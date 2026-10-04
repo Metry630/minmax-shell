@@ -21,7 +21,7 @@ Tick **Status** when done and add to `docs/DECISIONS.md`.
 
 ## Step 1. Hub skeleton and the risky integration
 
-**Status:** todo
+**Status:** done 2026-10-04 (https://minmax.joshuajodrian-d0a.workers.dev; preview and PostHog confirmed by Joshua)
 
 **Goal:** a deployed site on his own Cloudflare that writes to a database and logs an analytics event,
 before any game code exists. The point is to hit the deployment surprises first.
