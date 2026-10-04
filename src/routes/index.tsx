@@ -1,24 +1,44 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "minmax — Daily optimisation puzzles" },
+      { name: "description", content: "A family of daily optimisation puzzle games." },
+      { property: "og:title", content: "minmax — Daily optimisation puzzles" },
+      { property: "og:description", content: "A family of daily optimisation puzzle games." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="mx-auto min-h-screen w-full max-w-xl px-5 py-16 sm:px-8 sm:py-24">
+      <header className="border-b border-border pb-8">
+        <h1 className="text-4xl font-semibold tracking-normal">minmax</h1>
+        <p className="mt-3 text-base text-muted-foreground">Daily optimisation puzzles.</p>
+      </header>
+
+      <section aria-labelledby="games-heading" className="pt-8">
+        <h2 id="games-heading" className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">
+          Games
+        </h2>
+        <ul className="mt-4 border-t border-border">
+          <li className="border-b border-border">
+            <Link
+              to="/g/$game"
+              params={{ game: "guard" }}
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-5 text-base font-medium transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="min-w-0 truncate">Guard to Sub</span>
+              <span aria-hidden="true" className="shrink-0 text-muted-foreground">→</span>
+            </Link>
+          </li>
+        </ul>
+      </section>
+    </main>
   );
 }
