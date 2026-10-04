@@ -32,7 +32,10 @@ function DemoPage() {
   useEffect(() => {
     getDemoHistogram().then(
       ({ buckets }) => setBuckets(buckets),
-      () => setNote("Couldn't load the histogram."),
+      (error: unknown) =>
+        setNote(
+          `Couldn't load the histogram: ${error instanceof Error ? error.message : String(error)}`,
+        ),
     );
   }, []);
 
@@ -52,8 +55,10 @@ function DemoPage() {
         setNote("You've already submitted today. One a day.");
       }
       track("demo_submitted", { value, accepted: result.accepted, store: result.store });
-    } catch {
-      setNote("That didn't go through. Try again.");
+    } catch (error) {
+      // The demo exists to surface integration failures, so show the real cause.
+      console.error(error);
+      setNote(`That didn't go through: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
