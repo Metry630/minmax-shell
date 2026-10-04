@@ -237,7 +237,8 @@ once, see the histogram and optimum; a second submit is refused.
    This must happen before any public link exists, because streaks live in localStorage per origin.
 3. Smoke checklist on the real domain, with output: play, submit, second submit refused, tampered score
    re-scored by the server, streak survives reload, share text, `/ads.txt` → 200, PostHog shows
-   `puzzle_started` and `puzzle_submitted`.
+   `puzzle_started` and `puzzle_submitted`, and scores responses report `store: "d1"` (the memory
+   fallback is silent by design, see DECISIONS).
 4. Submit to dles.aukspot.com (https://tally.so/r/mOKOea). Claude Code drafts the r/bjj post in his
    register (short, no em dashes, the number that makes the puzzle interesting); 🧑 Joshua posts it.
    No Pints heads-up is planned (START-HERE, Gates).

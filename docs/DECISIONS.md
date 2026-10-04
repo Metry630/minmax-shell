@@ -139,8 +139,9 @@ cloudflare-module handler gets `fetch(request, env, ctx)` and attaches env to th
 event with `new H3Event(request)` from that same object (`start-server-core/.../request-response.js`).
 A probe on the built Worker under `wrangler dev` (workerd) returned `sameRequestObject: true` and `DB`
 visible via `getRequest()`, the handler's `request`, nitro's `globalThis.__env__` and
-`cloudflare:workers`. Picked the first: it's the path nitro documents, and unlike the
-`cloudflare:workers` import it doesn't break `vite dev`, where it simply returns undefined.
+`cloudflare:workers`. The deployed Worker gave the same answer, with `PUZZLE_SALT` visible too once the
+secret was set. Picked the first: it's the path nitro documents, and unlike the `cloudflare:workers`
+import it doesn't break `vite dev`, where it simply returns undefined. The probe route was then deleted.
 
 ## 2026-10-04: Root `wrangler.jsonc`, merged by nitro
 
@@ -158,14 +159,17 @@ moved later. The audience is mostly American (step 2's reasoning), so every US s
 APAC round trip. It was empty and a minute old, so it was deleted and recreated with `--location enam`
 (`running_in_region: ENAM`). Joshua's own testing from Asia is slower; he isn't the audience.
 
-## 2026-10-04: Memory fallback, but never silently on Cloudflare
+## 2026-10-04: Memory fallback whenever DB is missing; production asserts "d1"
 
-`scoreStore()` uses D1 on Cloudflare and an in-memory store when there's no Cloudflare runtime at all
-(`vite dev`, which is what Lovable's preview runs). On Cloudflare without a `DB` binding it throws rather
-than falling back, because a misconfigured deploy would otherwise keep production scores in one
-isolate's memory and lose them. One submission a day is enforced by the table's unique key with
-`ON CONFLICT DO NOTHING` and `meta.changes`, one round trip and no read-then-write race; verified
-locally: first submit stored, second refused.
+`scoreStore()` uses D1 when the `DB` binding exists and an in-memory store otherwise. The first version
+threw when it saw a Cloudflare env without `DB`, to stop a broken deploy from quietly keeping scores in
+one isolate's memory. Lovable's preview hit that throw ("Running on Cloudflare without a DB binding"):
+it serves the app with a Cloudflare-style env that has no bindings, so "on Cloudflare" can't tell
+preview from production. Now it falls back everywhere with one console warning, and the check moved to
+the deploy: every scores response carries `store`, and production must answer `"d1"` (it did, after the
+fix). One submission a day is enforced by the table's unique key with `ON CONFLICT DO NOTHING` and
+`meta.changes`, one round trip and no read-then-write race; verified: first submit stored, second
+refused.
 
 ## 2026-10-04: Host routing through the router's rewrite
 
@@ -204,3 +208,11 @@ so it's an ocean). Guard to Sub's mechanic is chaining techniques for points aga
 a combo, so the board becomes a fighting-game screen with a pixel LED scoreboard HUD. Applied in step 6
 rather than now, because the board is where the identity lives and restyling placeholders now would
 spend Lovable credits on screens step 6 replaces. Details and asset licenses in `docs/DESIGN.md`.
+
+## 2026-10-04: Deployed to workers.dev
+
+`https://minmax.joshuajodrian-d0a.workers.dev`, inside the one-hour timebox, so no fallback to Lovable
+hosting. The one snag: a new Cloudflare account needs a workers.dev subdomain, and wrangler only asks for
+it in an interactive terminal (non-interactive, it tried the package name `tanstack-start-ts`, which was
+taken), so Joshua ran the first deploy himself. `PUZZLE_SALT` went in with `wrangler secret put`, piped
+from `.dev.vars` so the value never appeared in a log; it took a few seconds to show up in the Worker.

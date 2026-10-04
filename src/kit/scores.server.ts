@@ -72,15 +72,23 @@ export function memoryStore(): ScoreStore {
   };
 }
 
+let warnedNoDb = false;
+
 /**
- * D1 on Cloudflare, memory everywhere else. Lovable's preview runs plain `vite dev` with no
- * bindings, and without this fallback every preview of a page that reads scores would break.
- * On Cloudflare a missing DB binding is a deploy mistake, so it throws instead of silently
- * keeping production scores in an isolate's memory.
+ * D1 when the binding exists, memory otherwise, so pages that read scores keep working in Lovable's
+ * preview and under `vite dev`.
+ *
+ * This used to throw when running on Cloudflare without DB, to stop a broken deploy from quietly
+ * keeping scores in one isolate's memory. Lovable's preview turned out to have a Cloudflare-style env
+ * with no bindings in it (step 1: its /demo hit that throw), so "on Cloudflare" can't tell preview
+ * from production. Instead every response carries `store`, and the deploy check requires "d1".
  */
 export async function scoreStore(): Promise<ScoreStore> {
   const env = await workerEnv();
-  if (!env) return memoryStore();
-  if (!env.DB) throw new Error("Running on Cloudflare without a DB binding; check wrangler.jsonc");
-  return d1Store(env.DB);
+  if (env?.DB) return d1Store(env.DB);
+  if (env && !warnedNoDb) {
+    warnedNoDb = true;
+    console.warn("[minmax] Cloudflare env without a DB binding: scores are kept in memory");
+  }
+  return memoryStore();
 }
