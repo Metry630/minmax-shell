@@ -34,7 +34,7 @@ stack: TanStack Start, nitro, Cloudflare default target).
    `render_project_widget`. Initial brief: a minimal mobile-first shell where each game is a
    self-contained page (it will be served on its own domain), a `/demo` placeholder, light/dark theme
    tokens, no auth; **do not enable Lovable Cloud** (we use D1).
-2. 🧑 Joshua connects GitHub in the Lovable editor, **public** repo `Metry630/minmax`.
+2. 🧑 Joshua connects GitHub in the Lovable editor, **public** repo (it became `Metry630/minmax-shell`).
 3. Clone to `~/kerjaan/lovable/minmax-repo`, move `CLAUDE.md` and `docs/` in, then replace the plain
    `~/kerjaan/lovable/minmax` folder with the clone. Add `LICENSE` (Apache-2.0) and a short README, and
    gitignore `.dev.vars`, `.sources/` and `schedule-export/`. Commit.
@@ -183,6 +183,8 @@ changes (time costs, opponent counters, objectives) instead of building UI on a 
 **Status:** todo
 
 **Goal:** playable end to end on a phone.
+
+**Read first:** `docs/DESIGN.md` (the arcade fighting-game direction; every batch brief quotes it).
 
 **Do:**
 1. Claude Code first writes `src/games/guard/ui-contract.ts`: the hooks and prop types the UI uses

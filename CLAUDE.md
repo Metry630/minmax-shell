@@ -74,3 +74,21 @@ Lovable commits straight to `main`. Never force-push or rewrite pushed history.
   content pages after the first, the next game's module files from `src/games/guard/`). Not for new logic.
 - **Dependencies need bun**: Lovable runs bun and `bun.lock` is the committed lockfile. Add, remove or
   bump a package only in a batch where bun regenerates the lockfile, then check CI.
+
+## Commands
+
+```sh
+npx bun install --frozen-lockfile        # install; bun.lock is the committed lockfile (npm crashes on `overrides`)
+npm run dev                              # vite dev on :8080 (next free port if taken); scores in memory, no bindings
+npm run build                            # TanStack Start + nitro -> .output/ and the merged .output/server/wrangler.json
+npx tsc --noEmit && npx vitest run       # typecheck and tests
+npx wrangler dev --config .output/server/wrangler.json --port 8788 --persist-to .wrangler/state
+                                         # the built Worker under workerd with local D1; test Host routing here
+npx wrangler deploy --config .output/server/wrangler.json   # deploy the build (run npm run build first)
+npx wrangler d1 migrations apply minmax --remote --config wrangler.jsonc   # apply migrations (--local for dev)
+npx wrangler d1 execute minmax --remote --config wrangler.jsonc --command "select count(*) from scores"
+```
+
+Local secrets: `.dev.vars` (PUZZLE_SALT) and `.env.local` (VITE_POSTHOG_KEY, VITE_POSTHOG_HOST), both
+gitignored. `wrangler dev` on the built config does not pick up `.dev.vars` yet (even with
+`--env-file`); nothing reads the salt until step 2, which falls back to the public `dev` salt locally.

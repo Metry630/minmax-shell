@@ -89,7 +89,7 @@ this. Building may start; launch waits for the written yes with an IP line. Draf
 ## 2026-10-02: Analytics
 
 PostHog free tier for retention cohorts (D1/D7 by referrer is the metric), Cloudflare Web Analytics for
-pageviews. Confirm current free-tier limits in step 1.
+pageviews. Confirm current free-tier limits in step 1 (done, see "Free-tier limits, checked").
 
 ## 2026-10-04: Open source instead of a new ask to Pints
 
@@ -121,3 +121,86 @@ cost ad scale later: AdSense reviews each site, and Journey (1k tier-1 sessions)
 count traffic per site, so split traffic reaches thresholds later. Ads are off for now, so the cost is
 deferred. Domain checks for game #1 are in `GAMES.md`; `arm.bar` and `loadthe.bar` were available at the
 .bar registry on 2026-10-04.
+
+## 2026-10-04: Free-tier limits, checked (step 1)
+
+Workers Free: 10 ms CPU per HTTP request, 100,000 requests/day
+([limits](https://developers.cloudflare.com/workers/platform/limits/)). D1 Free: 5M rows read/day,
+100k rows written/day, 5 GB total; past a daily cap queries error until the reset
+([pricing](https://developers.cloudflare.com/d1/platform/pricing/)). PostHog Free: 1M events and 1M
+feature-flag requests a month, 1 project, 1-year retention, no card ([pricing](https://posthog.com/pricing)).
+The 10 ms CPU cap is why solving stays offline in `scripts/schedule.ts`.
+
+## 2026-10-04: How bindings reach TanStack Start server functions
+
+`getRequest().runtime.cloudflare.env` (`src/kit/env.server.ts`). Evidence, not guesswork: nitro's
+cloudflare-module handler gets `fetch(request, env, ctx)` and attaches env to the Request object itself
+(`nitro/dist/presets/cloudflare/runtime/_module-handler.mjs`, `augmentReq`); TanStack Start builds its
+event with `new H3Event(request)` from that same object (`start-server-core/.../request-response.js`).
+A probe on the built Worker under `wrangler dev` (workerd) returned `sameRequestObject: true` and `DB`
+visible via `getRequest()`, the handler's `request`, nitro's `globalThis.__env__` and
+`cloudflare:workers`. Picked the first: it's the path nitro documents, and unlike the
+`cloudflare:workers` import it doesn't break `vite dev`, where it simply returns undefined.
+
+## 2026-10-04: Root `wrangler.jsonc`, merged by nitro
+
+Lovable's `defineConfig` forwards only `preset`, `output` and `cloudflare.{nodeCompat,deployConfig}`
+to nitro, so there's no place to declare a D1 binding there. nitro reads a root `wrangler.json(c)`
+and merges it into the generated `.output/server/wrangler.json`, overriding only `main` and `assets`
+(`nitro/dist/_presets.mjs`, `writeWranglerConfig`). That's also how the Worker is named `minmax`
+instead of nitro's git-derived `metry630-minmax-shell`. Deploys name the built config explicitly
+(`--config .output/server/wrangler.json`); D1 commands name the source one (`--config wrangler.jsonc`).
+
+## 2026-10-04: D1 lives in eastern North America
+
+`wrangler d1 create` placed it in APAC, the region nearest whoever runs it, and the location can't be
+moved later. The audience is mostly American (step 2's reasoning), so every US submit would have paid an
+APAC round trip. It was empty and a minute old, so it was deleted and recreated with `--location enam`
+(`running_in_region: ENAM`). Joshua's own testing from Asia is slower; he isn't the audience.
+
+## 2026-10-04: Memory fallback, but never silently on Cloudflare
+
+`scoreStore()` uses D1 on Cloudflare and an in-memory store when there's no Cloudflare runtime at all
+(`vite dev`, which is what Lovable's preview runs). On Cloudflare without a `DB` binding it throws rather
+than falling back, because a misconfigured deploy would otherwise keep production scores in one
+isolate's memory and lose them. One submission a day is enforced by the table's unique key with
+`ON CONFLICT DO NOTHING` and `meta.changes`, one round trip and no read-then-write race; verified
+locally: first submit stored, second refused.
+
+## 2026-10-04: Host routing through the router's rewrite
+
+`src/kit/hosts.ts` maps hostname to game; the router's `rewrite.input` turns `/` on a game domain into
+`/g/<game>` and `rewrite.output` turns it back, on server and client alike, so hydration matches. Only the
+root is mapped, so shared paths like `/demo` work on every host. Verified on the built Worker:
+`armbar.day` and `www.armbar.day` serve "Guard to Sub · minmax" at `/`; `localhost` and a workers.dev
+host get the hub. Test this with `wrangler dev`, not `vite dev`, which answers unknown hosts with a 403
+(its DNS-rebinding guard).
+
+## 2026-10-04: PostHog setup
+
+US cloud. `VITE_POSTHOG_KEY` lives in `.env.local` (gitignored) and is inlined at build; without it every
+`track()` is a no-op, so Lovable previews and forks of the public repo send nothing to this project.
+posthog-js loads on first event, never during SSR, with the distinct id bootstrapped to the anon id
+(step 2's plan, done now so the data has one id scheme from day one). The project's remote config
+switched on surveys, dead-click capture and web vitals, each one another script; all off, plus
+autocapture and pageviews (Cloudflare Web Analytics does pageviews). Verified: two event POSTs, both 200.
+
+## 2026-10-04: Local tooling: bun through npx, wrangler through npx
+
+`npm install` with no lockfile crashes on the `overrides` entry ("Cannot read properties of null
+(reading 'edgesOut')"), and `bun.lock` is the committed lockfile anyway, so installs are
+`npx bun install --frozen-lockfile` (bun 1.4.2), which leaves the lockfile untouched. wrangler 4.147.0
+runs through npx rather than being a devDependency, since adding one means a bun lockfile batch.
+
+## 2026-10-04: The repo is `Metry630/minmax-shell`
+
+Lovable created it under that name when Joshua connected GitHub. Kept rather than renamed, because
+renaming risks the Lovable sync for a cosmetic gain.
+
+## 2026-10-04: Visual direction is a 16-bit arcade fighting game
+
+Joshua's pick, with Krillion as the reference: its world *is* its mechanic (rarer answers sink deeper,
+so it's an ocean). Guard to Sub's mechanic is chaining techniques for points against a clock, which is
+a combo, so the board becomes a fighting-game screen with a pixel LED scoreboard HUD. Applied in step 6
+rather than now, because the board is where the identity lives and restyling placeholders now would
+spend Lovable credits on screens step 6 replaces. Details and asset licenses in `docs/DESIGN.md`.

@@ -5,8 +5,10 @@ order of work. Steps for the current game: `docs/steps/guard.md`.
 
 ## Where things stand (2026-10-04)
 
-Planning only. Nothing is built, bought or created yet. The folder holds the runbook and nothing else;
-step 1 moves `CLAUDE.md` and `docs/` into the Lovable-created repo.
+Step 1's slice is built: Lovable project `41bb2af6-1aab-4d1f-a3e0-5fbb6bc52325`, repo
+`Metry630/minmax-shell`, D1 `minmax` (ENAM), and a Worker named `minmax` that serves the shell, writes
+`/demo` scores to D1 and sends `demo_submitted` to PostHog (US cloud). Visual direction for step 6 is in
+`docs/DESIGN.md` (arcade fighting game).
 
 | Game | Steps file | Current step |
 |---|---|---|
@@ -39,7 +41,7 @@ will be paid to. The ads ladder is in `DECISIONS.md`.
 | When | What |
 |---|---|
 | Step 0 | Create Cloudflare and PostHog accounts |
-| Step 1 | Connect GitHub in the Lovable editor (**public** repo `Metry630/minmax`); `wrangler login` |
+| Step 1 | Connect GitHub in the Lovable editor (**public** repo `Metry630/minmax-shell`); `wrangler login`; register a workers.dev subdomain |
 | Steps 3–4 | Sign off the scoring rules and the position graph |
 | Step 8 | Buy `armbar.day` and point it at Cloudflare (before any public link); post to r/bjj |
 | When ads are worth it | Optional MOM email (draft below); then AdSense |
