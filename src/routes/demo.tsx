@@ -79,7 +79,7 @@ function DemoPage() {
         </button>
       </form>
 
-      <DemoHistogram buckets={buckets} mine={mine} />
+      <DemoHistogram buckets={buckets} {...(mine === undefined ? {} : { mine })} />
     </main>
   );
 }
