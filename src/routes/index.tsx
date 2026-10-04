@@ -3,9 +3,9 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "minmax — Daily optimisation puzzles" },
+      { title: "minmax · daily optimisation puzzles" },
       { name: "description", content: "A family of daily optimisation puzzle games." },
-      { property: "og:title", content: "minmax — Daily optimisation puzzles" },
+      { property: "og:title", content: "minmax · daily optimisation puzzles" },
       { property: "og:description", content: "A family of daily optimisation puzzle games." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

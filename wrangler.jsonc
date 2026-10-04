@@ -1,0 +1,18 @@
+// Source config for the Worker. nitro merges this into the generated .output/server/wrangler.json
+// at build time, overriding only `main` and `assets` (node_modules/nitro/dist/_presets.mjs,
+// writeWranglerConfig). Edit this file, never the generated one.
+{
+  "name": "minmax",
+  "compatibility_date": "2026-10-04",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      // Created 2026-10-04 with --location enam: the BJJ audience is mostly American.
+      "binding": "DB",
+      "database_name": "minmax",
+      "database_id": "bb9cd6ed-d66e-49d1-84db-d6bddb6c1e1f",
+      "migrations_dir": "migrations",
+    },
+  ],
+}

@@ -7,7 +7,7 @@ const games: Record<string, { name: string }> = {
 export const Route = createFileRoute("/g/$game")({
   head: ({ params }) => {
     const game = games[params.game];
-    const title = game ? `${game.name} — minmax` : "Game not found — minmax";
+    const title = game ? `${game.name} · minmax` : "Game not found · minmax";
     const description = game
       ? `Play today's ${game.name} optimisation puzzle.`
       : "This minmax game could not be found.";
