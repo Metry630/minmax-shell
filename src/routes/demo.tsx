@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
 import { DemoHistogram } from "@/components/DemoHistogram";
-import { anonId } from "@/kit/anon";
-import { track } from "@/kit/analytics";
-import { getDemoHistogram, submitDemo } from "@/kit/demo.functions";
+import { demo } from "@/games/demo/module";
+import { t, useLang } from "@/kit/i18n";
+import { useDaily } from "@/kit/useDaily";
 
-type Bucket = { value: number; count: number };
+// /demo runs the whole kit end to end on a trivial game (src/games/demo/module.ts): local puzzle
+// number, salted puzzle, server re-score, one submission a day, histogram and optimum, streaks, share.
 
 export const Route = createFileRoute("/demo")({
   head: () => ({
@@ -23,44 +24,23 @@ export const Route = createFileRoute("/demo")({
 });
 
 function DemoPage() {
+  const lang = useLang();
+  const { state, markStarted, submit, share } = useDaily(demo);
   const [input, setInput] = useState("");
-  const [buckets, setBuckets] = useState<Bucket[]>([]);
-  const [mine, setMine] = useState<number>();
-  const [note, setNote] = useState<string>();
-
-  // Today's histogram from the server (D1 when deployed, memory in the Lovable preview).
-  useEffect(() => {
-    getDemoHistogram().then(
-      ({ buckets }) => setBuckets(buckets),
-      (error: unknown) =>
-        setNote(
-          `Couldn't load the histogram: ${error instanceof Error ? error.message : String(error)}`,
-        ),
-    );
-  }, []);
+  const [shareNote, setShareNote] = useState<string>();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const value = Number(input);
-    if (!Number.isInteger(value) || value < 0 || value > 100) return;
-
-    try {
-      const result = await submitDemo({ data: { anonId: anonId(), value } });
-      setBuckets(result.buckets);
-      setInput("");
-      if (result.accepted) {
-        setMine(value);
-        setNote(undefined);
-      } else {
-        setNote("You've already submitted today. One a day.");
-      }
-      track("demo_submitted", { value, accepted: result.accepted, store: result.store });
-    } catch (error) {
-      // The demo exists to surface integration failures, so show the real cause.
-      console.error(error);
-      setNote(`That didn't go through: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    // The engine judges the number, here and again on the server.
+    await submit({ value: Number(input) });
   }
+
+  async function handleShare() {
+    const outcome = await share();
+    setShareNote(outcome === "shared" ? undefined : t(`share.${outcome}`, lang));
+  }
+
+  const puzzleNo = state.phase === "playing" || state.phase === "done" ? state.puzzleNo : undefined;
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-xl px-5 py-12 sm:px-8 sm:py-20">
@@ -68,38 +48,94 @@ function DemoPage() {
         <p className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">
           minmax
         </p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-normal">Histogram demo</h1>
+        <h1 className="mt-3 text-2xl font-semibold tracking-normal">
+          Histogram demo
+          {puzzleNo !== undefined && <span className="text-muted-foreground"> #{puzzleNo}</span>}
+        </h1>
       </header>
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 py-8"
-      >
-        <label className="min-w-0 text-sm font-medium" htmlFor="demo-number">
-          Number
-          <input
-            id="demo-number"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            max={100}
-            step={1}
-            required
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            className="mt-2 h-11 w-full rounded-sm border border-input bg-background px-3 text-base tabular-nums outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
-          />
-        </label>
-        <button
-          type="submit"
-          className="h-11 shrink-0 rounded-sm bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          Submit
-        </button>
-      </form>
+      {state.phase === "loading" && (
+        <p className="py-8 text-sm text-muted-foreground">{t("daily.loading", lang)}</p>
+      )}
+      {state.phase === "unavailable" && (
+        <p className="py-8 text-sm text-muted-foreground">{t("daily.unavailable", lang)}</p>
+      )}
+      {state.phase === "error" && (
+        <p className="py-8 text-sm text-muted-foreground">
+          {t("daily.error", lang, { message: state.message })}
+        </p>
+      )}
 
-      {note && <p className="pb-4 text-sm text-muted-foreground">{note}</p>}
-      <DemoHistogram buckets={buckets} {...(mine === undefined ? {} : { mine })} />
+      {state.phase === "playing" && (
+        <>
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 py-8"
+          >
+            <label className="min-w-0 text-sm font-medium" htmlFor="demo-number">
+              A whole number from 0 to {state.puzzle.max}
+              <input
+                id="demo-number"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={state.puzzle.max}
+                step={1}
+                required
+                value={input}
+                onChange={(event) => {
+                  markStarted();
+                  setInput(event.target.value);
+                }}
+                className="mt-2 h-11 w-full rounded-sm border border-input bg-background px-3 text-base tabular-nums outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={state.submitting}
+              className="h-11 shrink-0 rounded-sm bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60"
+            >
+              {t(state.submitting ? "daily.submitting" : "daily.submit", lang)}
+            </button>
+          </form>
+          {state.rejection && (
+            <p className="pb-4 text-sm text-muted-foreground">{state.rejection}</p>
+          )}
+          <DemoHistogram buckets={[]} />
+        </>
+      )}
+
+      {state.phase === "done" && (
+        <section className="py-8">
+          {state.duplicate && (
+            <p className="pb-4 text-sm text-muted-foreground">{t("daily.duplicate", lang)}</p>
+          )}
+          <p className="pb-6 text-sm font-medium">
+            {t("daily.score", lang, { score: state.score, optimum: state.optimum.score })}
+          </p>
+          <DemoHistogram buckets={state.buckets} mine={state.score} />
+          <p className="pt-5 text-xs text-muted-foreground">
+            {t("stats.line", lang, {
+              played: state.stats.played,
+              optimal: state.stats.optimal,
+              current: state.stats.currentStreak,
+              max: state.stats.maxStreak,
+            })}
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-5">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="h-11 shrink-0 rounded-sm bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {t("share.button", lang)}
+            </button>
+            {shareNote && <span className="text-sm text-muted-foreground">{shareNote}</span>}
+          </div>
+          {/* The integration check: production must say d1 (DECISIONS 2026-10-04). */}
+          <p className="pt-8 text-xs text-muted-foreground">store: {state.store}</p>
+        </section>
+      )}
     </main>
   );
 }

@@ -3,18 +3,19 @@
 Briefing for every session. `CLAUDE.md` has the protocol and rules; this file has the state and the
 order of work. Steps for the current game: `docs/steps/guard.md`.
 
-## Where things stand (2026-10-04)
+## Where things stand (2026-10-05)
 
-Step 1 is done: Lovable project `41bb2af6-1aab-4d1f-a3e0-5fbb6bc52325`, repo
-`Metry630/minmax-shell`, D1 `minmax` (ENAM), and a Worker named `minmax` that serves the shell, writes
-`/demo` scores to D1 and sends `demo_submitted` to PostHog (US cloud), live at
-`https://minmax.joshuajodrian-d0a.workers.dev`. The Lovable preview runs the same code on an in-memory
-store. Visual direction for step 6 is in
-`docs/DESIGN.md` (arcade fighting game).
+Steps 1 and 2 are done: Lovable project `41bb2af6-1aab-4d1f-a3e0-5fbb6bc52325`, repo
+`Metry630/minmax-shell`, D1 `minmax` (ENAM), and a Worker named `minmax` live at
+`https://minmax.joshuajodrian-d0a.workers.dev`. The shared kit is in `src/kit/` (local puzzle number,
+salted seed, puzzle/scores API with server re-scoring, streaks, share, analytics, A/B hook, EN/ID
+strings). `/demo` is a trivial game on that kit (`src/games/demo/`), proving the pipeline on the Worker
+with D1; the Lovable preview runs it on memory and the public `dev` salt. Visual direction for step 6
+is in `docs/DESIGN.md` (arcade fighting game).
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **2** |
+| Guard to Sub | `docs/steps/guard.md` | **3** |
 
 ## Gates
 

@@ -13,6 +13,11 @@ export function gameForHost(hostname: string): GameId | undefined {
   return GAME_HOSTS[hostname.toLowerCase().replace(/^www\./, "")];
 }
 
+/** A game's own domain, for share text; undefined for games without one (the demo). */
+export function hostForGame(game: string): string | undefined {
+  return Object.keys(GAME_HOSTS).find((host) => GAME_HOSTS[host] === game);
+}
+
 // Router rewrite pair: on a game's own domain, "/" is that game's page. Only the root is mapped,
 // so shared paths (/demo, and later /privacy etc.) keep working on every host. `input` runs before
 // the router matches a URL, `output` before it writes one to the address bar, so links to

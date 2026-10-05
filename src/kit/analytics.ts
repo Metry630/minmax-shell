@@ -9,7 +9,8 @@ const HOST = import.meta.env.VITE_POSTHOG_HOST ?? "https://us.i.posthog.com";
 type PostHog = (typeof import("posthog-js"))["default"];
 let client: Promise<PostHog> | undefined;
 
-function posthog(): Promise<PostHog> | undefined {
+/** The lazily loaded client; undefined during SSR and when there's no key. */
+export function posthogClient(): Promise<PostHog> | undefined {
   if (typeof window === "undefined" || !KEY) return undefined;
   // Loaded on first event rather than at page load, and never during SSR.
   client ??= import("posthog-js").then(({ default: ph }) => {
@@ -32,6 +33,16 @@ function posthog(): Promise<PostHog> | undefined {
   return client;
 }
 
-export function track(event: string, properties?: Record<string, unknown>): void {
-  void posthog()?.then((ph) => ph.capture(event, properties));
+// Every event the kit sends, with its properties. The distinct id is the anon id (bootstrapped
+// above), so retention cohorts follow one browser across days.
+export type Events = {
+  puzzle_viewed: { game: string; n: number };
+  puzzle_started: { game: string; n: number };
+  /** Accepted submissions only; `ms` is from puzzle_started, null if the player never started. */
+  puzzle_submitted: { game: string; n: number; score: number; optimum: number; ms: number | null };
+  share_clicked: { game: string; n: number };
+};
+
+export function track<E extends keyof Events>(event: E, properties: Events[E]): void {
+  void posthogClient()?.then((ph) => ph.capture(event, properties));
 }

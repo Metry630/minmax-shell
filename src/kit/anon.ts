@@ -1,5 +1,5 @@
 // A random per-browser id: how the server enforces one submission a day without accounts, and the
-// PostHog distinct id. Minimal for step 1; step 2 builds stats and streaks on top of it.
+// PostHog distinct id. Streaks and stats live beside it, in stats.ts.
 
 const KEY = "minmax:anon";
 

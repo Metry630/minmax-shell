@@ -216,3 +216,61 @@ hosting. The one snag: a new Cloudflare account needs a workers.dev subdomain, a
 it in an interactive terminal (non-interactive, it tried the package name `tanstack-start-ts`, which was
 taken), so Joshua ran the first deploy himself. `PUZZLE_SALT` went in with `wrangler secret put`, piped
 from `.dev.vars` so the value never appeared in a log; it took a few seconds to show up in the Worker.
+
+## 2026-10-05: Puzzle number by the player's local date
+
+Wordle's rule: the puzzle rolls over at the player's midnight. A UTC rollover lands at 8 pm US Eastern,
+mid-evening for the audience. Each game has an `epoch` (local date of #1); the browser computes N and
+the server accepts it only within ±1 of its own UTC N, because every zone (UTC−12 to UTC+14) is within
+one calendar day of UTC. `day.test.ts` sweeps 105 offsets × 192 instants (20,160 cases) and none is
+refused. Cost accepted: someone who changes their clock sees tomorrow's puzzle up to a day early.
+
+## 2026-10-05: Seed = HMAC-SHA256(salt, game:n) into sfc32
+
+HMAC is a PRF, so brute-forcing today's seed from a published puzzle says nothing about tomorrow's; a
+fast non-crypto hash (cyrb128) gives no such guarantee. Its first 128 bits seed sfc32, a state too big
+to brute-force from one puzzle in the first place (mulberry32's 32 bits are not). WebCrypto, so the
+same code runs in the Worker, Node and tests. Generators take the kit's `Rng`, not a raw seed, so every
+game shares one PRNG. The first draws are pinned in `seed.test.ts`, checked against node:crypto's HMAC
+and bryc's reference sfc32; if they change, every salt generates different puzzles. Verified live:
+puzzle #1 of the demo has max 93 on the Worker and 71 with the public `dev` salt, so production reads
+the real `PUZZLE_SALT`.
+
+## 2026-10-05: The server re-scores; a mismatched claim is refused
+
+The client sends its solution and the score its engine showed. The server parses the solution with the
+game's zod schema, scores it with the same engine, and refuses (`score_mismatch`, nothing stored) if
+the two differ, instead of quietly storing its own number. A mismatch means tampering or a stale client
+bundle after a deploy, and both should be loud; a reload fixes the stale case and the day's one
+submission isn't used up. Verified on the deployed Worker by rewriting `claimedScore` to 93 in flight
+for a solution worth 10: `score_mismatch`, and D1 has no row for that anon id.
+
+## 2026-10-05: Optimum and histogram only after you submit
+
+`today` never returns the optimum. `results` returns optimum and histogram only to an anon id with a
+row, or to anyone once the puzzle is out of the window (the archive later). Known hole, accepted: a
+throwaway anon id can submit junk to peek, since there are no accounts (enclose.horse has the same).
+
+## 2026-10-05: Where a puzzle comes from
+
+With a DB binding, D1's `puzzles` row; a missing row is `no_puzzle`, because a real game's solver
+won't fit the Worker's 10 ms of CPU. Without one (vite dev, Lovable preview) the puzzle is generated,
+solved and quality-checked on request and cached per isolate. A module flagged `onDemand` (only the
+demo, microseconds of CPU) takes that same path in production too, so nothing reaches players without a
+solver optimum and a passing quality report. `generateChecked()` in `puzzles.server.ts` is the piece
+step 7's scheduler reuses.
+
+## 2026-10-05: /demo is a game now
+
+Puzzle `{max}` (seeded, 50 to 100), pick a whole number up to it, score is the number, optimum is max.
+Trivial on purpose: it runs the whole kit (salted seed, API, re-score, one a day, histogram, optimum,
+streaks, share) on the deployed Worker before guard's engine exists. Its scores live under puzzle
+numbers from 2026-10-05; step 1's rows (UTC day ~20,730) stay in D1, unused. The contract carries
+`goal: "max" | "min"` because GAMES.md has two fewest-moves games (Mise, Plates).
+
+## 2026-10-05: Language and the share bar
+
+`t()` over an EN/ID table typed so ID can't miss a key. The server and first render are English, then
+the page switches on `navigator.language`: one frame of English for Indonesian readers, but no
+hydration mismatch. The share bar floors to 10 cells so a full bar always means the optimum (16/17
+shows 9). Phones get the share sheet, everything else the clipboard, like Wordle.

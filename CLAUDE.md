@@ -91,4 +91,6 @@ npx wrangler d1 execute minmax --remote --config wrangler.jsonc --command "selec
 
 Local secrets: `.dev.vars` (PUZZLE_SALT) and `.env.local` (VITE_POSTHOG_KEY, VITE_POSTHOG_HOST), both
 gitignored. `wrangler dev` on the built config does not pick up `.dev.vars` yet (even with
-`--env-file`); nothing reads the salt until step 2, which falls back to the public `dev` salt locally.
+`--env-file`), so locally the kit uses the public `dev` salt (`src/kit/seed.ts`); only the deployed
+Worker has the real one. Kit tests that need WebCrypto run under `// @vitest-environment node`
+(jsdom has no `crypto.subtle`).

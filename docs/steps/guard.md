@@ -72,7 +72,7 @@ activity view shows `demo_submitted`; the Lovable preview still loads `/demo`;
 
 ## Step 2. Shared kit
 
-**Status:** todo
+**Status:** done 2026-10-05 (/demo on the kit, deployed; second submit and a tampered score refused live)
 
 **Goal:** everything a game needs that isn't the game, tested.
 
@@ -212,7 +212,9 @@ once, see the histogram and optimum; a second submit is refused.
 1. Pages: How to play, Rules (from `RULES.md`, with citations), About (pseudonymous is fine), Privacy
    (PostHog, localStorage, no accounts), Contact, Terms, Archive. Write the first page by hand, then
    `/code-write` the rest from it. Lovable polish pass if the pages need it.
-2. `scripts/schedule.ts --game guard --days 90`: run locally with the real salt from `.dev.vars`;
+2. First set guard's `epoch` to the launch date: puzzle numbers count from it, and moving it after
+   scheduling renumbers every row. Reuse `generateChecked()` from `src/kit/puzzles.server.ts`.
+   `scripts/schedule.ts --game guard --days 90`: run locally with the real salt from `.dev.vars`;
    generates, solves and quality-checks each puzzle and writes the rows into D1 `puzzles` (refuses to
    write any puzzle without a solver-verified optimum or failing quality). `scripts/schedule-check.ts`
    reports the first day not covered.

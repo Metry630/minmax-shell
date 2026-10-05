@@ -1,0 +1,130 @@
+// @vitest-environment node
+import { describe, expect, it } from "vitest";
+
+import { demo, type DemoPuzzle } from "@/games/demo/module";
+
+import { results, submit, today, type Deps } from "./daily.core";
+import { generatedPuzzles } from "./puzzles.server";
+import { memoryStore } from "./scores.server";
+
+const NOW = new Date(Date.UTC(2026, 9, 10, 12, 0)); // demo puzzle #6 by UTC
+const N = 6;
+const PLAYER = "3f2b8c1e-5d4a-4b6f-9a7c-1e2d3c4b5a69";
+const OTHER = "9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a";
+
+function deps(): Deps {
+  return {
+    games: { demo },
+    puzzles: generatedPuzzles("test-salt"),
+    scores: memoryStore(new Map()),
+    now: NOW,
+  };
+}
+
+async function todaysMax(d: Deps): Promise<number> {
+  const res = await today(d, { game: "demo", puzzleNo: N });
+  if (res.status !== "ok") throw new Error(`no puzzle: ${res.reason}`);
+  return (res.puzzle as DemoPuzzle).max;
+}
+
+const play = (value: unknown, claimedScore: number, anonId = PLAYER) => ({
+  game: "demo",
+  puzzleNo: N,
+  anonId,
+  solution: { value },
+  claimedScore,
+});
+
+describe("today", () => {
+  it("serves the puzzle and never its optimum", async () => {
+    const res = await today(deps(), { game: "demo", puzzleNo: N });
+    expect(res.status).toBe("ok");
+    expect(res).not.toHaveProperty("optimum");
+    expect(JSON.stringify(res)).not.toContain("solutions");
+  });
+
+  it("refuses unknown games and puzzles outside the window", async () => {
+    const d = deps();
+    expect(await today(d, { game: "nope", puzzleNo: N })).toMatchObject({ reason: "unknown_game" });
+    expect(await today(d, { game: "demo", puzzleNo: N - 2 })).toMatchObject({ reason: "closed" });
+    expect(await today(d, { game: "demo", puzzleNo: N + 2 })).toMatchObject({ reason: "not_open" });
+  });
+});
+
+describe("submit", () => {
+  it("stores the engine's score and reveals the optimum", async () => {
+    const d = deps();
+    const max = await todaysMax(d);
+    expect(await submit(d, play(40, 40))).toEqual({
+      status: "accepted",
+      score: 40,
+      optimum: { score: max, solutions: [{ value: max }] },
+      buckets: [{ value: 40, count: 1 }],
+      store: "memory",
+    });
+  });
+
+  it("rejects a tampered score, stores nothing, and leaves the day's submission unused", async () => {
+    const d = deps();
+    const max = await todaysMax(d);
+    // A solution worth 40, sent claiming the optimum.
+    expect(await submit(d, play(40, max))).toMatchObject({
+      status: "rejected",
+      reason: "score_mismatch",
+    });
+    expect(await d.scores.histogram("demo", N)).toEqual([]);
+    expect(await d.scores.find("demo", N, PLAYER)).toBeUndefined();
+    expect(await submit(d, play(40, 40))).toMatchObject({ status: "accepted", score: 40 });
+  });
+
+  it("judges legality with the server's engine, not the client's say-so", async () => {
+    const d = deps();
+    const max = await todaysMax(d);
+    expect(await submit(d, play(max + 1, max + 1))).toMatchObject({ reason: "illegal" });
+    expect(await submit(d, play(12.5, 12.5))).toMatchObject({ reason: "illegal" });
+    expect(await submit(d, play("40", 40))).toMatchObject({ reason: "illegal" });
+    expect(await d.scores.histogram("demo", N)).toEqual([]);
+  });
+
+  it("refuses a second submission and returns the first score", async () => {
+    const d = deps();
+    await submit(d, play(40, 40));
+    expect(await submit(d, play(50, 50))).toMatchObject({
+      status: "duplicate",
+      score: 40,
+      buckets: [{ value: 40, count: 1 }],
+    });
+  });
+
+  it("refuses a submission outside the window", async () => {
+    const d = deps();
+    expect(await submit(d, { ...play(40, 40), puzzleNo: N - 2 })).toMatchObject({
+      reason: "closed",
+    });
+  });
+});
+
+describe("results", () => {
+  it("stay locked until this anon id has submitted", async () => {
+    const d = deps();
+    const ref = { game: "demo", puzzleNo: N };
+    expect(await results(d, { ...ref, anonId: PLAYER })).toEqual({ status: "locked" });
+    await submit(d, play(40, 40));
+    expect(await results(d, { ...ref, anonId: PLAYER })).toMatchObject({
+      status: "ok",
+      yourScore: 40,
+    });
+    expect(await results(d, { ...ref, anonId: OTHER })).toEqual({ status: "locked" });
+  });
+
+  it("are open to everyone once the puzzle has closed", async () => {
+    const d = deps();
+    await submit(d, play(40, 40));
+    const later = { ...d, now: new Date(Date.UTC(2026, 9, 12, 12, 0)) };
+    expect(await results(later, { game: "demo", puzzleNo: N, anonId: OTHER })).toMatchObject({
+      status: "ok",
+      yourScore: null,
+      buckets: [{ value: 40, count: 1 }],
+    });
+  });
+});
