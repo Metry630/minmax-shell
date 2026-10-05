@@ -1,6 +1,7 @@
 # Guard to Sub: scoring rules
 
-The IBJJF scoring model the game uses, **signed off by Joshua on 2026-10-05** except choice 10. The code is
+The IBJJF scoring model the game uses, **signed off by Joshua on 2026-10-05**, with choices 1 and 10 revised the same day from r/bjj threads he
+sent (awaiting his yes). The code is
 `src/games/guard/rules.ts`; every point value lives there and nowhere else. Quotes below are verbatim
 from the rule book (its dashes and typos included), and `rules.test.ts` checks each one against the
 book's text on its stated page.
@@ -80,20 +81,24 @@ the tests check those headings.
 > mount shall add up 7 points (3+4)."
 
 In code: events add up across a line (3.4), and several events in one technique add up too. An event
-scores the first time it's reached. After that, only mount, back mount and back control score again,
-and only when a technique goes straight from one of them to another (choice 1). Anything else that
-returns to a scored position gets 0.
+pays its points unless it's the position you were last credited with (stepping off and back on, 3.2),
+or it's knee on belly coming down from mount or the back (no points going backwards). The opponent's
+escape wipes that memory, so positions re-taken after it pay again. Choice 1 has the reasoning.
 
-## Modelling choices (1 to 9 signed off 2026-10-05)
+## Modelling choices (signed off 2026-10-05; 1 and 10 revised after)
 
-1. **Re-scoring the same position.** In a real match it depends on the opponent: if they escape and
-   you re-take the position, it scores again; if you step off it yourself to score it again, 3.2
-   refuses the points ("voluntarily relinquish a position, in order to again score points"). This game
-   has no opponent moves, so every exit is the player's own and a plain return scores 0 (S3, S9). The
-   exception is the mount and back family: going straight between mount, back mount and back control
-   scores 4 every time, because they're "distinct positions" (4.4.1, explicit for mount and back
-   mount). Joshua confirmed it for back control too. *Our reading of 3.2 and 4.4.1, signed off.*
-   (S4, S5, S11)
+1. **Re-scoring a position.** Three cases.
+   - **After the opponent escapes** (re-guards, pushes the knee off, bucks you off, stands up),
+     re-taking a position scores again. 3.2 only refuses points when the athlete "voluntarily
+     relinquish[es]" a position, and r/bjj describes passes scored again after every re-guard. So
+     mount, re-guard, pass, mount pays 4 + 3 + 4. (S13, S14, S16)
+   - **Stepping off yourself and straight back on** scores 0, which is exactly the case 3.2
+     describes, and what bjj-rules.com calls intentionally abandoning a position. (S3, S9)
+   - **Moving on to another scoring position and coming back** scores again: mount, back control,
+     mount is 12, and mount, knee on belly, mount pays both mounts. 4.4.1 says so for back mount;
+     Joshua and r/bjj for back control and the rest. (S4, S5, S10, S12)
+
+   *Rule book plus referee practice.*
 2. **Pass straight to mount (3 + 4?).** Yes, 7, by 3.4's own example: "Guard pass followed by mount
    shall add up 7 points (3+4)." The book doesn't say whether a pass that never reaches side control
    (half guard straight to mount) still earns the 3, since 4.2 asks for side control or north-south.
@@ -101,7 +106,7 @@ returns to a scored position gets 0.
 3. **Mount to back (4 again?).** To back mount, yes, explicitly: "four points for the first mount and
    another four points for the subsequent mount" (4.4.1). To back control, also yes, and back again to
    mount scores another 4 (mount, back control, mount is 12). Back mount to back control follows from
-   the same reading. *Back control: our reading, confirmed by Joshua.* (S4, S5, S12)
+   choice 1. *Back control: confirmed by Joshua and r/bjj.* (S4, S5, S12)
 4. **Knee on belly after a pass.** 3 + 2, by 3.4. Knee on belly needs the top player "free of the
    opponent’s guard" (4.3), so it never scores from inside the guard. (S3)
 5. **Sweep conditions.** From bottom in guard or half guard to top, held 3 s (4.6.1), or to the back
@@ -124,39 +129,44 @@ returns to a scored position gets 0.
    a chain only the last position needs the hold (3.4). No failed attempts. *Our choice.*
 9. **Positions reached while caught in a hold (3.3, p.17).** Out of scope, because the opponent
    doesn't attack in this game, so it never applies.
-10. **Stepping down from mount to knee on belly.** *Open, the one choice not yet confirmed.* For now
-    knee on belly scores 2 the first time however you get there, because 3.2 only refuses re-taking
-    "the same position", and coming back up to mount is a plain return, 0 (S10: 4 + 2 + 0). Against
-    that, Gymdesk says "Only moving up the ladder does" score again (about side control and
-    north-south), and a jits.gg summary we couldn't open says mount then knee on belly gets 0.
+10. **Going backwards.** Knee on belly reached coming down from mount or the back scores 0, even the
+    first time, and switching knees isn't a new position. A black belt in the r/bjj thread
+    "Competition rules and racking up points switching between positions fast?" puts it as "you don't
+    get poins for going backwards", and adds that going back up to mount scores again. The book is
+    silent; 3.2's "progression of positions" is the nearest text. *Referee practice, our choice.*
+    (S10, S15)
 
 ## Game rule, not IBJJF
 
-The mount and back family re-scores without limit, so a line could reach mount and then go back and
-forth for 4 points a move (S11). That's correct BJJ but a dead puzzle, since the best line would
-always be "get to mount, then spin", and taking the most points now finds it. Step 5's engine adds a
-game rule: **each technique can be used once per line.** Mount, back control, mount still scores 12
-with two different techniques, but the loop ends when the techniques between those positions run out.
-Whether that's enough is what step 5's greedy-gap check measures.
+Real scoring has loops: mount and back control pay 4 a move forever (S11), mount and knee on belly pay
+4 every two moves (S10), and if the graph has escapes, every re-guard re-pays the pass. r/bjj confirms
+people farm points this way. In a puzzle it's fatal, since the best line would always be "find a loop
+and spin it", and taking the most points now finds that too. Step 5's engine adds a game rule: **each
+technique can be used once per line.** Mount, back control, mount still scores 12 with two different
+techniques, but every loop ends when its techniques run out. Whether that's enough is what step 5's
+greedy-gap check measures.
 
 ## What the consensus says (checked 2026-10-05)
 
-Reddit was out of reach: its API answers 403 to scripts and the browser extension blocks the site. The
-rule book's wording is unchanged since v4 (2019), where the same rules are 3.2, 3.8 and 3.9. What we
-could read agrees with the model:
+The rule book has nothing past 3.2, 3.4 and 4.4.1 on re-scoring, and its wording is unchanged since
+v4 (2019). The rest is referee practice:
 
+- **Two r/bjj threads** Joshua pasted (reddit blocks our tools): "Competition rules and racking up
+  points switching between positions fast?" and "Point Farming". A black belt and others: switching
+  knee on belly sides doesn't score, going backwards doesn't, mount to back to mount does, and passes
+  re-score after each re-guard. Another black belt: knee on belly re-scores after the opponent pushes
+  the knee off. Brown, purple and blue belts report 21-0 to 33-0 wins built this way.
+- [bjj-rules.com](https://bjj-rules.com/en/bjj-rules-point-scoring/) (unofficial, restating 3.2 in v4
+  numbering): intentionally abandoning a position and coming back to it doesn't score again.
 - [Gymdesk](https://gymdesk.com/blog/jiu-jitsu-point-system), citing v6.1: shuffling between side
   control and north-south doesn't score again, and mount to back mount scores 4 for each.
-- [Digitsu](https://digitsu.com/v/ibjjf-rules-explanations-transitional-scoring-kristina-barlaan),
-  transitional scoring: back mount to mount, each held 3 s, adds another 4.
-- jits.gg (blocked to us, seen only through search summaries, so not relied on): knee on belly scores
-  again if the opponent escapes and you re-establish it, switching knees doesn't, and mount, back,
-  mount, back keeps scoring 4 each time.
+- [Digitsu](https://digitsu.com/v/ibjjf-rules-explanations-transitional-scoring-kristina-barlaan):
+  back mount to mount, each held 3 s, adds another 4.
 
 ## Hand-worked sequences
 
-`rules.test.ts` runs exactly these. One row per technique; "back to side control" and "stand up"
-score nothing.
+`rules.test.ts` runs exactly these. One row per move; "back to side control" and "stand up" score
+nothing, and "they ..." is the opponent's escape.
 
 | # | Line | Points | Total | Why |
 |---|---|---|---|---|
@@ -166,12 +176,16 @@ score nothing.
 | S4 | mount, back mount, mount | 4 + 4 + 4 | 12 | 4.4.1 |
 | S5 | mount, back control, mount | 4 + 4 + 4 | 12 | choice 3 |
 | S6 | sweep, guard pass, mount, back control | 2 + 3 + 4 + 4 | 13 | 3.4 |
-| S7 | sweep, stand up, takedown, guard pass, knee on belly, mount, back mount, back control, guard pass again | 2 + 0 + 2 + 3 + 2 + 4 + 4 + 4 + 0 | 21 | every event once, then a plain repeat |
+| S7 | sweep, stand up, takedown, guard pass, knee on belly, mount, back mount, back control | 2 + 0 + 2 + 3 + 2 + 4 + 4 + 4 | 21 | every event once |
 | S8 | two techniques that score nothing | 0 + 0 | 0 | |
 | S9 | mount, step down to side control, mount | 4 + 0 + 0 | 4 | 3.2 |
-| S10 | mount, step down to knee on belly, mount | 4 + 2 + 0 | 6 | choice 10, open |
+| S10 | mount, down to knee on belly, mount | 4 + 0 + 4 | 8 | choices 1 and 10 |
 | S11 | mount, back control, mount, back control, mount | 4 + 4 + 4 + 4 + 4 | 20 | the loop the game rule caps |
 | S12 | back mount, back control, back mount | 4 + 4 + 4 | 12 | choice 3 |
+| S13 | mount, they re-guard, guard pass, mount | 4 + 0 + 3 + 4 | 11 | choice 1, escape |
+| S14 | guard pass, knee on belly, they push the knee off, knee on belly | 3 + 2 + 0 + 2 | 7 | choice 1, escape |
+| S15 | mount, down to side control, knee on belly | 4 + 0 + 0 | 4 | choice 10 |
+| S16 | takedown, they stand back up, takedown | 2 + 0 + 2 | 4 | choice 1, escape |
 
 ## What step 4's graph needs from this
 
@@ -183,10 +197,10 @@ score nothing.
 - A takedown or sweep that lands past the legs carries no pass event (choice 5).
 - Back mount and back control are separate events, so they're separate nodes if the graph has both.
 - Submissions are terminal edges with no event (choice 6).
-- An edge into a position that scores as mount, back mount or back control lists that event even when
-  it comes from a variant of the same position (technical mount to mount scores 0 but still lists
-  `mount`), because scoring knows where you are only through events, and a technique with no event
-  counts as stepping off.
-- Scoring state for the solver: which events have scored (7 bits) and the event the last technique
-  ended on (8 values), 1,024 states.
+- The opponent's escapes (re-guard, knee pushed off, bucked off, stands up) are a separate kind of
+  move, `"escape"`, which wipes scoring's memory. Whether lines contain them, and whether the player
+  picks them or today's opponent does, is step 4 and 5's call.
+- A technique with no event leaves scoring's memory alone, so variants of a position (technical mount,
+  switching knees) can be plain nodes or no-event edges.
+- Scoring state for the solver: the position last credited (7 events or none), 8 values.
 - Each technique once per line is step 5's engine rule, so technique ids must be unique per edge.

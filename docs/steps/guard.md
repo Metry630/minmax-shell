@@ -160,7 +160,7 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 
 **Do:**
 1. `engine.ts`: is a line legal (contiguous edges from the start, none blocked, within budget, **each
-   technique at most once**: the game rule that caps the mount/back loop, `docs/guard/RULES.md`), and
+   technique at most once**: the game rule that caps scoring loops, `docs/guard/RULES.md`), and
    what does it score under `rules.ts` (`award`/`tally`, state `ScoringState`).
 2. `solver.ts`: exact DP/BFS over (position, budget left, scoring state). Returns the optimum and all
    optimal lines.

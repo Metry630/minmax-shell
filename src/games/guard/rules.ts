@@ -40,8 +40,8 @@ export type ScoringEvent = Clause & {
   heading: string;
   /** Our reading of when the event applies, each with its clause. The graph must respect these. */
   conditions: readonly string[];
-  /** Arriving straight from one of these scores again, even if already awarded (4.4.1). */
-  rescoresFrom: readonly EventId[];
+  /** Reached coming down from one of these, it pays 0: no points for going backwards. */
+  notAfter: readonly EventId[];
   version: string;
 };
 
@@ -60,7 +60,7 @@ export const SCORING_EVENTS: Record<EventId, ScoringEvent> = {
       "no points for taking down an opponent who is on their knees (4.1.6)",
       "landing past the legs adds no guard pass (our reading of 4.2)",
     ],
-    rescoresFrom: [],
+    notAfter: [],
     version: RULEBOOK.version,
   },
   sweep: {
@@ -77,7 +77,7 @@ export const SCORING_EVENTS: Record<EventId, ScoringEvent> = {
       "also: ends behind an opponent on all fours, or comes up and puts them down (4.6.2, 4.6.3)",
       "landing past the legs adds no guard pass (our reading of 4.2)",
     ],
-    rescoresFrom: [],
+    notAfter: [],
     version: RULEBOOK.version,
   },
   "guard-pass": {
@@ -93,7 +93,7 @@ export const SCORING_EVENTS: Record<EventId, ScoringEvent> = {
       "starts on top in guard or half guard, ends in side control or north-south (4.2)",
       "may end in mount or knee on belly instead, adding that event too (3.4)",
     ],
-    rescoresFrom: [],
+    notAfter: [],
     version: RULEBOOK.version,
   },
   "knee-on-belly": {
@@ -105,8 +105,11 @@ export const SCORING_EVENTS: Record<EventId, ScoringEvent> = {
     page: 20,
     quote:
       "When the athlete on top and free of the opponent’s guard, places the knee or shin(closest to the opponent’s hip) on the opponent’s belly, chest or ribs, without the opposite knee touching the ground, maintaining the position stable for 3 seconds, while the opponent is lying on his/her back or side.",
-    conditions: ["only once past the guard (4.3)"],
-    rescoresFrom: [],
+    conditions: [
+      "only once past the guard (4.3)",
+      "0 coming down from mount or the back: referee practice (r/bjj), the book is silent",
+    ],
+    notAfter: ["mount", "back-mount", "back-control"],
     version: RULEBOOK.version,
   },
   mount: {
@@ -120,9 +123,9 @@ export const SCORING_EVENTS: Record<EventId, ScoringEvent> = {
       "When the athlete is on top, clear of the half-guard, sitting on the opponent’s torso and with two knees or one foot and one knee on the ground, facing the opponent’s head and with up to one arm trapped under his/her leg – and thus remains for 3 (three) seconds.",
     conditions: [
       "clear of the half guard (4.4.1)",
-      "scores again straight from back mount (4.4.1) or back control (same reading, signed off)",
+      "scores again straight from back mount (4.4.1) or back control (signed off)",
     ],
-    rescoresFrom: ["back-mount", "back-control"],
+    notAfter: [],
     version: RULEBOOK.version,
   },
   "back-mount": {
@@ -137,9 +140,9 @@ export const SCORING_EVENTS: Record<EventId, ScoringEvent> = {
     conditions: [
       "sitting on the back of an opponent lying face down (4.4 photo captioned BACK MOUNT, p.21)",
       "distinct from mount, so mount to back mount scores again (4.4.1)",
-      "scores again straight from back control (same reading, signed off)",
+      "scores again straight from back control (signed off)",
     ],
-    rescoresFrom: ["mount", "back-control"],
+    notAfter: [],
     version: RULEBOOK.version,
   },
   "back-control": {
@@ -153,9 +156,9 @@ export const SCORING_EVENTS: Record<EventId, ScoringEvent> = {
       "When the athlete takes control of the opponent’s back, placing his/her heels between the opponent’s thighs without crossing his/her legs and in a position to trap up to one of the opponent’s arms without trapping the arm above the shoulder line – and thus remains for 3 (three) seconds.",
     conditions: [
       "hooks in, feet not crossed (4.5)",
-      "scores again straight from mount or back mount (4.4.1's distinct positions, signed off)",
+      "scores again straight from mount or back mount (signed off)",
     ],
-    rescoresFrom: ["mount", "back-mount"],
+    notAfter: [],
     version: RULEBOOK.version,
   },
 };
@@ -200,59 +203,62 @@ export const CLAUSES = {
 } as const satisfies Record<string, Clause>;
 
 /**
- * What scoring remembers about a line. `awarded`: bit i is set once EVENT_IDS[i] has scored.
- * `last`: the event the previous technique ended on, or null after a technique with no event (it
- * stepped off the scoring position). Plain values so the solver (step 5) can key its DP on them:
- * 128 × 8 = 1,024 states.
+ * The position a line was last credited with reaching (paid or not), or null at the start and after
+ * the opponent escapes. A no-event technique (mount to side control) leaves it unchanged, so stepping
+ * off and back on can't score twice. One of 8 values, so the solver (step 5) keys its DP on it.
  */
-export type ScoringState = { awarded: number; last: EventId | null };
+export type ScoringState = { last: EventId | null };
 
-export const START: ScoringState = { awarded: 0, last: null };
-
-const BIT = Object.fromEntries(EVENT_IDS.map((id, i) => [id, 1 << i])) as Record<EventId, number>;
+export const START: ScoringState = { last: null };
 
 /**
- * Scores the events one technique triggers. Several events in one technique add up (3.4: "Guard pass
- * followed by mount shall add up 7 points"). An event scores the first time it's reached; after that
- * only when arriving straight from a position in its `rescoresFrom` (mount and the two back
- * positions, 4.4.1). Anything else is stepping off a position and back on, which 3.2 refuses when
- * it's voluntary, and in a line it always is: every move is the player's own and the puzzle has no
- * opponent escapes. Repeating the mount/back loop is limited by a game rule in the engine (step 5).
+ * One move in a line: the events a technique triggers (often none), or "escape", the opponent
+ * getting out (re-guarding, pushing the knee off, bucking off mount). Whether the graph has escape
+ * moves, and who picks them, is step 4 and 5's call.
+ */
+export type Step = readonly EventId[] | "escape";
+
+/**
+ * Scores one move. Events in one technique add up (3.4: "Guard pass followed by mount shall add up 7
+ * points"). An event pays its points unless
+ * - it's the position last reached: a voluntary step off and back on, which 3.2 refuses ("voluntarily
+ *   relinquish a position, in order to again score points using the same position"), or
+ * - it's reached coming down from a higher position (`notAfter`): no points for going backwards.
+ * So mount, back mount, back control keep paying as you switch between them (4.4.1), and mount pays
+ * again after a knee on belly. An escape clears the slate, since 3.2 only bars a voluntary exit.
+ * Repeating a loop is capped by a game rule in the engine (step 5): each technique once per line.
  */
 export function award(
   state: ScoringState,
-  events: readonly EventId[],
+  step: Step,
 ): { state: ScoringState; points: number; scored: EventId[] } {
-  let { awarded, last } = state;
+  if (step === "escape") return { state: START, points: 0, scored: [] };
+  let { last } = state;
   let points = 0;
   const scored: EventId[] = [];
-  for (const id of events) {
+  for (const id of step) {
     const event = SCORING_EVENTS[id];
-    const first = (awarded & BIT[id]) === 0;
-    const straightFrom = last !== null && event.rescoresFrom.includes(last);
-    if (first || straightFrom) {
+    const stayed = last === id;
+    const cameDown = last !== null && event.notAfter.includes(last);
+    if (!stayed && !cameDown) {
       points += event.points;
       scored.push(id);
     }
-    awarded |= BIT[id];
     last = id;
   }
-  return { state: { awarded, last: events.length > 0 ? last : null }, points, scored };
+  return { state: { last }, points, scored };
 }
 
-/** Scores a whole line, one entry per technique: the events that technique triggers (often none). */
-export function tally(steps: readonly (readonly EventId[])[]): {
-  points: number;
-  perStep: number[];
-} {
+/** Scores a whole line, one entry per move. */
+export function tally(steps: readonly Step[]): { points: number; perStep: number[] } {
   let state = START;
   let points = 0;
   const perStep: number[] = [];
-  for (const events of steps) {
-    const step = award(state, events);
-    state = step.state;
-    points += step.points;
-    perStep.push(step.points);
+  for (const step of steps) {
+    const scored = award(state, step);
+    state = scored.state;
+    points += scored.points;
+    perStep.push(scored.points);
   }
   return { points, perStep };
 }

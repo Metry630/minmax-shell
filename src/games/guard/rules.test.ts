@@ -11,12 +11,12 @@ import {
   START,
   award,
   tally,
-  type EventId,
+  type Step,
 } from "./rules";
 
-// The hand-worked sequences in docs/guard/RULES.md, one-to-one. Each step is one technique and lists
-// the events it triggers; [] is a technique that scores nothing (e.g. back to side control).
-const SEQUENCES: [string, EventId[][], number[], number][] = [
+// The hand-worked sequences in docs/guard/RULES.md, one-to-one. Each step is one move: the events a
+// technique triggers ([] scores nothing, e.g. back to side control), or "escape" (the opponent's).
+const SEQUENCES: [string, Step[], number[], number][] = [
   ["S1 takedown, pass, mount", [["takedown"], ["guard-pass"], ["mount"]], [2, 3, 4], 9],
   ["S2 pass straight to mount (3.4's example)", [["guard-pass", "mount"]], [7], 7],
   [
@@ -25,18 +25,8 @@ const SEQUENCES: [string, EventId[][], number[], number][] = [
     [3, 2, 0, 0],
     5,
   ],
-  [
-    "S4 mount, back mount, mount again (4.4.1: each straight transition scores)",
-    [["mount"], ["back-mount"], ["mount"]],
-    [4, 4, 4],
-    12,
-  ],
-  [
-    "S5 mount, take the back, mount again (same reading for back control)",
-    [["mount"], ["back-control"], ["mount"]],
-    [4, 4, 4],
-    12,
-  ],
+  ["S4 mount, back mount, mount (4.4.1)", [["mount"], ["back-mount"], ["mount"]], [4, 4, 4], 12],
+  ["S5 mount, take the back, mount", [["mount"], ["back-control"], ["mount"]], [4, 4, 4], 12],
   [
     "S6 sweep, pass, mount, take the back",
     [["sweep"], ["guard-pass"], ["mount"], ["back-control"]],
@@ -44,7 +34,7 @@ const SEQUENCES: [string, EventId[][], number[], number][] = [
     13,
   ],
   [
-    "S7 every event once, then a repeat",
+    "S7 every event once",
     [
       ["sweep"],
       [],
@@ -54,23 +44,17 @@ const SEQUENCES: [string, EventId[][], number[], number][] = [
       ["mount"],
       ["back-mount"],
       ["back-control"],
-      ["guard-pass"],
     ],
-    [2, 0, 2, 3, 2, 4, 4, 4, 0],
+    [2, 0, 2, 3, 2, 4, 4, 4],
     21,
   ],
   ["S8 a line that scores nothing", [[], []], [0, 0], 0],
+  ["S9 mount, step down to side control, mount (3.2)", [["mount"], [], ["mount"]], [4, 0, 0], 4],
   [
-    "S9 mount, step down to side control, mount again (3.2)",
-    [["mount"], [], ["mount"]],
-    [4, 0, 0],
-    4,
-  ],
-  [
-    "S10 mount, step down to knee on belly, mount again",
+    "S10 mount, down to knee on belly, mount (no points going backwards)",
     [["mount"], ["knee-on-belly"], ["mount"]],
-    [4, 2, 0],
-    6,
+    [4, 0, 4],
+    8,
   ],
   [
     "S11 the mount/back loop keeps scoring (step 5's game rule caps it)",
@@ -83,6 +67,30 @@ const SEQUENCES: [string, EventId[][], number[], number][] = [
     [["back-mount"], ["back-control"], ["back-mount"]],
     [4, 4, 4],
     12,
+  ],
+  [
+    "S13 mount, they re-guard, pass, mount",
+    [["mount"], "escape", ["guard-pass"], ["mount"]],
+    [4, 0, 3, 4],
+    11,
+  ],
+  [
+    "S14 pass, knee on belly, they push the knee off, knee on belly",
+    [["guard-pass"], ["knee-on-belly"], "escape", ["knee-on-belly"]],
+    [3, 2, 0, 2],
+    7,
+  ],
+  [
+    "S15 mount, down to side control, knee on belly (still going backwards)",
+    [["mount"], [], ["knee-on-belly"]],
+    [4, 0, 0],
+    4,
+  ],
+  [
+    "S16 takedown, they stand back up, takedown",
+    [["takedown"], "escape", ["takedown"]],
+    [2, 0, 2],
+    4,
   ],
 ];
 
@@ -100,37 +108,33 @@ describe("award", () => {
   it("reports what scored and leaves the input state alone", () => {
     const first = award(START, ["guard-pass", "mount"]);
     expect(first.scored).toEqual(["guard-pass", "mount"]);
-    expect(first.state.last).toBe("mount");
-    expect(START).toEqual({ awarded: 0, last: null });
-    // Staying on mount scores nothing; mount then the back scores the back only.
-    expect(award(first.state, ["mount"]).points).toBe(0);
+    expect(first.state).toEqual({ last: "mount" });
+    expect(START).toEqual({ last: null });
     expect(award(first.state, ["mount", "back-control"])).toMatchObject({
       points: 4,
       scored: ["back-control"],
     });
   });
 
-  it("a technique with no event forgets the position, so a return isn't straight from it", () => {
-    const onBack = award(award(START, ["mount"]).state, ["back-control"]).state;
-    const steppedOff = award(onBack, []).state;
-    expect(steppedOff.last).toBeNull();
+  it("a technique with no event keeps the last position, so stepping back on pays nothing", () => {
+    const steppedOff = award(award(START, ["mount"]).state, []).state;
+    expect(steppedOff).toEqual({ last: "mount" });
     expect(award(steppedOff, ["mount"]).points).toBe(0);
-    expect(award(onBack, ["mount"]).points).toBe(4);
+  });
+
+  it("an escape clears the slate", () => {
+    const onMount = award(START, ["mount"]).state;
+    expect(award(onMount, "escape")).toEqual({ state: START, points: 0, scored: [] });
   });
 
   it("the same event twice in one technique scores once", () => {
     expect(award(START, ["mount", "mount"]).points).toBe(4);
   });
 
-  it("all seven events fit in 7 bits", () => {
-    expect(award(START, [...EVENT_IDS]).state.awarded).toBe(0b1111111);
-  });
-
-  it("only mount, back mount and back control re-score, and only from each other", () => {
-    const family = ["mount", "back-mount", "back-control"];
+  it("only knee on belly is pointless going backwards, and only from mount or the back", () => {
     for (const event of Object.values(SCORING_EVENTS)) {
-      const expected = family.includes(event.id) ? family.filter((id) => id !== event.id) : [];
-      expect([...event.rescoresFrom].sort()).toEqual(expected.sort());
+      const expected = event.id === "knee-on-belly" ? ["back-control", "back-mount", "mount"] : [];
+      expect([...event.notAfter].sort()).toEqual(expected);
     }
   });
 });

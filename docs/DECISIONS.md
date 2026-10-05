@@ -316,7 +316,7 @@ file passed 54 of 54. The book's text is gitignored, so the check skips in CI an
 beyond step 3's sketch: `heading` (the printed "Takedown (2 points)", so the point value is sourced as
 well as the definition) and `article` (the results page will cite rules by article).
 
-## 2026-10-05: Mount and back re-score; a game rule caps the loop
+## 2026-10-05: Mount and back re-score; a game rule caps the loop (superseded 2026-10-05, see below)
 
 Joshua's sign-off corrected "once per line": in a real match mount, back control, mount is 12, and
 whether a re-taken position scores depends on the opponent's escape, which this game doesn't have. So
@@ -328,3 +328,19 @@ agree; reddit was unreachable (403 to scripts, blocked in the browser extension)
 4-points-a-move loop, correct BJJ but a dead puzzle, so step 5's engine gets a game rule: each
 technique once per line. Its effect is measured by step 5's greedy gap, not assumed. Still open:
 whether stepping down from mount to knee on belly scores the knee on belly (now 2; two guides lean 0).
+
+## 2026-10-05: Re-scoring follows referee practice: last position, going backwards, escapes
+
+Two r/bjj threads Joshua pasted (reddit blocks our tools) settled what the book leaves to referees. A
+black belt: no points for switching knees or going backwards (mount to knee on belly is 0), but back
+up to mount scores again; mount to back to mount scores; passes re-score after each re-guard. Another
+black belt: knee on belly re-scores after the opponent pushes the knee off. bjj-rules.com restates 3.2
+(abandoning a position and coming back doesn't score). One rule fits all of it: an event pays unless
+it's the position last credited (stepping off and back on) or knee on belly coming down from mount or
+the back, and the opponent's escape (`"escape"` move) wipes the memory, since 3.2 bars only a
+voluntary exit. That answered Joshua's question too: mount, re-guard, pass, mount pays 4 + 3 + 4. The
+state shrinks to the last position, 8 values instead of 1,024, and the special-cased mount family
+(`rescoresFrom`) is gone, since switching between different positions pays by the general rule.
+Checked both ways: emptying knee on belly's `notAfter` failed S10, S15 and one table test (3 of 64).
+More loops now exist (mount and knee on belly, re-guards if the graph has escapes), so the step-5
+game rule, each technique once per line, matters more.
