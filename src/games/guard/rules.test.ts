@@ -3,7 +3,16 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { CLAUSES, EVENT_IDS, RULEBOOK, SCORING_EVENTS, award, tally, type EventId } from "./rules";
+import {
+  CLAUSES,
+  EVENT_IDS,
+  RULEBOOK,
+  SCORING_EVENTS,
+  START,
+  award,
+  tally,
+  type EventId,
+} from "./rules";
 
 // The hand-worked sequences in docs/guard/RULES.md, one-to-one. Each step is one technique and lists
 // the events it triggers; [] is a technique that scores nothing (e.g. back to side control).
@@ -17,12 +26,17 @@ const SEQUENCES: [string, EventId[][], number[], number][] = [
     5,
   ],
   [
-    "S4 mount, back mount, mount again (4.4.1, then 3.2)",
+    "S4 mount, back mount, mount again (4.4.1: each straight transition scores)",
     [["mount"], ["back-mount"], ["mount"]],
-    [4, 4, 0],
-    8,
+    [4, 4, 4],
+    12,
   ],
-  ["S5 mount, then take the back (distinct positions)", [["mount"], ["back-control"]], [4, 4], 8],
+  [
+    "S5 mount, take the back, mount again (same reading for back control)",
+    [["mount"], ["back-control"], ["mount"]],
+    [4, 4, 4],
+    12,
+  ],
   [
     "S6 sweep, pass, mount, take the back",
     [["sweep"], ["guard-pass"], ["mount"], ["back-control"]],
@@ -46,6 +60,30 @@ const SEQUENCES: [string, EventId[][], number[], number][] = [
     21,
   ],
   ["S8 a line that scores nothing", [[], []], [0, 0], 0],
+  [
+    "S9 mount, step down to side control, mount again (3.2)",
+    [["mount"], [], ["mount"]],
+    [4, 0, 0],
+    4,
+  ],
+  [
+    "S10 mount, step down to knee on belly, mount again",
+    [["mount"], ["knee-on-belly"], ["mount"]],
+    [4, 2, 0],
+    6,
+  ],
+  [
+    "S11 the mount/back loop keeps scoring (step 5's game rule caps it)",
+    [["mount"], ["back-control"], ["mount"], ["back-control"], ["mount"]],
+    [4, 4, 4, 4, 4],
+    20,
+  ],
+  [
+    "S12 back mount, back control, back mount",
+    [["back-mount"], ["back-control"], ["back-mount"]],
+    [4, 4, 4],
+    12,
+  ],
 ];
 
 describe("tally", () => {
@@ -59,20 +97,41 @@ describe("tally", () => {
 });
 
 describe("award", () => {
-  it("reports what scored and keeps the state immutable", () => {
-    const first = award(0, ["guard-pass", "mount"]);
+  it("reports what scored and leaves the input state alone", () => {
+    const first = award(START, ["guard-pass", "mount"]);
     expect(first.scored).toEqual(["guard-pass", "mount"]);
-    const again = award(first.awarded, ["mount", "back-control"]);
-    expect(again).toMatchObject({ points: 4, scored: ["back-control"] });
-    expect(award(first.awarded, ["mount"]).points).toBe(0);
+    expect(first.state.last).toBe("mount");
+    expect(START).toEqual({ awarded: 0, last: null });
+    // Staying on mount scores nothing; mount then the back scores the back only.
+    expect(award(first.state, ["mount"]).points).toBe(0);
+    expect(award(first.state, ["mount", "back-control"])).toMatchObject({
+      points: 4,
+      scored: ["back-control"],
+    });
+  });
+
+  it("a technique with no event forgets the position, so a return isn't straight from it", () => {
+    const onBack = award(award(START, ["mount"]).state, ["back-control"]).state;
+    const steppedOff = award(onBack, []).state;
+    expect(steppedOff.last).toBeNull();
+    expect(award(steppedOff, ["mount"]).points).toBe(0);
+    expect(award(onBack, ["mount"]).points).toBe(4);
   });
 
   it("the same event twice in one technique scores once", () => {
-    expect(award(0, ["mount", "mount"]).points).toBe(4);
+    expect(award(START, ["mount", "mount"]).points).toBe(4);
   });
 
   it("all seven events fit in 7 bits", () => {
-    expect(award(0, [...EVENT_IDS]).awarded).toBe(0b1111111);
+    expect(award(START, [...EVENT_IDS]).state.awarded).toBe(0b1111111);
+  });
+
+  it("only mount, back mount and back control re-score, and only from each other", () => {
+    const family = ["mount", "back-mount", "back-control"];
+    for (const event of Object.values(SCORING_EVENTS)) {
+      const expected = family.includes(event.id) ? family.filter((id) => id !== event.id) : [];
+      expect([...event.rescoresFrom].sort()).toEqual(expected.sort());
+    }
   });
 });
 

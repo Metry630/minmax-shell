@@ -106,7 +106,7 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 
 ## Step 3. Scoring rules 🧑 sign-off
 
-**Status:** done 2026-10-05 (`docs/guard/RULES.md` awaiting Joshua's sign-off)
+**Status:** done 2026-10-05 (`docs/guard/RULES.md` signed off by Joshua, except choice 10)
 
 **Goal:** the IBJJF scoring model as code, every line traceable to the official rule book.
 
@@ -159,8 +159,9 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 **Goal:** prove the puzzle is worth building UI for.
 
 **Do:**
-1. `engine.ts`: is a line legal (contiguous edges from the start, none blocked, within budget), and what
-   does it score under `rules.ts`, with the scoring state the re-scoring rules need.
+1. `engine.ts`: is a line legal (contiguous edges from the start, none blocked, within budget, **each
+   technique at most once**: the game rule that caps the mount/back loop, `docs/guard/RULES.md`), and
+   what does it score under `rules.ts` (`award`/`tally`, state `ScoringState`).
 2. `solver.ts`: exact DP/BFS over (position, budget left, scoring state). Returns the optimum and all
    optimal lines.
 3. `generator.ts`: from a seed, produce start position, budget (moves, or a clock with per-technique time

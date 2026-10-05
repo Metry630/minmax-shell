@@ -13,13 +13,15 @@ strings). `/demo` is a trivial game on that kit (`src/games/demo/`), proving the
 with D1; the Lovable preview runs it on memory and the public `dev` salt. Visual direction for step 6
 is in `docs/DESIGN.md` (arcade fighting game).
 
-Step 3 is done pending sign-off: the IBJJF scoring model is `src/games/guard/rules.ts` (seven events,
-each with a verbatim quote and page from Rule Book 6.1), reviewed in `docs/guard/RULES.md`. The rule
-book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
+Step 3 is done and signed off (one open choice, stepping down to knee on belly): the IBJJF scoring
+model is `src/games/guard/rules.ts` (seven events, each with a verbatim quote and page from Rule Book
+6.1), reviewed in `docs/guard/RULES.md`. Step 5 owes a game rule, each technique once per line, to cap
+the mount/back re-score loop. The rule book PDF and its text live in `.sources/ibjjf/` on Joshua's
+machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **4** (step 3's RULES.md sign-off can ride with step 4's review) |
+| Guard to Sub | `docs/steps/guard.md` | **4** |
 
 ## Gates
 

@@ -297,9 +297,9 @@ control is hooks in (4.5). Keeping both costs one bit of scoring state and lets 
 Step 3 needs totals for hand-worked lines, and the re-score rule is a rule book fact with a quote, so
 `award`/`tally` live in `rules.ts`; step 5's engine adds graph legality and the budget on top. Scoring
 state is a bitmask of events already awarded: 7 events, 128 states, so the solver's state is
-positions × budget × 128.
+positions × budget × 128 (now 1,024, see "Mount and back re-score" below).
 
-## 2026-10-05: Each event scores once per line
+## 2026-10-05: Each event scores once per line (superseded 2026-10-05, see below)
 
 3.2 refuses points for re-taking a position after a *voluntary* exit, and every move in a line is the
 player's own, so every exit is voluntary. Result: each event scores at most once, and one line tops out
@@ -315,3 +315,16 @@ asserts each of the 13 quotes and 7 headings appears on its stated page. Checked
 file passed 54 of 54. The book's text is gitignored, so the check skips in CI and forks. Two fields
 beyond step 3's sketch: `heading` (the printed "Takedown (2 points)", so the point value is sourced as
 well as the definition) and `article` (the results page will cite rules by article).
+
+## 2026-10-05: Mount and back re-score; a game rule caps the loop
+
+Joshua's sign-off corrected "once per line": in a real match mount, back control, mount is 12, and
+whether a re-taken position scores depends on the opponent's escape, which this game doesn't have. So
+every exit in a line is the player's own and a plain return scores 0 (3.2), but mount, back mount and
+back control score 4 every time a technique goes straight between them (4.4.1's "distinct
+positions", which Joshua confirmed covers back control). The state grows to awarded events plus the
+event the last technique ended on, 128 × 8 = 1,024. Consensus check: Gymdesk (citing v6.1) and Digitsu
+agree; reddit was unreachable (403 to scripts, blocked in the browser extension). That leaves a
+4-points-a-move loop, correct BJJ but a dead puzzle, so step 5's engine gets a game rule: each
+technique once per line. Its effect is measured by step 5's greedy gap, not assumed. Still open:
+whether stepping down from mount to knee on belly scores the knee on belly (now 2; two guides lean 0).
