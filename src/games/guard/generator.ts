@@ -19,6 +19,11 @@ export type GuardPuzzle = {
 };
 
 export const SESSIONS = 6;
+/**
+ * Every starting skill sits this far below the style's, so your fighter starts as the underdog
+ * (Joshua, 2026-10-05). At 2 the median start is about 26% and a good camp reaches about 79%.
+ */
+export const UNDERDOG = 2;
 export const EXCHANGES = { min: 4, max: 6 };
 
 /** Four days in ten start standing; the rest drop you into a position, so no opening stat rules. */
@@ -39,7 +44,7 @@ export function generate(rng: Rng): GuardPuzzle {
   );
   const style = rng.pick(STYLES);
   const skills = STATS.map((stat) =>
-    clamp((style.skills[stat] ?? DEFAULT.skill) + rng.int(-1, 1), 1, MAX_SKILL - 2),
+    clamp((style.skills[stat] ?? DEFAULT.skill) - UNDERDOG + rng.int(-1, 1), 1, MAX_SKILL - 2),
   );
   const exchanges = rng.int(EXCHANGES.min, EXCHANGES.max);
   const start = rng.next() < 0.4 ? "standing" : rng.pick(OTHER_STARTS);

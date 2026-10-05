@@ -8,7 +8,8 @@ number here is a feel call.
 ## The day's puzzle
 
 - **Your fighter:** a style (guard player, pressure passer, wrestler, back taker, all-rounder) and a
-  skill from 1 to 8 in each of 14 stats.
+  skill from 1 to 8 in each of 14 stats, set 2 below the style's so you start as the underdog (Joshua's
+  call): median start 22%, and a puzzle is only served if you start below 50%.
 - **Today's opponent:** an archetype (ex-D1 wrestler, judo black belt, leg-lock specialist, guard
   player, scrambler) and a defence from 1 to 9 in each stat. Both get ±1 noise per stat, so no two
   days match.
@@ -114,5 +115,11 @@ exchange: greedy 68%, but takedowns jumped to 57% of best camps, through the sta
 their shot and the opponent never shoots, so it went, and starts moved from 7 in 10 standing to 4 in
 10. Now **no stat is in more than 40% of best camps** (closed guard 40%, takedowns 33%, escapes 27%,
 half guard 17%), passing that new gate. Still open: greedy finds the best camp on 70% (gate 50%), and
-puzzles got easy (median best 89.5%; 13 of 60 above 95%, which the per-puzzle check rejects). Fewer
-exchanges or stronger counters would fix the second; START-HERE has the options.
+puzzles got easy (median best 89.5%; 13 of 60 above 95%, which the per-puzzle check rejects).
+
+**The underdog (round 3, Joshua's idea).** Starting skills 2 below the style's: median start 22%, best
+camp 80%, lift 52 points, and a random camp lands 44 points below the best, so the camp decides almost
+everything. 10 of 60 fail the per-puzzle check (start not below 50%, or best above 95%). But the best
+camp now uses 1.3 stats on average, and greedy finds it on 75%: every short route needs one stat
+(pulling closed guard and attacking from it are both "closed guard"), so the answer is "find that stat
+and pour everything in". START-HERE has the proposal.

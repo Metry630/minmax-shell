@@ -101,6 +101,7 @@ writeFileSync(
     `| A random camp | median ${pts(m.medianRandomGap!)} below the best |`,
     `| Camps tied for best | median ${m.medianOptimalCamps} |`,
     `| Stats a best camp uses | ${m.meanStatsPerCamp!.toFixed(1)} on average |`,
+    `| Rejected by the per-puzzle check | ${Math.round(m.rejectedShare! * count)} of ${count} (start not below 50%, lift under 5 points, or best above 95%) |`,
     `| Most-used stats in best camps | ${shares
       .slice(0, 5)
       .map(({ stat, share }) => `${STAT_NAMES[STATS[stat]!]} ${Math.round(share * 100)}%`)

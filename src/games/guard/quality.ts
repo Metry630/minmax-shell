@@ -9,13 +9,15 @@ import { STATS } from "./model";
 
 // Is the camp worth thinking about? Per puzzle: where the fighter starts (baseline), what the best
 // camp reaches, what greedy (each session where it adds most right now) and a random camp reach.
-// One puzzle passes if a camp can move it by 5 points and the best isn't a foregone 95%. A batch
+// One puzzle passes if your fighter starts as the underdog (below 50%), a camp can move it by 5
+// points, and the best isn't a foregone 95%. A batch
 // (scripts/quality.ts) also needs greedy to miss the best on at least half the puzzles and a median
 // lift of 10 points, or step 5 stops (docs/steps/guard.md). It also needs no stat in more than half
 // of the best camps, or the game has a meta players would learn in a week (step 5 found finishing in
 // 52 of 60 before the finishing stat was dropped).
 
 export const GATE = {
+  maxBaseline: 499,
   minLift: 50,
   maxOptimum: 950,
   maxGreedyOptimalShare: 0.5,
@@ -92,6 +94,12 @@ export function statShares(measured: readonly PuzzleQuality[]): { stat: number; 
   })).sort((a, b) => b.share - a.share);
 }
 
+/** One puzzle's own check: what `generateChecked` uses before serving it. */
+export const passes = (q: PuzzleQuality) =>
+  q.baseline <= GATE.maxBaseline &&
+  q.optimum - q.baseline >= GATE.minLift &&
+  q.optimum <= GATE.maxOptimum;
+
 export function summarize(measured: readonly PuzzleQuality[]): Record<string, number> {
   const lifts = measured.map((q) => q.optimum - q.baseline);
   return {
@@ -108,13 +116,12 @@ export function summarize(measured: readonly PuzzleQuality[]): Record<string, nu
     medianOptimalCamps: median(measured.map((q) => q.optimalCamps)),
     maxStatShare: statShares(measured)[0]?.share ?? 0,
     meanStatsPerCamp: measured.reduce((sum, q) => sum + q.used.length, 0) / measured.length,
+    rejectedShare: measured.filter((q) => !passes(q)).length / measured.length,
   };
 }
 
 export function report(entries: readonly Scheduled<GuardPuzzle, GuardSolution>[]): QualityReport {
   const measured = entries.map(measure);
-  const pass = measured.every(
-    (q) => q.optimum - q.baseline >= GATE.minLift && q.optimum <= GATE.maxOptimum,
-  );
+  const pass = measured.every(passes);
   return { pass, metrics: summarize(measured) };
 }
