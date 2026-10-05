@@ -106,7 +106,7 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 
 ## Step 3. Scoring rules 🧑 sign-off
 
-**Status:** done 2026-10-05 (`docs/guard/RULES.md` signed off by Joshua, except choice 10)
+**Status:** done 2026-10-05 (`docs/guard/RULES.md` signed off by Joshua, all ten choices)
 
 **Goal:** the IBJJF scoring model as code, every line traceable to the official rule book.
 
@@ -142,6 +142,9 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
    north-south), technique edges `{ id, from, to, technique, event? }` where `event` is a
    `rules.ts` id, and submissions as terminal edges with belt legality. Aliases: common English names
    plus Portuguese where standard (*raspagem*, *passagem*, *montada*, *pegada nas costas*).
+   Also the opponent's **escape edges** (re-guard from mount or side control, knee on belly pushed off,
+   back escape, standing back up), tagged as the opponent's, which step 5's daily opponent switches
+   on. They score as `"escape"` moves (`docs/guard/RULES.md`, choice 1).
 2. `scripts/check-graph.ts`: every node reachable from standing; every `event` exists in `rules.ts`; no
    edge carries a raw point number.
 3. `docs/guard/GRAPH.md`: mermaid map and an edge table for review.
@@ -162,11 +165,16 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 1. `engine.ts`: is a line legal (contiguous edges from the start, none blocked, within budget, **each
    technique at most once**: the game rule that caps scoring loops, `docs/guard/RULES.md`), and
    what does it score under `rules.ts` (`award`/`tally`, state `ScoringState`).
-2. `solver.ts`: exact DP/BFS over (position, budget left, scoring state). Returns the optimum and all
-   optimal lines.
+2. `solver.ts`: exact search over (position, budget left, scoring state, techniques used). The
+   technique-once rule makes it a path search rather than a small DP; fine offline, but measure solve
+   time per puzzle. Returns the optimum and all optimal lines.
 3. `generator.ts`: from a seed, produce start position, budget (moves, or a clock with per-technique time
-   costs), blocked edges (today's opponent), and a rotating objective: max points / come back from N down /
-   reach the named submission while ≥ X ahead.
+   costs), today's opponent, and a rotating objective: max points / come back from N down / reach the
+   named submission while ≥ X ahead. **Today's opponent** (Joshua's direction, 2026-10-05) has a few
+   skills: positions they escape from (an escape move fires when you arrive) and techniques they defend
+   (blocked edges). The player feels them out while building the line: the board shows each reaction
+   as it happens and undo is free, so only the one submission counts (enclose.horse lets you try
+   before submitting the same way). The opponent stays deterministic, which keeps the optimum exact.
 4. `scripts/quality.ts` on 60 generated puzzles: **greedy gap** (share of puzzles where "take the most
    points now" scores below optimum), distinct optimal lines per puzzle, spread of optima, percentile
    of a random legal line.

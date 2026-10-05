@@ -1,7 +1,7 @@
 # Guard to Sub: scoring rules
 
-The IBJJF scoring model the game uses, **signed off by Joshua on 2026-10-05**, with choices 1 and 10 revised the same day from r/bjj threads he
-sent (awaiting his yes). The code is
+The IBJJF scoring model the game uses, **signed off by Joshua on 2026-10-05**, all ten choices (1 and 10 after a revision from r/bjj threads
+he sent). The code is
 `src/games/guard/rules.ts`; every point value lives there and nowhere else. Quotes below are verbatim
 from the rule book (its dashes and typos included), and `rules.test.ts` checks each one against the
 book's text on its stated page.
@@ -85,7 +85,7 @@ pays its points unless it's the position you were last credited with (stepping o
 or it's knee on belly coming down from mount or the back (no points going backwards). The opponent's
 escape wipes that memory, so positions re-taken after it pay again. Choice 1 has the reasoning.
 
-## Modelling choices (signed off 2026-10-05; 1 and 10 revised after)
+## Modelling choices (all signed off 2026-10-05)
 
 1. **Re-scoring a position.** Three cases.
    - **After the opponent escapes** (re-guards, pushes the knee off, bucks you off, stands up),
