@@ -1,6 +1,4 @@
 // @vitest-environment node
-import { existsSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -13,6 +11,7 @@ import {
   tally,
   type Step,
 } from "./rules";
+import { normalize, page, pages } from "./rulebookText";
 
 // The hand-worked sequences in docs/guard/RULES.md, one-to-one. Each step is one move: the events a
 // technique triggers ([] scores nothing, e.g. back to side control), or "escape" (the opponent's).
@@ -160,27 +159,8 @@ describe("the table", () => {
   });
 });
 
-// The rule book's raw text is IBJJF's copyright and gitignored (.sources/), so this runs on Joshua's
-// machine and skips in CI and forks. Recreate it with the fetch command in CLAUDE.md.
-const SOURCE = fileURLToPath(
-  new URL("../../../.sources/ibjjf/rules-v6.1.layout.txt", import.meta.url),
-);
-// pdftotext puts a form feed between pages, so page N is chunk N - 1.
-const pages = existsSync(SOURCE) ? readFileSync(SOURCE, "utf8").split("\f") : null;
-
-// Same normalisation on both sides: layout whitespace collapses, a line break after "-" or "/"
-// ("his/ her") closes up, and curly quotes straighten. Dashes and typos stay as printed.
-const normalize = (text: string) =>
-  text
-    .replace(/[‘’]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/\s+/g, " ")
-    .replace(/([-/]) /g, "$1")
-    .trim();
-
+// Needs the rule book's text from .sources/ (rulebookText.ts), so it skips in CI and forks.
 describe.skipIf(!pages)("quotes match the rule book, page by page", () => {
-  const page = (n: number) => normalize(pages?.[n - 1] ?? "");
-
   it("the saved text is the 52-page edition", () => {
     expect(pages?.filter((chunk) => chunk.trim() !== "").length).toBe(RULEBOOK.pages);
     expect(page(17)).toContain("VERSION 6.1 2024");

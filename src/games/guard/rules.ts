@@ -194,6 +194,12 @@ export const CLAUSES = {
     page: 15,
     quote: "Match decisions shall be issued in the following forms: » Submission",
   },
+  illegalMoves: {
+    article: "6.2.3 M",
+    page: 29,
+    quote:
+      "When an athlete applies a hold prohibited for his/her respective division, as indicated in the following table.",
+  },
   tiebreaks: {
     article: "2.5.3",
     page: 16,

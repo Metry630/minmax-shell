@@ -132,7 +132,7 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 
 ## Step 4. Position graph 🧑 sign-off
 
-**Status:** todo
+**Status:** done 2026-10-05 (`docs/guard/GRAPH.md` awaiting Joshua's sign-off)
 
 **Goal:** the board, as data.
 
@@ -175,6 +175,9 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
    (blocked edges). The player feels them out while building the line: the board shows each reaction
    as it happens and undo is free, so only the one submission counts (enclose.horse lets you try
    before submitting the same way). The opponent stays deterministic, which keeps the optimum exact.
+   A **scouting card** (Joshua said yes, 2026-10-05) shows a hint before you play ("scrambler, hates
+   bottom mount") and likely today's belt, which decides the legal submissions (`minBelt` in
+   `graph.ts`); the board reveals the exact effects.
 4. `scripts/quality.ts` on 60 generated puzzles: **greedy gap** (share of puzzles where "take the most
    points now" scores below optimum), distinct optimal lines per puzzle, spread of optima, percentile
    of a random legal line.

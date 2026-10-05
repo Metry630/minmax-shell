@@ -15,14 +15,15 @@ is in `docs/DESIGN.md` (arcade fighting game).
 
 Step 3 is done and fully signed off: the IBJJF scoring model is `src/games/guard/rules.ts` (seven
 events, each with a verbatim quote and page from Rule Book 6.1), reviewed in `docs/guard/RULES.md`. Step
-5 owes a game rule, each technique once per line, to cap scoring loops such as mount, back, mount. The
-rule book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only. Joshua's direction for
-steps 4 and 5: a daily opponent with skills (what they escape, what they defend) that the player feels
-out while building the line.
+4 is done pending sign-off: the position graph is `src/games/guard/graph.ts` (29 positions, 85
+techniques, 13 opponent moves, 38 submissions), checked by `scripts/check-graph.ts` and reviewed in the
+generated `docs/guard/GRAPH.md`. Step 5 owes a game rule, each technique once per line, to cap scoring
+loops such as mount, back, mount, and Joshua's daily opponent with a scouting card. The rule book PDF
+and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **4** |
+| Guard to Sub | `docs/steps/guard.md` | **5** (step 4's GRAPH.md sign-off pending) |
 
 ## Gates
 

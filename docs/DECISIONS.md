@@ -344,3 +344,25 @@ state shrinks to the last position, 8 values instead of 1,024, and the special-c
 Checked both ways: emptying knee on belly's `notAfter` failed S10, S15 and one table test (3 of 64).
 More loops now exist (mount and knee on belly, re-guards if the graph has escapes), so the step-5
 game rule, each technique once per line, matters more.
+
+## 2026-10-05: The graph is gi, adult, and the opponent never scores
+
+IBJJF gi is what the rule book scores, so submissions follow its illegal-moves table (p.29, 6.2.3 M)
+for adults in the gi: rows 1 to 8 legal for all (straight foot lock, Ezekiel, guillotine, omoplata,
+arm triangle), 9 to 11 blue and up (wrist lock), 12 to 16 brown and up (knee bar, toe hold), heel
+hooks and reaping never. The marks are graphics, so they were read from a render of the page; a test
+checks each row name is on p.29. Legality is monotone by belt, so each submission carries one
+`minBelt`. The opponent only escapes and defends: their sweeps or passes would need opponent scoring,
+and "come back from N down" sets their score up front instead.
+
+## 2026-10-05: Events are double-entry; start-only positions; GRAPH.md is generated
+
+Each edge lists its events so the review table reads plainly, and `graph.check.ts` re-derives them
+from the two positions using RULES.md's choices (takedown from standing, sweep from the bottom of a
+guard, pass from the top of one into side control, north-south, knee on belly or mount, plus the
+position arrived in). A disagreement fails unless the edge says why; there are none. Positions only
+the opponent's offense reaches (7 bottom pins, the top of butterfly, De la Riva, X and single-leg X)
+are `startOnly`, and the check fails if a start-only one becomes reachable, so the flag can't rot.
+GRAPH.md is generated from the data and a test fails when it's stale, so the sign-off copy is the
+data. The checker was checked too: eight planted mistakes (wrong event, a number on an edge, a dead
+end, a wrong belt, a scoring opponent move...) each produce exactly the expected problem.
