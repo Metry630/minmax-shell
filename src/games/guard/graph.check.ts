@@ -18,8 +18,12 @@ const POSITION_EVENT: Partial<Record<Kind, EventId>> = {
 /**
  * The events a move from `from` to `to` should list, from the positions alone:
  * - standing to any top position: takedown (4.1.1, 4.1.2);
- * - from bottom in a guard to any top position, the back included: sweep (4.6.1, 4.6.2);
- * - from top in a guard to side control, north-south, knee on belly or mount: guard pass (4.2, 3.4);
+ * - from bottom in a guard to any top position, the back included: sweep (4.6.1; 4.6.2, whose photos
+ *   on p.23 show an arm drag from seated guard ending behind an opponent on all fours);
+ * - from top in a guard to side control, north-south, knee on belly or mount: guard pass (4.2, 3.4).
+ *   Not to the back, and not from turtle: a pass surmounts the legs of someone in guard or half guard
+ *   and ends in side control or north-south (4.2); ending behind a turtled opponent is an advantage
+ *   (5.6.2);
  * - arriving on top in knee on belly, mount, back mount or back control: that event too (3.4).
  * Reversals from a pin or turtle score nothing, since a sweep starts in guard (4.6, RULES.md choice
  * 5), and so does a takedown or sweep landing past the legs as far as the pass goes (choice 5).

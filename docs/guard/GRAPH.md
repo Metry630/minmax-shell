@@ -2,7 +2,7 @@
 
 <!-- Generated from src/games/guard/graph.ts by `npx tsx scripts/graph-doc.ts`. Don't edit by hand. -->
 
-Awaiting Joshua's sign-off. 29 positions, 85 techniques, 13 opponent moves, 38 submissions. `npx tsx scripts/check-graph.ts` checks it.
+Awaiting Joshua's sign-off. 29 positions, 86 techniques, 13 opponent moves, 38 submissions. `npx tsx scripts/check-graph.ts` checks it.
 
 ## How to read it
 
@@ -31,6 +31,22 @@ move that disagrees fails the check unless it explains why.
 | reversals from a pin or turtle, pulling guard, their moves | none | 4.6 (a sweep starts in guard), choice 5 |
 
 Exceptions with a reason: none.
+
+### Calls checked against sources (2026-10-05)
+
+- **Sweeps that end on the back score sweep + back control, 6.** The rule book's photos for 4.6.2
+  (p.23) show an arm drag from a seated guard ending behind an opponent on all fours, scored as a
+  sweep; hooks in add back control by 3.4. 4.6.2 covers half guard too, so the dogfight is the same.
+  The berimbolo ends the same way, though no referee source names it.
+- **Leg drag to the back is back control only, 4.** A pass ends in side control or north-south
+  (4.2), and ending behind a turtled opponent while passing is only an advantage (5.6.2). Elite
+  Sports' IBJJF guide agrees that taking the back doesn't count as a pass.
+- **Turtle to side control is 0.** A pass surmounts the legs of someone in guard or half guard
+  (4.2), and a turtled opponent isn't in one. No referee source either way, so the book decides.
+- **A pass into knee on belly or mount is 3 + 2 or 3 + 4**, as Exponential Jiu-Jitsu's IBJJF
+  passing guide also says.
+- **The butterfly sweep lands in mount or side control**, mount being the classic finish, so both
+  are here.
 
 ## Belts
 
@@ -114,6 +130,7 @@ flowchart LR
   half_guard_bottom --> back_control_top
   half_guard_bottom --> closed_guard_bottom
   half_guard_bottom --> butterfly_guard_bottom
+  butterfly_guard_bottom --> mount_top
   butterfly_guard_bottom --> side_control_top
   butterfly_guard_bottom --> back_control_top
   butterfly_guard_bottom --> x_guard_bottom
@@ -236,7 +253,7 @@ Submissions: Triangle (all belts).
 
 ### Half guard (bottom)
 
-`half-guard-bottom`. Also called: meia guarda.
+`half-guard-bottom`. Also called: deep half guard, meia guarda.
 
 | Move | To | Events | Points |
 |---|---|---|---|
@@ -254,7 +271,8 @@ Submissions: Kimura (all belts).
 
 | Move | To | Events | Points |
 |---|---|---|---|
-| Butterfly sweep | Side control (top) | sweep | 2 |
+| Butterfly sweep | Mount (top) | sweep + mount | 6 |
+| Butterfly sweep, landing in side control | Side control (top) | sweep | 2 |
 | Arm drag to the back | Back control (top) | sweep + back control | 6 |
 | Elevate into X guard | X guard (bottom) | none | 0 |
 | Switch to half guard | Half guard (bottom) | none | 0 |
@@ -416,7 +434,7 @@ Their moves from here: They push the knee off → Side control (top).
 
 ### Mount (top)
 
-`mount-top`. Also called: full mount, montada.
+`mount-top`. Also called: full mount, technical mount, S-mount, montada.
 
 | Move | To | Events | Points |
 |---|---|---|---|

@@ -51,7 +51,7 @@ export const POSITIONS = {
     name: "Half guard (bottom)",
     perspective: "bottom",
     kind: "guard",
-    aliases: ["meia guarda"],
+    aliases: ["deep half guard", "meia guarda"],
   },
   "butterfly-guard-bottom": {
     name: "Butterfly guard (bottom)",
@@ -147,7 +147,8 @@ export const POSITIONS = {
     name: "Mount (top)",
     perspective: "top",
     kind: "mount",
-    aliases: ["full mount", "montada"],
+    // p.21 photos score technical and sideways mount as mount, so they're the same position here.
+    aliases: ["full mount", "technical mount", "S-mount", "montada"],
   },
   "back-mount-top": {
     name: "Back mount (top)",
@@ -422,9 +423,17 @@ export const EDGES: readonly Edge[] = [
   sub("half-guard-kimura", "half-guard-bottom", "Kimura"),
 
   // Butterfly guard, bottom
-  move("butterfly-sweep", "butterfly-guard-bottom", "side-control-top", "Butterfly sweep", [
+  move("butterfly-sweep-to-mount", "butterfly-guard-bottom", "mount-top", "Butterfly sweep", [
     "sweep",
+    "mount",
   ]),
+  move(
+    "butterfly-sweep",
+    "butterfly-guard-bottom",
+    "side-control-top",
+    "Butterfly sweep, landing in side control",
+    ["sweep"],
+  ),
   move("arm-drag-to-back", "butterfly-guard-bottom", "back-control-top", "Arm drag to the back", [
     "sweep",
     "back-control",
