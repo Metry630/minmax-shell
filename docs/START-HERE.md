@@ -27,8 +27,13 @@ book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
 ### Step 5's gate: Joshua's call (2026-10-05)
 
-Greedy (each session where it adds most) finds the best camp on 80% of puzzles; the gate is 50%. Options:
+Greedy (each session where it adds most) finds the best camp on 80% of puzzles; the gate is 50%. Worse,
+the best camps share a meta: finishing in 52 of 60, closed guard in 27, mount in none (MODEL.md). Options:
 
+0. **Break the meta first (recommended).** Drop the universal finishing stat, so a submission uses only
+   its position's stat, and make pulling guard a real exchange instead of an 85% transition. Then
+   re-measure the gate and which stats the best camps use; the target is no stat in more than half
+   of them.
 1. **Change the gate, not the game.** Exact greedy knows every session's true value, which no player
    does; a player's real problem is reading the card and the route. Judge against what a person would
    do instead (spread evenly, all-in on one stat, train against the card's top defences) and keep a

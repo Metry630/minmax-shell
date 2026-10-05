@@ -421,4 +421,7 @@ camp 22 points below the best. But greedy, each session where it adds most, find
 at most +2 per stat 75%; locking moves when you're 2 or more below their defence changed nothing. The
 cause is shape: chances are near-linear in skill and add up across routes, so returns diminish and
 greedy is near-optimal; all 6 sessions in the single best stat land a median 1.7 points below the
-best. Stopped for Joshua's call (START-HERE lists the options).
+best. Stopped for Joshua's call (START-HERE lists the options). A second finding matters more: the
+best camps share a meta. Finishing is in 52 of 60 (top stat in 23), closed guard in 27, mount in
+none, the back in 2, 2 stats per camp on average: pull guard and finish, because finishing helps
+every submission and pulling guard is an 85% transition.

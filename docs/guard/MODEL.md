@@ -95,5 +95,11 @@ puzzles**, against a gate of 50%. Tried on copies of the model, not adopted:
 
 Chances are close to linear in skill and add up across routes, so each extra session helps a bit
 less, and that's exactly the shape where greedy is near-optimal. Putting all 6 sessions into the one
-best stat lands only 1.7 points below the best camp (median). Joshua decides what to do; the options
-are in START-HERE.
+best stat lands only 1.7 points below the best camp (median).
+
+**The bigger problem is a dominant strategy.** Finishing is in 52 of 60 best camps (the top stat in
+23), closed guard in 27, takedowns in 21; mount in none, the back in 2; a best camp uses 2 stats on
+average. The meta is "pull guard, attack from closed guard, train finishing", which players would
+learn within a week. Two causes in this model: finishing helps every submission, so it's good
+everywhere; and pulling guard is an 85% transition, so the shortest route beats working to mount or
+the back within 4 to 6 exchanges. Joshua decides what to do; the options are in START-HERE.
