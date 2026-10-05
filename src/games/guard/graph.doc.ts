@@ -4,7 +4,8 @@ import { SCORING_EVENTS, award, type EventId } from "./rules";
 // Writes docs/guard/GRAPH.md, the review copy of graph.ts (scripts/graph-doc.ts). graph.test.ts fails
 // if the committed file differs, so the document Joshua signs off is always the data.
 
-const STATUS = "Awaiting Joshua's sign-off.";
+const STATUS =
+  "Base graph signed off by Joshua on 2026-10-05; the opponent's counters (added in step 5) await his sign-off.";
 
 const ids = Object.keys(POSITIONS) as PositionId[];
 const name = (id: PositionId) => POSITIONS[id].name;
@@ -120,11 +121,12 @@ export function graphMarkdown(): string {
     "",
     '- **You\'re always the player.** "Top" positions are the ones you control (on top in their guard,',
     '  on their back); "bottom" ones have you controlled.',
-    "- **Start-only** positions can't be reached from standing, because only the opponent's offense gets",
-    "  you there and the opponent doesn't attack. A puzzle can start in one (a comeback, say).",
-    "- **Their moves** are the opponent's escapes and guard plays. They score nothing, and in scoring",
-    "  they wipe the memory of what you last scored (RULES.md, choice 1). Step 5's daily opponent decides",
-    "  which ones happen.",
+    "- **Start-only** positions can't be reached from standing by your moves or theirs. A puzzle can",
+    "  still start in one (a comeback, say).",
+    "- **Their moves** are the opponent's escapes and counters (they pass you, sweep you, sprawl, mount",
+    "  you). In the fight they happen when your move fails, and the opponent picks the one that's worst",
+    "  for you (docs/guard/MODEL.md). They score nothing, and in IBJJF scoring they wipe the memory of",
+    "  what you last scored (RULES.md, choice 1).",
     "- **Points** is what the move pays if the position you're leaving was the last one you scored. In a",
     "  real line `rules.ts` decides, so the same move can pay less (stepping down from mount to knee on",
     "  belly pays 0).",

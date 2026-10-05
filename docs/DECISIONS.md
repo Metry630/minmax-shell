@@ -378,3 +378,47 @@ knee on belly or mount (3 + 2, 3 + 4). The butterfly sweep's classic finish is m
 edge beside the side control one (86 techniques). Two calls rest on the book alone with no referee
 source: the berimbolo (scored like 4.6.2) and turtle to side control. Technical and sideways mount
 became aliases of mount, since the p.21 photos score them as mount.
+
+## 2026-10-05: The puzzle is a training camp, scored by exact chance
+
+Joshua's redesign replaces "chain moves for the most IBJJF points". Your fighter is at X% against
+today's opponent; a scouting card shows the archetype, its three best defences and two hints; you
+spend 6 sessions on 15 per-position stats (his call: per position, not 6 broad areas), submit once
+and watch one replayed fight. The score is the exact chance the camp gives, not the replay's result,
+so "your score against the proven best" still means skill rather than dice (his pick). One puzzle a
+day for everyone, not a chosen difficulty, so the histogram compares like with like; hints come only
+from the card, not from sharing, so share rate stays a clean signal. Closer to Krillion than Wordle,
+which he accepted: minutes per day, with depth across days as players learn the model. The graph
+carries over as the board; RULES.md's points don't decide anything until a points or dominant-hold
+objective exists.
+
+## 2026-10-05: Failed moves cost something, and the opponent plays smart
+
+With every move at 50% for even skill and failures free, a fighter finished a stronger opponent 62%
+of the time in two exchanges (retrying a standing guillotine) and 99% in ten: nothing to optimise.
+Three changes, each measured. Bases by move type (transition 85%, scoring move 40%, submission 10%
+to 30% by position) brought that matchup to 11% in two exchanges and 55% in five. 19 opponent
+counters went into the graph (they pass, sweep, sprawl, mount you, take your back), firing when your
+move fails. And the opponent picks the counter that's worst for you, with holding position always
+allowed: before that, more skill sometimes lowered the chance (32, then 40 of 13,500 checks, worst
+4 points), because a random counter could sweep a guard player into their own guard. After: 0 of
+13,500, and a test re-checks 1,500 fights every run. The chain bonus was also narrowed to
+submissions, as Joshua described it (armbar, triangle, omoplata); that alone didn't fix monotonicity.
+
+## 2026-10-05: The solver prunes, exactly
+
+Trying all 38,760 camps costs 30 to 45 s a puzzle at about 1 ms per evaluation. Because more skill
+never hurts, a branch's bound is its sessions so far plus every remaining session in every open stat;
+branches that can't beat the best camp found are skipped. 0.08 s a puzzle, and a test checks it equals
+trying every camp. Re-scoring one camp takes 0.08 ms against the Worker's 10 ms, so submissions are
+scored live with no precomputed table.
+
+## 2026-10-05: Step 5's gate fails: greedy finds the best camp 80% of the time
+
+On 60 puzzles (dev salt): median start 48%, best camp 80%, median lift 29 points (gate: 10), a random
+camp 22 points below the best. But greedy, each session where it adds most, finds the best camp on
+80% of puzzles (gate: 50%). Variants tried on copies, not adopted: 10 sessions 67%; 8 sessions with
+at most +2 per stat 75%; locking moves when you're 2 or more below their defence changed nothing. The
+cause is shape: chances are near-linear in skill and add up across routes, so returns diminish and
+greedy is near-optimal; all 6 sessions in the single best stat land a median 1.7 points below the
+best. Stopped for Joshua's call (START-HERE lists the options).

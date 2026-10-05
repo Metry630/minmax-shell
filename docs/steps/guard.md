@@ -132,7 +132,8 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 
 ## Step 4. Position graph 🧑 sign-off
 
-**Status:** done 2026-10-05 (`docs/guard/GRAPH.md` awaiting Joshua's sign-off)
+**Status:** done 2026-10-05 (base graph signed off by Joshua; the 19 opponent counters added in step 5
+await his sign-off in `docs/guard/GRAPH.md`)
 
 **Goal:** the board, as data.
 
@@ -155,38 +156,32 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 
 ---
 
-## Step 5. Engine, solver, generator, quality gate
+## Step 5. Engine, solver, generator, quality gate (the training camp)
 
-**Status:** todo
+**Status:** built 2026-10-05; **quality gate failed** (greedy finds the best camp on 80% of puzzles,
+gate 50%), awaiting Joshua's call. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
 
 **Goal:** prove the puzzle is worth building UI for.
 
+**The puzzle** (Joshua's redesign, 2026-10-05; replaces "chain moves for IBJJF points"): your fighter
+is at X% to finish today's opponent. A scouting card shows the opponent's archetype, three best
+defences and two hints. You spend a short camp (6 sessions) on 15 per-position stats, submit once,
+and watch one replayed fight. The score is the exact chance the camp gives you; the best camp is
+solver-proven.
+
 **Do:**
-1. `engine.ts`: is a line legal (contiguous edges from the start, none blocked, within budget, **each
-   technique at most once**: the game rule that caps scoring loops, `docs/guard/RULES.md`), and
-   what does it score under `rules.ts` (`award`/`tally`, state `ScoringState`).
-2. `solver.ts`: exact search over (position, budget left, scoring state, techniques used). The
-   technique-once rule makes it a path search rather than a small DP; fine offline, but measure solve
-   time per puzzle. Returns the optimum and all optimal lines.
-3. `generator.ts`: from a seed, produce start position, budget (moves, or a clock with per-technique time
-   costs), today's opponent, and a rotating objective: max points / come back from N down / reach the
-   named submission while ≥ X ahead. **Today's opponent** (Joshua's direction, 2026-10-05) has a few
-   skills: positions they escape from (an escape move fires when you arrive) and techniques they defend
-   (blocked edges). The player feels them out while building the line: the board shows each reaction
-   as it happens and undo is free, so only the one submission counts (enclose.horse lets you try
-   before submitting the same way). The opponent stays deterministic, which keeps the optimum exact.
-   A **scouting card** (Joshua said yes, 2026-10-05) shows a hint before you play ("scrambler, hates
-   bottom mount") and likely today's belt, which decides the legal submissions (`minBelt` in
-   `graph.ts`); the board reveals the exact effects.
-4. `scripts/quality.ts` on 60 generated puzzles: **greedy gap** (share of puzzles where "take the most
-   points now" scores below optimum), distinct optimal lines per puzzle, spread of optima, percentile
-   of a random legal line.
+1. `model.ts`, `opponents.ts`: stats, `STAT_OF` (position to stat), chances, archetypes, styles.
+2. `engine.ts`: exact chance of a submission within N exchanges, best move every exchange (or hold),
+   failed submissions chain, the opponent counters with the move worst for you.
+3. `solver.ts`: pruned exact search over camps, relying on "more skill never hurts" (tested).
+4. `generator.ts`, `module.ts`: the day's puzzle from the Rng; the `GameModule`, registered.
+5. `quality.ts` + `scripts/quality.ts` on 60 puzzles: baseline, best, greedy, random, ties, timings.
 
-**Done when:** tests pass (determinism, solver ≥ greedy and random on fixtures, hand-worked sequences);
-the quality report is written to `docs/guard/QUALITY.md` with the numbers.
+**Done when:** tests pass (hand-worked chances, monotonicity, solver equals trying every camp,
+determinism, bad camps refused); `docs/guard/QUALITY.md` has the numbers.
 
-**Stop if:** greedy is optimal on more than half the puzzles. Report the numbers and propose constraint
-changes (time costs, opponent counters, objectives) instead of building UI on a trivial puzzle.
+**Stop if:** greedy finds the best camp on more than half the puzzles, or the median lift is under 10
+points. Report the numbers and propose changes instead of building UI on a shallow puzzle.
 
 ---
 
@@ -196,21 +191,27 @@ changes (time costs, opponent counters, objectives) instead of building UI on a 
 
 **Goal:** playable end to end on a phone.
 
-**Read first:** `docs/DESIGN.md` (the arcade fighting-game direction; every batch brief quotes it).
+**Read first:** `docs/DESIGN.md` (the arcade fighting-game direction; every batch brief quotes it) and
+`docs/guard/MODEL.md`.
 
 **Do:**
 1. Claude Code first writes `src/games/guard/ui-contract.ts`: the hooks and prop types the UI uses
-   (`useGuardPuzzle`, `useLine` with add/undo, `useSubmit`, the results view model).
-2. Lovable batch A, board: the position map (current position highlighted, legal moves tappable,
-   blocked moves greyed), the line so far, the budget meter, undo, and submit behind a confirm, since
-   it's **one submission**. Mobile-first at 400 px.
-3. Lovable batch B, results: histogram with "you" marked, your line against the optimal line, each
-   scoring step citing its rule.
+   (`useGuardPuzzle`, `useCamp` with add/remove session, `useSubmit`, the replay and results view
+   models).
+2. Lovable batch A, before the fight: the **scouting card** (archetype, their 2 to 3 best defences, the
+   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 15
+   scrollable, sessions left, your chance updating live as you place sessions), submit behind a
+   confirm since it's **one submission**. Mobile-first at 400 px.
+3. Lovable batch B, after: the **fight replay** (one random fight from the best plan for your camp),
+   then results: your chance against the best camp, **"better than X% of players"**, the histogram
+   with "you" marked, and what the camp changed ("passing 30% to 52% against a guard player") so
+   players learn the model day to day. **Share**: copy to clipboard, X/Twitter, and the phone's share
+   sheet for Instagram, WhatsApp and the rest; the text is `armbar.day #12 31% → 58% (best 64%)`.
 4. Every batch: the stale-sandbox guard first; `git pull` + `git diff --stat` after. Claude Code wires
    submit to the scores API.
 
 **Done when:** on the deployed workers.dev URL at 400 px width you can play today's puzzle, submit
-once, see the histogram and optimum; a second submit is refused.
+once, watch the replay, see the histogram and the best camp; a second submit is refused.
 
 ---
 
@@ -221,8 +222,10 @@ once, see the histogram and optimum; a second submit is refused.
 **Goal:** what ad review and players both expect, plus a buffer of verified days.
 
 **Do:**
-1. Pages: How to play, Rules (from `RULES.md`, with citations), About (pseudonymous is fine), Privacy
-   (PostHog, localStorage, no accounts), Contact, Terms, Archive. Write the first page by hand, then
+1. Pages: How to play, Rules (from `RULES.md` and `MODEL.md`, with citations), About (pseudonymous is
+   fine), Privacy (PostHog, localStorage, no accounts), Contact, Terms, and an **Archive where past
+   puzzles are playable** (yesterday's and older; they don't count toward the streak, and results show
+   straight away since the kit releases a past puzzle's optimum and histogram to anyone). Write the first page by hand, then
    `/code-write` the rest from it. Lovable polish pass if the pages need it.
 2. First set guard's `epoch` to the launch date: puzzle numbers count from it, and moving it after
    scheduling renumbers every row. Reuse `generateChecked()` from `src/kit/puzzles.server.ts`.

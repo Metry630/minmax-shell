@@ -26,8 +26,8 @@ export type PositionSpec = {
   /** Other names players use: common English, standard Portuguese. */
   aliases: readonly string[];
   /**
-   * Not reachable from standing, because only the opponent's offense gets you there and the opponent
-   * doesn't attack in this game. A puzzle can still start here (comeback puzzles, step 5).
+   * Not reachable from standing by your moves or theirs; only the opponent's offense outside the
+   * graph gets you there. A puzzle can still start here (comeback puzzles).
    */
   startOnly?: true;
 };
@@ -174,7 +174,6 @@ export const POSITIONS = {
     perspective: "bottom",
     kind: "side-control",
     aliases: ["side control bottom"],
-    startOnly: true,
   },
   "north-south-bottom": {
     name: "Under north-south",
@@ -195,7 +194,6 @@ export const POSITIONS = {
     perspective: "bottom",
     kind: "mount",
     aliases: ["bottom mount"],
-    startOnly: true,
   },
   "back-mount-bottom": {
     name: "Flattened, them on your back",
@@ -209,14 +207,12 @@ export const POSITIONS = {
     perspective: "bottom",
     kind: "back-control",
     aliases: ["back control bottom"],
-    startOnly: true,
   },
   "turtle-bottom": {
     name: "Turtled",
     perspective: "bottom",
     kind: "turtle",
     aliases: ["turtle", "tartaruga"],
-    startOnly: true,
   },
 } as const satisfies Record<string, PositionSpec>;
 
@@ -693,7 +689,8 @@ export const EDGES: readonly Edge[] = [
   move("turtle-stand-up", "turtle-bottom", "standing", "Stand up", []),
   move("granby-roll", "turtle-bottom", "open-guard-bottom", "Granby roll to guard", []),
 
-  // The opponent's moves (step 5's daily opponent switches these on)
+  // The opponent's moves. In the fight they happen when your move fails: escapes from your top
+  // positions, and counters everywhere else (they pass, sweep, sprawl, mount you, take your back).
   theirs("they-elbow-knee", "mount-top", "half-guard-top", "They elbow-knee escape to half guard"),
   theirs("they-upa", "mount-top", "closed-guard-bottom", "They bridge and roll you (upa)"),
   theirs("they-recover-half", "side-control-top", "half-guard-top", "They recover half guard"),
@@ -712,6 +709,60 @@ export const EDGES: readonly Edge[] = [
   theirs("they-stand-from-turtle", "turtle-top", "standing", "They stand up"),
   theirs("they-full-guard", "half-guard-top", "closed-guard-top", "They recover full guard"),
   theirs("they-stand-from-guard", "open-guard-top", "standing", "They stand back up"),
+  theirs("they-sprawl", "standing", "turtle-bottom", "They sprawl on your shot"),
+  theirs(
+    "they-pass-closed",
+    "closed-guard-bottom",
+    "side-control-bottom",
+    "They stack and pass your guard",
+  ),
+  theirs("they-pass-open", "open-guard-bottom", "side-control-bottom", "They pass your open guard"),
+  theirs("they-pass-half", "half-guard-bottom", "side-control-bottom", "They flatten and pass"),
+  theirs(
+    "they-flatten-butterfly",
+    "butterfly-guard-bottom",
+    "half-guard-bottom",
+    "They flatten you to half guard",
+  ),
+  theirs("they-strip-de-la-riva", "de-la-riva-bottom", "open-guard-bottom", "They strip the hook"),
+  theirs("they-escape-x", "x-guard-bottom", "open-guard-bottom", "They step out of X"),
+  theirs("they-free-leg", "single-leg-x-bottom", "open-guard-bottom", "They free their leg"),
+  theirs("they-sweep-closed", "closed-guard-top", "mount-bottom", "They sweep you to mount"),
+  theirs(
+    "they-butterfly-sweep",
+    "butterfly-guard-top",
+    "side-control-bottom",
+    "They butterfly sweep you",
+  ),
+  theirs("they-berimbolo", "de-la-riva-top", "back-control-bottom", "They berimbolo to your back"),
+  theirs("they-x-sweep", "x-guard-top", "open-guard-bottom", "They X-guard sweep you"),
+  theirs(
+    "they-single-leg-x-sweep",
+    "single-leg-x-top",
+    "open-guard-bottom",
+    "They sweep you from single-leg X",
+  ),
+  theirs("they-mount-you", "side-control-bottom", "mount-bottom", "They mount you"),
+  theirs("they-mount-from-knee", "knee-on-belly-bottom", "mount-bottom", "They swing to mount"),
+  theirs(
+    "they-take-back-mounted",
+    "mount-bottom",
+    "back-control-bottom",
+    "They take your back as you turn",
+  ),
+  theirs(
+    "they-back-to-side",
+    "north-south-bottom",
+    "side-control-bottom",
+    "They walk to side control",
+  ),
+  theirs("they-take-back-turtle", "turtle-bottom", "back-control-bottom", "They take your back"),
+  theirs(
+    "they-insert-hooks",
+    "back-mount-bottom",
+    "back-control-bottom",
+    "They get their hooks in",
+  ),
 ];
 
 export const position = (id: PositionId) => ({ id, ...POSITIONS[id] });

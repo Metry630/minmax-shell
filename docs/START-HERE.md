@@ -13,17 +13,32 @@ strings). `/demo` is a trivial game on that kit (`src/games/demo/`), proving the
 with D1; the Lovable preview runs it on memory and the public `dev` salt. Visual direction for step 6
 is in `docs/DESIGN.md` (arcade fighting game).
 
-Step 3 is done and fully signed off: the IBJJF scoring model is `src/games/guard/rules.ts` (seven
-events, each with a verbatim quote and page from Rule Book 6.1), reviewed in `docs/guard/RULES.md`. Step
-4 is done pending sign-off: the position graph is `src/games/guard/graph.ts` (29 positions, 86
-techniques, 13 opponent moves, 38 submissions), checked by `scripts/check-graph.ts` and reviewed in the
-generated `docs/guard/GRAPH.md`. Step 5 owes a game rule, each technique once per line, to cap scoring
-loops such as mount, back, mount, and Joshua's daily opponent with a scouting card. The rule book PDF
-and its text live in `.sources/ibjjf/` on Joshua's machine only.
+Steps 3 and 4 are done: the IBJJF scoring model (`rules.ts`, `docs/guard/RULES.md`, signed off) and the
+position graph (`graph.ts`, `docs/guard/GRAPH.md`; base signed off, the opponent's counters added in
+step 5 await sign-off). Joshua redesigned the puzzle on 2026-10-05 into a **training camp**: your
+fighter is at X% against today's opponent, you spend 6 sessions on 15 stats, and the score is the exact
+chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built and its quality gate fails: greedy finds
+the best camp on 80% of puzzles (gate 50%), though the camp matters (median lift 29 points). The rule
+book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **5** (step 4's GRAPH.md sign-off pending) |
+| Guard to Sub | `docs/steps/guard.md` | **5** (gate failed; Joshua's call below) |
+
+### Step 5's gate: Joshua's call (2026-10-05)
+
+Greedy (each session where it adds most) finds the best camp on 80% of puzzles; the gate is 50%. Options:
+
+1. **Change the gate, not the game.** Exact greedy knows every session's true value, which no player
+   does; a player's real problem is reading the card and the route. Judge against what a person would
+   do instead (spread evenly, all-in on one stat, train against the card's top defences) and keep a
+   median lift of 10 points. Cheapest; the camp already moves a fighter 29 points and random camps
+   land 22 below the best.
+2. **Add thresholds that matter on the route.** Techniques that unlock at a skill level (a berimbolo
+   needs open guard 6) make "invest 2 to open a route" decisions where greedy's first step sees
+   nothing. Needs per-technique data and a new gate run; the one threshold tried (relative to their
+   defence) changed nothing.
+3. **Make camps lumpier.** 10 sessions brought greedy to 67%; combined with option 2 it may pass 50%.
 
 ## Gates
 

@@ -2,17 +2,18 @@
 
 <!-- Generated from src/games/guard/graph.ts by `npx tsx scripts/graph-doc.ts`. Don't edit by hand. -->
 
-Awaiting Joshua's sign-off. 29 positions, 86 techniques, 13 opponent moves, 38 submissions. `npx tsx scripts/check-graph.ts` checks it.
+Base graph signed off by Joshua on 2026-10-05; the opponent's counters (added in step 5) await his sign-off. 29 positions, 86 techniques, 32 opponent moves, 38 submissions. `npx tsx scripts/check-graph.ts` checks it.
 
 ## How to read it
 
 - **You're always the player.** "Top" positions are the ones you control (on top in their guard,
   on their back); "bottom" ones have you controlled.
-- **Start-only** positions can't be reached from standing, because only the opponent's offense gets
-  you there and the opponent doesn't attack. A puzzle can start in one (a comeback, say).
-- **Their moves** are the opponent's escapes and guard plays. They score nothing, and in scoring
-  they wipe the memory of what you last scored (RULES.md, choice 1). Step 5's daily opponent decides
-  which ones happen.
+- **Start-only** positions can't be reached from standing by your moves or theirs. A puzzle can
+  still start in one (a comeback, say).
+- **Their moves** are the opponent's escapes and counters (they pass you, sweep you, sprawl, mount
+  you). In the fight they happen when your move fails, and the opponent picks the one that's worst
+  for you (docs/guard/MODEL.md). They score nothing, and in IBJJF scoring they wipe the memory of
+  what you last scored (RULES.md, choice 1).
 - **Points** is what the move pays if the position you're leaving was the last one you scored. In a
   real line `rules.ts` decides, so the same move can pay less (stepping down from mount to knee on
   belly pays 0).
@@ -200,6 +201,25 @@ flowchart LR
   turtle_top -.-> standing
   half_guard_top -.-> closed_guard_top
   open_guard_top -.-> standing
+  standing -.-> turtle_bottom
+  closed_guard_bottom -.-> side_control_bottom
+  open_guard_bottom -.-> side_control_bottom
+  half_guard_bottom -.-> side_control_bottom
+  butterfly_guard_bottom -.-> half_guard_bottom
+  de_la_riva_bottom -.-> open_guard_bottom
+  x_guard_bottom -.-> open_guard_bottom
+  single_leg_x_bottom -.-> open_guard_bottom
+  closed_guard_top -.-> mount_bottom
+  butterfly_guard_top -.-> side_control_bottom
+  de_la_riva_top -.-> back_control_bottom
+  x_guard_top -.-> open_guard_bottom
+  single_leg_x_top -.-> open_guard_bottom
+  side_control_bottom -.-> mount_bottom
+  knee_on_belly_bottom -.-> mount_bottom
+  mount_bottom -.-> back_control_bottom
+  north_south_bottom -.-> side_control_bottom
+  turtle_bottom -.-> back_control_bottom
+  back_mount_bottom -.-> back_control_bottom
 ```
 
 ## Positions and moves
@@ -222,6 +242,8 @@ flowchart LR
 
 Submissions: Standing guillotine (all belts).
 
+Their moves from here: They sprawl on your shot → Turtled.
+
 ### Closed guard (bottom)
 
 `closed-guard-bottom`. Also called: full guard, guarda fechada.
@@ -235,6 +257,8 @@ Submissions: Standing guillotine (all belts).
 | Switch to butterfly hooks | Butterfly guard (bottom) | none | 0 |
 
 Submissions: Armbar (all belts), Triangle (all belts), Omoplata (all belts), Cross collar choke (all belts), Kimura (all belts), Guillotine (all belts), Wrist lock (blue belt and up).
+
+Their moves from here: They stack and pass your guard → Under side control.
 
 ### Open guard (bottom)
 
@@ -251,6 +275,8 @@ Submissions: Armbar (all belts), Triangle (all belts), Omoplata (all belts), Cro
 
 Submissions: Triangle (all belts).
 
+Their moves from here: They pass your open guard → Under side control.
+
 ### Half guard (bottom)
 
 `half-guard-bottom`. Also called: deep half guard, meia guarda.
@@ -264,6 +290,8 @@ Submissions: Triangle (all belts).
 | Insert a butterfly hook | Butterfly guard (bottom) | none | 0 |
 
 Submissions: Kimura (all belts).
+
+Their moves from here: They flatten and pass → Under side control.
 
 ### Butterfly guard (bottom)
 
@@ -280,6 +308,8 @@ Submissions: Kimura (all belts).
 
 Submissions: Guillotine (all belts).
 
+Their moves from here: They flatten you to half guard → Half guard (bottom).
+
 ### De la Riva guard (bottom)
 
 `de-la-riva-bottom`. Also called: DLR, guarda De la Riva.
@@ -290,6 +320,8 @@ Submissions: Guillotine (all belts).
 | De la Riva sweep | In their open guard | sweep | 2 |
 | Enter X guard | X guard (bottom) | none | 0 |
 | Release the hook | Open guard (bottom) | none | 0 |
+
+Their moves from here: They strip the hook → Open guard (bottom).
 
 ### X guard (bottom)
 
@@ -302,6 +334,8 @@ Submissions: Guillotine (all belts).
 
 Submissions: Straight ankle lock (all belts).
 
+Their moves from here: They step out of X → Open guard (bottom).
+
 ### Single-leg X (bottom)
 
 `single-leg-x-bottom`. Also called: SLX, ashi garami.
@@ -313,6 +347,8 @@ Submissions: Straight ankle lock (all belts).
 
 Submissions: Straight ankle lock (all belts), Toe hold (brown belt and up), Knee bar (brown belt and up).
 
+Their moves from here: They free their leg → Open guard (bottom).
+
 ### In their closed guard
 
 `closed-guard-top`. Also called: closed guard top.
@@ -323,6 +359,8 @@ Submissions: Straight ankle lock (all belts), Toe hold (brown belt and up), Knee
 | Open with the knee into half guard | In their half guard | none | 0 |
 
 Submissions: Ezekiel choke (all belts).
+
+Their moves from here: They sweep you to mount → Mounted.
 
 ### In their open guard
 
@@ -365,6 +403,8 @@ Their moves from here: They recover full guard → In their closed guard.
 | Flatten into half guard | In their half guard | none | 0 |
 | Knee cut through butterfly | Side control (top) | guard pass | 3 |
 
+Their moves from here: They butterfly sweep you → Under side control.
+
 ### In their De la Riva
 
 `de-la-riva-top`, start-only. Also called: DLR top.
@@ -374,6 +414,8 @@ Their moves from here: They recover full guard → In their closed guard.
 | Kick free of the hook | In their open guard | none | 0 |
 | Long step pass | Side control (top) | guard pass | 3 |
 
+Their moves from here: They berimbolo to your back → Back taken.
+
 ### In their X guard
 
 `x-guard-top`, start-only. Also called: X guard top.
@@ -381,6 +423,8 @@ Their moves from here: They recover full guard → In their closed guard.
 | Move | To | Events | Points |
 |---|---|---|---|
 | Step out of X | In their open guard | none | 0 |
+
+Their moves from here: They X-guard sweep you → Open guard (bottom).
 
 ### In their single-leg X
 
@@ -391,6 +435,8 @@ Their moves from here: They recover full guard → In their closed guard.
 | Backstep out and pass | Side control (top) | guard pass | 3 |
 
 Submissions: Straight ankle lock (all belts).
+
+Their moves from here: They sweep you from single-leg X → Open guard (bottom).
 
 ### Side control (top)
 
@@ -488,13 +534,15 @@ Their moves from here: They stand up → Standing.
 
 ### Under side control
 
-`side-control-bottom`, start-only. Also called: side control bottom.
+`side-control-bottom`. Also called: side control bottom.
 
 | Move | To | Events | Points |
 |---|---|---|---|
 | Shrimp to half guard | Half guard (bottom) | none | 0 |
 | Shrimp to full guard | Closed guard (bottom) | none | 0 |
 | Turn in to turtle | Turtled | none | 0 |
+
+Their moves from here: They mount you → Mounted.
 
 ### Under north-south
 
@@ -505,6 +553,8 @@ Their moves from here: They stand up → Standing.
 | Turn in to guard | Open guard (bottom) | none | 0 |
 | Come up to turtle | Turtled | none | 0 |
 
+Their moves from here: They walk to side control → Under side control.
+
 ### Under knee on belly
 
 `knee-on-belly-bottom`, start-only. Also called: knee on belly bottom.
@@ -513,14 +563,18 @@ Their moves from here: They stand up → Standing.
 |---|---|---|---|
 | Push the knee and shrimp | Half guard (bottom) | none | 0 |
 
+Their moves from here: They swing to mount → Mounted.
+
 ### Mounted
 
-`mount-bottom`, start-only. Also called: bottom mount.
+`mount-bottom`. Also called: bottom mount.
 
 | Move | To | Events | Points |
 |---|---|---|---|
 | Elbow-knee escape (shrimp escape) | Half guard (bottom) | none | 0 |
 | Upa (bridge and roll, trap and roll) | In their closed guard | none | 0 |
+
+Their moves from here: They take your back as you turn → Back taken.
 
 ### Flattened, them on your back
 
@@ -530,9 +584,11 @@ Their moves from here: They stand up → Standing.
 |---|---|---|---|
 | Come up to all fours | Turtled | none | 0 |
 
+Their moves from here: They get their hooks in → Back taken.
+
 ### Back taken
 
-`back-control-bottom`, start-only. Also called: back control bottom.
+`back-control-bottom`. Also called: back control bottom.
 
 | Move | To | Events | Points |
 |---|---|---|---|
@@ -540,9 +596,11 @@ Their moves from here: They stand up → Standing.
 
 ### Turtled
 
-`turtle-bottom`, start-only. Also called: turtle, tartaruga.
+`turtle-bottom`. Also called: turtle, tartaruga.
 
 | Move | To | Events | Points |
 |---|---|---|---|
 | Stand up | Standing | none | 0 |
 | Granby roll to guard | Open guard (bottom) | none | 0 |
+
+Their moves from here: They take your back → Back taken.
