@@ -158,8 +158,8 @@ await his sign-off in `docs/guard/GRAPH.md`)
 
 ## Step 5. Engine, solver, generator, quality gate (the training camp)
 
-**Status:** built 2026-10-05; meta broken (no stat in more than 40% of best camps); **greedy gate still
-fails** (70%, gate 50%) and 13 of 60 puzzles are too easy; awaiting Joshua's call. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
+**Status:** built 2026-10-05; meta broken, fighter starts as the underdog (median 22%, lift 52 points);
+**greedy gate still fails** (75%, gate 50%) because routes need one stat; awaiting Joshua's call. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
 
 **Goal:** prove the puzzle is worth building UI for.
 
@@ -228,7 +228,9 @@ once, watch the replay, see the histogram and the best camp; a second submit is 
    straight away since the kit releases a past puzzle's optimum and histogram to anyone). Write the first page by hand, then
    `/code-write` the rest from it. Lovable polish pass if the pages need it.
 2. First set guard's `epoch` to the launch date: puzzle numbers count from it, and moving it after
-   scheduling renumbers every row. Reuse `generateChecked()` from `src/kit/puzzles.server.ts`.
+   scheduling renumbers every row. Reuse `generateChecked()` from `src/kit/puzzles.server.ts`, and
+   when a draw fails the per-puzzle check (10 of 60 for guard on 2026-10-05), draw again from the same
+   seed rather than leaving the day empty.
    `scripts/schedule.ts --game guard --days 90`: run locally with the real salt from `.dev.vars`;
    generates, solves and quality-checks each puzzle and writes the rows into D1 `puzzles` (refuses to
    write any puzzle without a solver-verified optimum or failing quality). `scripts/schedule-check.ts`

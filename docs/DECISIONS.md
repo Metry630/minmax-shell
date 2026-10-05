@@ -436,3 +436,11 @@ moved from 7 in 10 standing to 4 in 10. Result on 60 puzzles: the most-used stat
 40% (new gate: at most 50%), then takedowns 33%, escapes 27%, half guard 17%; median lift 36 points;
 solve 0.02 s. Still failing: greedy 70% (gate 50%), and median best 89.5% with 13 of 60 puzzles above
 the 95% cap. The meta gate is now part of `quality.ts`.
+
+## 2026-10-05: Your fighter starts as the underdog
+
+Joshua's idea: start below 50% with lower stats. Tried 1 and 2 below the style's skills: at 1 the mean
+start was 39% with 17 of 60 still favourites; at 2 it's 26% (median 22%) with 5. Picked 2, and a
+puzzle is only served if it starts below 50%. Median best camp 80%, lift 52 points, a random camp 44
+points below the best. 10 of 60 fail the per-puzzle check, so step 7's scheduler must draw again
+rather than leave a day empty. Side effect worth knowing: the best camp narrowed to 1.3 stats.

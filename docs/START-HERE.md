@@ -16,29 +16,30 @@ is in `docs/DESIGN.md` (arcade fighting game).
 Steps 3 and 4 are done: the IBJJF scoring model (`rules.ts`, `docs/guard/RULES.md`, signed off) and the
 position graph (`graph.ts`, `docs/guard/GRAPH.md`; base signed off, the opponent's counters added in
 step 5 await sign-off). Joshua redesigned the puzzle on 2026-10-05 into a **training camp**: your
-fighter is at X% against today's opponent, you spend 6 sessions on 14 stats, and the score is the exact
-chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built and the meta is broken (no stat in more
-than 40% of best camps), but greedy still finds the best camp on 70% of puzzles (gate 50%) and 13 of 60
-puzzles are too easy. The rule book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
+fighter starts as the underdog against today's opponent, you spend 6 sessions on 14 stats, and the score
+is the exact chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built: meta broken, median start
+22%, lift 52 points, but greedy still finds the best camp on 75% of puzzles (gate 50%). The rule book
+PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **5** (greedy gate and difficulty: Joshua's call below) |
+| Guard to Sub | `docs/steps/guard.md` | **5** (greedy gate: Joshua's call below) |
 
 ### Step 5's gate: Joshua's call (2026-10-05)
 
-Round 1 found a meta (finishing in 52 of 60 best camps); round 2 broke it (finishing stat dropped,
-guard pulls a real exchange, no standing guillotine, fewer standing starts): no stat is now in more
-than 40% of best camps. Two things remain:
+Three rounds so far: round 1 found a meta (finishing in 52 of 60 best camps); round 2 broke it; round 3
+made your fighter the underdog (median start 22%, best 80%, lift 52 points). Greedy still finds the
+best camp on 75% (gate 50%), and the best camp uses 1.3 stats on average: every short route needs only
+one stat, so the answer is "find it and pour everything in".
 
-1. **Greedy finds the best camp on 70% of puzzles; the gate is 50%.** Options: change the gate, since
-   exact greedy knows every session's true value and no player does, and judge against what a person
-   would do instead (spread evenly, all-in on one stat, train against the card's top defences); or
-   add skill thresholds that unlock techniques (a berimbolo needs open guard 6), so "invest 2 to open
-   a route" decisions exist; or more sessions (10 brought greedy to 67% in round 1).
-2. **Puzzles are easy:** median best camp 89.5%, and 13 of 60 go above 95%, which the per-puzzle check
-   rejects. Fewer exchanges (3 to 5) or stronger counters would bring it down; a one-line change each,
-   then re-measure.
+**Proposal: submission families.** Three stats for finishing (chokes, arm locks, leg locks), and a
+submission uses the average of its position's stat and its family's. Every route then needs two stats
+(where you attack from, and what you finish with), so camps split. Unlike the old finishing stat no
+family helps everywhere, and the opponent card points at one ("chokes are their weakness"), so the
+best family changes with the opponent. 16 stats; measure greedy, the meta gate and stats per camp.
+
+Other options still open: judge against what a person would do instead of exact greedy (which knows
+every session's true value); techniques that unlock at a skill level; more sessions.
 
 ## Gates
 
