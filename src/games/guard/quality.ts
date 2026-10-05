@@ -10,18 +10,19 @@ import { STATS } from "./model";
 // Is the camp worth thinking about? Per puzzle: where the fighter starts (baseline), what the best
 // camp reaches, what greedy (each session where it adds most right now) and a random camp reach.
 // One puzzle passes if your fighter starts as the underdog (below 50%), a camp can move it by 5
-// points, and the best isn't a foregone 95%. A batch
-// (scripts/quality.ts) also needs greedy to miss the best on at least half the puzzles and a median
-// lift of 10 points, or step 5 stops (docs/steps/guard.md). It also needs no stat in more than half
-// of the best camps, or the game has a meta players would learn in a week (step 5 found finishing in
-// 52 of 60 before the finishing stat was dropped).
+// points, and the best isn't a foregone 95%. A batch (scripts/quality.ts) needs a median lift of
+// 10 points; no stat in more than half the best camps, or the game has a meta players would learn in
+// a week (finishing was in 52 of 60 before it was dropped); and the strategies a person would try to
+// land at least 15 points below the best, or the puzzle is obvious. That last one replaced "greedy
+// misses the best on half the puzzles" (Joshua, 2026-10-05): greedy knows every session's exact
+// value, hidden defences included, which no player does. Greedy stays in the report to watch.
 
 export const GATE = {
   maxBaseline: 499,
   minLift: 50,
   maxOptimum: 950,
-  maxGreedyOptimalShare: 0.5,
   minMedianLift: 100,
+  minHumanGap: 150,
   maxStatShare: 0.5,
 };
 

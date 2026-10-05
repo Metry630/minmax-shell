@@ -158,9 +158,9 @@ await his sign-off in `docs/guard/GRAPH.md`)
 
 ## Step 5. Engine, solver, generator, quality gate (the training camp)
 
-**Status:** built 2026-10-05; meta gate and lift pass, every puzzle starts as the underdog (median 20%,
-none rejected); **greedy gate fails** (73%, gate 50%) while what a person would try lands ~30 points
-below the best; awaiting Joshua's call on the gate. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
+**Status:** done 2026-10-05; all gates pass after Joshua replaced the greedy gate with a human one (the
+closest strategy a person would try lands 29 points below the best). A player's-eye review is open in
+START-HERE (dead stats, explaining routes, no live chance) before step 6. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
 
 **Goal:** prove the puzzle is worth building UI for.
 
@@ -181,8 +181,11 @@ solver-proven.
 **Done when:** tests pass (hand-worked chances, monotonicity, solver equals trying every camp,
 determinism, bad camps refused); `docs/guard/QUALITY.md` has the numbers.
 
-**Stop if:** greedy finds the best camp on more than half the puzzles, or the median lift is under 10
-points. Report the numbers and propose changes instead of building UI on a shallow puzzle.
+**Stop if:** the strategies a person would try (your best stats, your worst, the card's) land under 15
+points below the best, the median lift is under 10 points, or one stat is in more than half the best
+camps. Report the numbers and propose changes instead of building UI on a shallow puzzle. (The first
+version used "greedy misses the best on half the puzzles"; Joshua replaced it on 2026-10-05, since
+greedy knows every session's exact value and no player does.)
 
 ---
 

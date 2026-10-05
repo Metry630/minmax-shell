@@ -13,33 +13,31 @@ strings). `/demo` is a trivial game on that kit (`src/games/demo/`), proving the
 with D1; the Lovable preview runs it on memory and the public `dev` salt. Visual direction for step 6
 is in `docs/DESIGN.md` (arcade fighting game).
 
-Steps 3 and 4 are done: the IBJJF scoring model (`rules.ts`, `docs/guard/RULES.md`, signed off) and the
-position graph (`graph.ts`, `docs/guard/GRAPH.md`; base signed off, the opponent's counters added in
-step 5 await sign-off). Joshua redesigned the puzzle on 2026-10-05 into a **training camp**: "Help the
-underdog win." Your fighter always starts below 50% against today's opponent, you spend 6 sessions on 16
-stats, and the score is the exact chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built: the
-meta and lift gates pass, but greedy finds the best camp on 73% of puzzles (gate 50%). The rule book PDF
-and its text live in `.sources/ibjjf/` on Joshua's machine only.
+Steps 3 to 5 are done: the IBJJF scoring model (`rules.ts`, `docs/guard/RULES.md`, signed off), the
+position graph (`graph.ts`, `docs/guard/GRAPH.md`; base signed off, the opponent's counters await
+sign-off), and the **training camp** ("Help the underdog win."): your fighter always starts below 50%
+against today's opponent, you spend 6 sessions on 16 stats, and the score is the exact chance the camp
+gives (`docs/guard/MODEL.md`, `QUALITY.md`; all gates pass). The rule book PDF and its text live in
+`.sources/ibjjf/` on Joshua's machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **5** (the greedy gate: Joshua's call below) |
+| Guard to Sub | `docs/steps/guard.md` | **6** (after the player's-eye review below) |
 
-### Step 5's gate: Joshua's call (2026-10-05)
+### Open before step 6: the player's-eye review (2026-10-05)
 
-Four rounds (MODEL.md, "Why each rule is there"): the meta is broken (closed guard in 40% of best
-camps, the most of any stat), every puzzle starts as the underdog (median 20%, best camp 60%, none
-rejected), and the camp moves a fighter 35 points. One gate fails: greedy, which knows every session's
-exact value including the opponent's hidden defences, finds the best camp on 73% of puzzles (gate 50%).
+Step 5's gates pass (Joshua replaced the greedy gate with a human one). Looking at it as a player:
 
-What a person would actually try does much worse: your 6 best stats land a median 29 points below the
-best camp, your 6 worst 34, the card's stats 34, about as bad as a random camp (30). So the options:
-
-1. **Judge against people, not greedy (recommended).** Replace the greedy gate with "the obvious
-   strategies land at least 15 points below the best"; today they're at 29 to 34. The puzzle then
-   passes, and the human-strategy numbers stay in QUALITY.md to watch.
-2. **Keep the greedy gate and keep tuning:** techniques that unlock at a skill level, more sessions.
-   More rounds of the model before any UI.
+1. **10 of 16 stats are traps.** On 60 puzzles, passing butterfly never matters (0 of 60), knee on belly
+   2, leg locks 8; mount, open guard, butterfly, escapes, chokes and arm locks matter but are almost
+   never in a best camp (0 to 2 of 60). Six stats carry every best camp.
+2. **Pulling guard on a judoka is near-impossible** (2% in 2 of 4 such puzzles), the opposite of the
+   mat, because it uses your standing against their takedown defence.
+3. **Nothing shows how stats connect to the fight.** A player can't know a triangle uses closed guard
+   and chokes, or which route the fighter will take.
+4. **A live chance on the camp screen would solve the puzzle for them** by trial and error (step 6's
+   draft had one).
+5. **The underdog fix strips the fighter's best stat**, so a "guard player" can lose their guard.
 
 ## Gates
 

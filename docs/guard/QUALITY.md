@@ -4,7 +4,7 @@
 
 60 puzzles, 6 sessions each. The gate (docs/steps/guard.md, step 5):
 
-- ❌ greedy finds the best camp on 73% of puzzles (needs at most 50%)
+- ✅ the closest strategy a person would try lands 29.2 points below the best (median) (needs at least 15.0 points)
 - ✅ median lift 35.4 points (needs at least 10.0 points)
 - ✅ Closed guard is in 40% of best camps, the most of any stat (needs at most 50%)
 
@@ -20,7 +20,7 @@
 | Stats a best camp uses | 1.4 on average |
 | Rejected by the per-puzzle check | 0 of 60 (start not below 50%, lift under 5 points, or best above 95%) |
 | Most-used stats in best camps | Closed guard 40%, Standing 25%, Side control 20%, Passing open guard 18%, Passing half guard 12% |
-| Solver | 0.07 s per puzzle, 833 exact evaluations (of 74,613 camps) |
+| Solver | 0.06 s per puzzle, 833 exact evaluations (of 74,613 camps) |
 | Engine, one camp | 0.07 ms (the Worker allows 10 ms of CPU per request) |
 
 | # | Opponent | Your fighter | Start | Exchanges | Start % | Best | Greedy | Random | Ties | A best camp |

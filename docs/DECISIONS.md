@@ -456,3 +456,12 @@ points off the fighter's best stat until the start is below 50%: no rejected puz
 median start 20%, best camp 60%, lift 35 points. Greedy still finds the best camp on 73%, but the
 strategies a person would try land 29 to 34 points below the best, about as far as a random camp (30),
 so QUALITY.md now reports them. Tagline for step 6: "Help the underdog win."
+
+## 2026-10-05: The step 5 gate judges people, not greedy
+
+Joshua's call. Greedy found the best camp on 73% of puzzles, but greedy knows every session's exact
+value, the opponent's hidden defences included, and no player does. The gate is now that the
+strategies a person would try (a session in each of your best stats, your worst, the card's) land at
+least 15 points below the best; the closest is 29 points below (median of 60). Greedy stays in
+QUALITY.md to watch. With that, step 5's gates all pass. A follow-up check from the player's side
+found 10 of the 16 stats almost never in a best camp, and is open in START-HERE.

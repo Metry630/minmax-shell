@@ -93,10 +93,7 @@ every camp. Scoring one camp takes 0.07 ms, far inside the Worker's 10 ms.
 |---|---|---|
 | No stat in more than half the best camps | closed guard 40%, then standing 25%, side control 20% | ✅ at most 50% |
 | Median lift (best camp minus start) | 35 points | ✅ at least 10 |
-| Greedy finds the best camp | 73% of puzzles | ❌ at most 50% |
+| What a person would try (best stats, worst stats, the card's) | 29 to 34 points below the best | ✅ at least 15 |
 
-Greedy knows every session's exact value, including the opponent's hidden defences. What a person
-would try does much worse: a session in each of your 6 best stats lands a median 29 points below the
-best camp, your 6 worst 34, the card's three stats 34, about as far as a random camp (30). So the
-puzzle isn't obvious to a person, even though it's near-greedy for a perfect calculator. Joshua's call
-(START-HERE).
+Greedy (73% optimal) was the first gate; Joshua replaced it, since greedy knows every session's exact
+value, hidden defences included, and no player does. It stays in QUALITY.md to watch.

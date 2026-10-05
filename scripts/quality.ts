@@ -54,6 +54,7 @@ for (let k = 0; k < runs; k++) finishChance(board, baseOf(sample));
 const engineMs = (performance.now() - t1) / runs;
 
 const m = summarize(measured);
+const humanGap = Math.min(m.medianStrengthsGap!, m.medianWeaknessesGap!, m.medianCardGap!);
 const shares = statShares(measured);
 const top = shares[0];
 const topName = top ? STAT_NAMES[STATS[top.stat]!] : "none";
@@ -65,9 +66,9 @@ const pct = (x: number) => `${(x / 10).toFixed(1)}%`;
 const pts = (x: number) => `${(x / 10).toFixed(1)} points`;
 const gate = [
   [
-    `greedy finds the best camp on ${(m.greedyOptimalShare! * 100).toFixed(0)}% of puzzles`,
-    m.greedyOptimalShare! <= GATE.maxGreedyOptimalShare,
-    `at most ${GATE.maxGreedyOptimalShare * 100}%`,
+    `the closest strategy a person would try lands ${pts(humanGap)} below the best (median)`,
+    humanGap >= GATE.minHumanGap,
+    `at least ${pts(GATE.minHumanGap)}`,
   ],
   [
     `median lift ${pts(m.medianLift!)}`,
