@@ -444,3 +444,15 @@ start was 39% with 17 of 60 still favourites; at 2 it's 26% (median 22%) with 5.
 puzzle is only served if it starts below 50%. Median best camp 80%, lift 52 points, a random camp 44
 points below the best. 10 of 60 fail the per-puzzle check, so step 7's scheduler must draw again
 rather than leave a day empty. Side effect worth knowing: the best camp narrowed to 1.3 stats.
+
+## 2026-10-05: Submission families, guard pulls on standing, always the underdog
+
+Joshua's calls. Three submission-family stats (chokes, arm locks, leg locks), a submission averaging its
+position's stat with its family's, and families on the opponent card ("never trained leg locks"). Alone
+they didn't split camps: closed guard went back to 57%, because pulling closed guard used the closed
+guard stat, so one stat still carried the whole route. Judging guard pulls by standing fixed that
+(closed guard 40%, standing 25%, side control 20%). The generator now guarantees the underdog by taking
+points off the fighter's best stat until the start is below 50%: no rejected puzzles (was 10 of 60),
+median start 20%, best camp 60%, lift 35 points. Greedy still finds the best camp on 73%, but the
+strategies a person would try land 29 to 34 points below the best, about as far as a random camp (30),
+so QUALITY.md now reports them. Tagline for step 6: "Help the underdog win."

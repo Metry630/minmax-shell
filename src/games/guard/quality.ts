@@ -35,7 +35,32 @@ export type PuzzleQuality = {
   optimalCamps: number;
   /** Stats the first best camp spends sessions on, by index. */
   used: number[];
+  /** What a person might try, scored: a session in each of your best stats, your worst, the card's. */
+  strengths: number;
+  weaknesses: number;
+  card: number;
 };
+
+/** One session per stat in this order, skipping capped stats, until the sessions run out. */
+function campFrom(
+  order: readonly number[],
+  base: readonly number[],
+  sessions: number,
+  perStat = 1,
+) {
+  const camp = STATS.map(() => 0);
+  let left = sessions;
+  for (let round = 0; left > 0 && round < sessions; round++) {
+    for (const i of order) {
+      if (left === 0) break;
+      if ((camp[i] ?? 0) < perStat * (round + 1) && (base[i] ?? 0) + (camp[i] ?? 0) < 10) {
+        camp[i] = (camp[i] ?? 0) + 1;
+        left--;
+      }
+    }
+  }
+  return camp;
+}
 
 export const baseOf = (puzzle: GuardPuzzle): Base => ({
   skills: puzzle.fighter.skills,
@@ -65,6 +90,11 @@ export function measure({ puzzle, optimum }: Scheduled<GuardPuzzle, GuardSolutio
     const skills = applyCamp(base.skills, camp, puzzle.sessions);
     return skills ? toScore(finishChance(board, { ...base, skills })) : 0;
   };
+  // Stats from your best to your worst (ties to the earlier stat), and the card's revealed ones.
+  const byskill = STATS.map((_, i) => i).sort(
+    (a, b) => (base.skills[b] ?? 0) - (base.skills[a] ?? 0),
+  );
+  const cardStats = puzzle.card.revealed.map((stat) => STATS.indexOf(stat));
   // A fixed seed, so the report is the same every run.
   const rng = sfc32([1, 2, 3, 4]);
   let randomTotal = 0;
@@ -77,6 +107,9 @@ export function measure({ puzzle, optimum }: Scheduled<GuardPuzzle, GuardSolutio
     randomMean: Math.round(randomTotal / RANDOM_CAMPS),
     optimalCamps: optimum.solutions.length,
     used: (optimum.solutions[0]?.camp ?? []).flatMap((k, i) => (k > 0 ? [i] : [])),
+    strengths: scoreCamp(campFrom(byskill.slice(0, puzzle.sessions), base.skills, puzzle.sessions)),
+    weaknesses: scoreCamp(campFrom(byskill.slice(-puzzle.sessions), base.skills, puzzle.sessions)),
+    card: scoreCamp(campFrom(cardStats, base.skills, puzzle.sessions)),
   };
 }
 
@@ -117,6 +150,9 @@ export function summarize(measured: readonly PuzzleQuality[]): Record<string, nu
     maxStatShare: statShares(measured)[0]?.share ?? 0,
     meanStatsPerCamp: measured.reduce((sum, q) => sum + q.used.length, 0) / measured.length,
     rejectedShare: measured.filter((q) => !passes(q)).length / measured.length,
+    medianStrengthsGap: median(measured.map((q) => q.optimum - q.strengths)),
+    medianWeaknessesGap: median(measured.map((q) => q.optimum - q.weaknesses)),
+    medianCardGap: median(measured.map((q) => q.optimum - q.card)),
   };
 }
 

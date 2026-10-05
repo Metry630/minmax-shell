@@ -21,6 +21,7 @@ export const ARCHETYPES: readonly Archetype[] = [
     id: "wrestler",
     title: "Ex-D1 wrestler",
     defence: {
+      chokes: 3,
       takedowns: 9,
       escapes: 8,
       "side-control": 7,
@@ -29,12 +30,14 @@ export const ARCHETYPES: readonly Archetype[] = [
       "pass-closed": 3,
       "pass-open": 3,
     },
-    hints: ["Wrestled D1. Nobody takes them down.", "Gives up the back in scrambles."],
+    hints: ["Wrestled D1. Nobody takes them down.", "Careless with their neck."],
   },
   {
     id: "judoka",
     title: "Judo black belt",
     defence: {
+      "leg-locks": 2,
+      "arm-locks": 7,
       takedowns: 10,
       "closed-guard": 7,
       escapes: 6,
@@ -42,12 +45,14 @@ export const ARCHETYPES: readonly Archetype[] = [
       "pass-half": 4,
       "pass-butterfly": 4,
     },
-    hints: ["Throws anyone who shoots.", "Turtles when in trouble."],
+    hints: ["Throws anyone who shoots.", "Never trained leg locks."],
   },
   {
     id: "leg-locker",
     title: "Leg-lock specialist",
     defence: {
+      "leg-locks": 9,
+      "arm-locks": 4,
       "pass-open": 8,
       "pass-butterfly": 7,
       "open-guard": 7,
@@ -60,6 +65,8 @@ export const ARCHETYPES: readonly Archetype[] = [
     id: "guard-player",
     title: "Guard player",
     defence: {
+      chokes: 3,
+      "arm-locks": 7,
       "pass-closed": 8,
       "pass-open": 8,
       "pass-half": 7,
@@ -67,19 +74,21 @@ export const ARCHETYPES: readonly Archetype[] = [
       takedowns: 3,
       escapes: 4,
     },
-    hints: ["Guard retention like a wall.", "Pulls guard every time."],
+    hints: ["Guard retention like a wall.", "Taps to chokes."],
   },
   {
     id: "scrambler",
     title: "Scrambler",
     defence: {
+      "arm-locks": 3,
+      chokes: 7,
       "side-control": 8,
       "knee-on-belly": 8,
       mount: 7,
       back: 7,
       "pass-half": 4,
     },
-    hints: ["Escapes everything.", "Weakest in half guard."],
+    hints: ["Escapes everything.", "Leaves their arms out."],
   },
 ];
 
@@ -91,6 +100,8 @@ export const STYLES: readonly Style[] = [
     id: "guard-player",
     title: "Guard player",
     skills: {
+      "arm-locks": 5,
+      chokes: 5,
       "closed-guard": 6,
       "open-guard": 6,
       "half-guard": 6,
@@ -102,6 +113,7 @@ export const STYLES: readonly Style[] = [
     id: "passer",
     title: "Pressure passer",
     skills: {
+      chokes: 5,
       "pass-half": 6,
       "pass-closed": 6,
       "pass-open": 5,
@@ -125,7 +137,7 @@ export const STYLES: readonly Style[] = [
   {
     id: "back-taker",
     title: "Back taker",
-    skills: { back: 7, mount: 5, butterfly: 5, "half-guard": 5, takedowns: 3 },
+    skills: { back: 7, mount: 5, chokes: 6, butterfly: 5, "half-guard": 5, takedowns: 3 },
   },
   { id: "all-rounder", title: "All-rounder", skills: {} },
 ];

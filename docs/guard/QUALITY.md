@@ -4,83 +4,84 @@
 
 60 puzzles, 6 sessions each. The gate (docs/steps/guard.md, step 5):
 
-- ❌ greedy finds the best camp on 75% of puzzles (needs at most 50%)
-- ✅ median lift 52.4 points (needs at least 10.0 points)
-- ✅ Closed guard is in 45% of best camps, the most of any stat (needs at most 50%)
+- ❌ greedy finds the best camp on 73% of puzzles (needs at most 50%)
+- ✅ median lift 35.4 points (needs at least 10.0 points)
+- ✅ Closed guard is in 40% of best camps, the most of any stat (needs at most 50%)
 
 | Metric | Value |
 |---|---|
-| Median start (no camp) | 22.4% |
-| Median best camp | 79.7% (range 42.3% to 99.1%) |
-| Median lift (best minus start) | 52.4 points (smallest 25.5 points) |
-| Greedy finds the best | 75% of puzzles; median gap 0.0 points |
-| A random camp | median 44.4 points below the best |
+| Median start (no camp) | 19.7% |
+| Median best camp | 60.0% (range 10.9% to 91.1%) |
+| Median lift (best minus start) | 35.4 points (smallest 10.0 points) |
+| Greedy finds the best | 73% of puzzles; median gap 0.0 points |
+| A random camp | median 30.0 points below the best |
+| What a person might try | your best stats 29.2 points below the best; your worst 33.8 points; the card's stats 34.3 points (medians) |
 | Camps tied for best | median 1 |
-| Stats a best camp uses | 1.3 on average |
-| Rejected by the per-puzzle check | 10 of 60 (start not below 50%, lift under 5 points, or best above 95%) |
-| Most-used stats in best camps | Closed guard 45%, Half guard 15%, Takedowns 13%, Passing half guard 13%, Passing open guard 10% |
-| Solver | 0.02 s per puzzle, 156 exact evaluations (of 27,132 camps) |
-| Engine, one camp | 0.09 ms (the Worker allows 10 ms of CPU per request) |
+| Stats a best camp uses | 1.4 on average |
+| Rejected by the per-puzzle check | 0 of 60 (start not below 50%, lift under 5 points, or best above 95%) |
+| Most-used stats in best camps | Closed guard 40%, Standing 25%, Side control 20%, Passing open guard 18%, Passing half guard 12% |
+| Solver | 0.07 s per puzzle, 833 exact evaluations (of 74,613 camps) |
+| Engine, one camp | 0.07 ms (the Worker allows 10 ms of CPU per request) |
 
 | # | Opponent | Your fighter | Start | Exchanges | Start % | Best | Greedy | Random | Ties | A best camp |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Leg-lock specialist | Guard player | open-guard-top | 6 | 18.8% | 69.5% | 69.5% | 27.4% | 1 | Closed guard 5, Passing open guard 1 |
-| 2 | Guard player | Back taker | open-guard-top | 6 | 22.4% | 75.3% | 75.3% | 31.2% | 1 | Butterfly guard 6 |
-| 3 | Judo black belt | Guard player | half-guard-top | 6 | 46.1% | 98.3% | 98.3% | 55.2% | 1 | Passing half guard 6 |
-| 4 | Guard player | Wrestler | open-guard-top | 6 | 26.3% | 61.3% | 61.3% | 31.5% | 1 | Passing open guard 2, Side control 4 |
-| 5 | Leg-lock specialist | Wrestler | open-guard-top | 5 | 8.9% | 51.8% | 48.2% | 16.4% | 1 | Closed guard 6 |
-| 6 | Leg-lock specialist | Pressure passer | open-guard-top | 4 | 13.4% | 73.1% | 47.9% | 17.8% | 1 | Passing open guard 6 |
-| 7 | Ex-D1 wrestler | All-rounder | half-guard-top | 4 | 9.2% | 75.5% | 39.4% | 12.3% | 1 | Passing half guard 6 |
-| 8 | Scrambler | Pressure passer | closed-guard-bottom | 4 | 13.5% | 87.6% | 87.6% | 23.7% | 1 | Closed guard 6 |
-| 9 | Scrambler | All-rounder | standing | 5 | 14.7% | 67.3% | 58.1% | 19.6% | 1 | Butterfly guard 6 |
-| 10 | Ex-D1 wrestler | Wrestler | standing | 4 | 9.8% | 59.2% | 39.5% | 14.7% | 1 | Closed guard 6 |
-| 11 | Leg-lock specialist | Pressure passer | standing | 6 | 33.6% | 78.5% | 78.5% | 40.4% | 1 | Takedowns 3, Side control 3 |
-| 12 | Leg-lock specialist | Back taker | closed-guard-bottom | 5 | 34.2% | 96.1% | 96.1% | 47.7% | 1 | Closed guard 6 |
-| 13 | Guard player | All-rounder | side-control-bottom | 4 | 14.8% | 70.3% | 70.3% | 24.4% | 1 | Closed guard 6 |
-| 14 | Leg-lock specialist | Guard player | standing | 5 | 14.2% | 82.1% | 82.1% | 24.7% | 1 | Closed guard 6 |
-| 15 | Judo black belt | All-rounder | standing | 4 | 6.4% | 56.2% | 51.1% | 9.5% | 1 | Closed guard 6 |
-| 16 | Judo black belt | Guard player | side-control-bottom | 6 | 47.6% | 92.6% | 92.6% | 54% | 1 | Half guard 5, Escapes 1 |
-| 17 | Scrambler | Guard player | standing | 4 | 28.3% | 78.2% | 78.2% | 35.8% | 1 | Takedowns 1, Closed guard 5 |
-| 18 | Judo black belt | All-rounder | standing | 5 | 17% | 74.9% | 74.9% | 21.7% | 1 | Open guard 6 |
-| 19 | Leg-lock specialist | All-rounder | open-guard-top | 5 | 10.6% | 42.3% | 34% | 13.9% | 1 | Closed guard 6 |
-| 20 | Ex-D1 wrestler | Pressure passer | side-control-bottom | 4 | 22.4% | 67.9% | 67.9% | 26.8% | 1 | Half guard 6 |
-| 21 | Leg-lock specialist | Pressure passer | side-control-bottom | 5 | 14.7% | 83.3% | 83.3% | 21.6% | 1 | Half guard 6 |
-| 22 | Ex-D1 wrestler | Wrestler | open-guard-top | 6 | 39% | 86.1% | 78.4% | 46.3% | 1 | Passing open guard 6 |
-| 23 | Scrambler | Back taker | side-control-bottom | 4 | 19% | 74.4% | 74.4% | 24.4% | 1 | Half guard 6 |
-| 24 | Leg-lock specialist | Back taker | side-control-bottom | 6 | 40.5% | 85.1% | 85.1% | 46.1% | 1 | Half guard 6 |
-| 25 | Judo black belt | Guard player | side-control-bottom | 4 | 35.5% | 72.3% | 72.3% | 39.8% | 1 | Half guard 5, Escapes 1 |
-| 26 | Judo black belt | Wrestler | side-control-bottom | 6 | 20.6% | 86.1% | 86.1% | 29.7% | 1 | Closed guard 6 |
-| 27 | Leg-lock specialist | Guard player | side-control-bottom | 5 | 53% | 91.7% | 91.7% | 61.6% | 1 | Closed guard 5, Escapes 1 |
-| 28 | Judo black belt | Guard player | standing | 6 | 22% | 86.4% | 86.4% | 32.1% | 1 | Butterfly guard 6 |
-| 29 | Ex-D1 wrestler | Guard player | standing | 6 | 31.9% | 86.7% | 86.7% | 42.4% | 1 | Closed guard 5, Escapes 1 |
-| 30 | Ex-D1 wrestler | All-rounder | closed-guard-bottom | 6 | 55.9% | 99.1% | 99.1% | 65.6% | 1 | Closed guard 6 |
-| 31 | Guard player | Wrestler | standing | 6 | 33.2% | 87.2% | 87.2% | 40% | 1 | Takedowns 1, Side control 5 |
-| 32 | Judo black belt | All-rounder | side-control-bottom | 5 | 35.6% | 86.9% | 86.9% | 41.2% | 1 | Half guard 6 |
-| 33 | Scrambler | All-rounder | standing | 4 | 7.5% | 68.1% | 68.1% | 14.7% | 1 | Closed guard 6 |
-| 34 | Scrambler | Guard player | standing | 4 | 28.2% | 77.2% | 77.2% | 36.8% | 1 | Takedowns 1, Closed guard 5 |
-| 35 | Ex-D1 wrestler | Back taker | standing | 6 | 32% | 87.8% | 87.8% | 42.6% | 1 | Closed guard 6 |
-| 36 | Scrambler | Pressure passer | half-guard-top | 4 | 49.9% | 92.5% | 92.5% | 55.1% | 13 | Takedowns 1, Passing half guard 5 |
-| 37 | Leg-lock specialist | Wrestler | standing | 6 | 51% | 94.2% | 94.2% | 56.9% | 1 | Takedowns 1, Side control 5 |
-| 38 | Leg-lock specialist | Pressure passer | closed-guard-bottom | 5 | 29.8% | 79.7% | 76.7% | 36.1% | 1 | Closed guard 6 |
-| 39 | Leg-lock specialist | Guard player | standing | 5 | 8.6% | 73.3% | 47.4% | 16.6% | 1 | Closed guard 6 |
-| 40 | Ex-D1 wrestler | All-rounder | standing | 5 | 17.1% | 74.9% | 74.9% | 22.8% | 1 | Open guard 6 |
-| 41 | Leg-lock specialist | Pressure passer | side-control-bottom | 6 | 21.1% | 86% | 86% | 32.1% | 1 | Closed guard 6 |
-| 42 | Judo black belt | Guard player | open-guard-top | 6 | 48.7% | 95.3% | 90.3% | 55.9% | 1 | Passing open guard 6 |
-| 43 | Guard player | Wrestler | half-guard-top | 4 | 7.1% | 47.7% | 7.8% | 7.2% | 1 | Passing half guard 6 |
-| 44 | Leg-lock specialist | Guard player | closed-guard-bottom | 6 | 73.6% | 99.1% | 99.1% | 80.4% | 13 | Takedowns 1, Closed guard 5 |
-| 45 | Ex-D1 wrestler | All-rounder | side-control-bottom | 6 | 24.9% | 79.4% | 79.4% | 35.6% | 1 | Closed guard 5, Escapes 1 |
-| 46 | Ex-D1 wrestler | Back taker | standing | 6 | 26.8% | 79.7% | 79.7% | 32.8% | 1 | Open guard 6 |
-| 47 | Guard player | Wrestler | closed-guard-bottom | 4 | 14.3% | 87.6% | 87.6% | 23.7% | 1 | Closed guard 6 |
-| 48 | Leg-lock specialist | Back taker | standing | 4 | 8.6% | 50.5% | 45.3% | 12.3% | 1 | Closed guard 6 |
-| 49 | Ex-D1 wrestler | All-rounder | half-guard-top | 6 | 51% | 98.3% | 98.3% | 57.6% | 1 | Passing half guard 6 |
-| 50 | Leg-lock specialist | Pressure passer | half-guard-top | 6 | 43.6% | 96.6% | 93.8% | 50.7% | 1 | Passing half guard 6 |
-| 51 | Scrambler | Pressure passer | side-control-bottom | 5 | 11.7% | 80% | 80% | 23.1% | 1 | Half guard 6 |
-| 52 | Judo black belt | Wrestler | half-guard-top | 6 | 30.4% | 96.6% | 96.6% | 40.1% | 1 | Passing half guard 6 |
-| 53 | Ex-D1 wrestler | Wrestler | side-control-bottom | 4 | 9.7% | 64.6% | 64.6% | 15.4% | 1 | Closed guard 6 |
-| 54 | Judo black belt | Wrestler | standing | 6 | 41.1% | 82.6% | 82.6% | 47.7% | 1 | Takedowns 4, Side control 2 |
-| 55 | Leg-lock specialist | Guard player | open-guard-top | 6 | 20.3% | 71.5% | 71.5% | 30.1% | 1 | Closed guard 5, Passing open guard 1 |
-| 56 | Scrambler | Guard player | standing | 5 | 22.8% | 82.3% | 82.3% | 29.2% | 1 | Open guard 6 |
-| 57 | Scrambler | All-rounder | standing | 4 | 11.5% | 72% | 72% | 17.1% | 1 | Butterfly guard 6 |
-| 58 | Guard player | Back taker | half-guard-top | 6 | 12.9% | 77.7% | 46.4% | 17.1% | 1 | Passing half guard 6 |
-| 59 | Judo black belt | Back taker | side-control-bottom | 6 | 44.9% | 85.1% | 85.1% | 50.1% | 1 | Half guard 6 |
-| 60 | Leg-lock specialist | Pressure passer | side-control-bottom | 4 | 6.4% | 53.9% | 53.9% | 9.7% | 1 | Closed guard 6 |
+| 1 | Leg-lock specialist | Back taker | standing | 5 | 26.9% | 61.7% | 61.7% | 32.5% | 1 | Standing 1, Side control 5 |
+| 2 | Guard player | Pressure passer | side-control-bottom | 4 | 10.1% | 45.5% | 45.5% | 15.7% | 2 | Closed guard 6 |
+| 3 | Judo black belt | Pressure passer | half-guard-top | 4 | 34.1% | 73.4% | 73.4% | 41.4% | 1 | Passing half guard 6 |
+| 4 | Guard player | All-rounder | side-control-bottom | 6 | 44.2% | 83.4% | 83.4% | 52.6% | 3 | Closed guard 6 |
+| 5 | Leg-lock specialist | Guard player | side-control-bottom | 6 | 48.2% | 84.3% | 84.3% | 56.2% | 2 | Closed guard 4, Arm locks 2 |
+| 6 | Leg-lock specialist | Wrestler | closed-guard-bottom | 5 | 32.5% | 82.7% | 82.7% | 42.7% | 3 | Closed guard 6 |
+| 7 | Ex-D1 wrestler | All-rounder | standing | 5 | 2.1% | 23% | 4.5% | 2.9% | 1 | Standing 5, Closed guard 1 |
+| 8 | Scrambler | Wrestler | half-guard-top | 5 | 48.4% | 86.6% | 86.6% | 55.6% | 1 | Passing half guard 6 |
+| 9 | Scrambler | Pressure passer | side-control-bottom | 4 | 6.9% | 41.7% | 41.7% | 11.5% | 3 | Half guard 6 |
+| 10 | Ex-D1 wrestler | All-rounder | open-guard-top | 6 | 41% | 81.7% | 81.7% | 48% | 1 | Passing open guard 1, Back 5 |
+| 11 | Leg-lock specialist | Pressure passer | side-control-bottom | 4 | 4.9% | 34.4% | 31.1% | 7.3% | 2 | Half guard 6 |
+| 12 | Leg-lock specialist | Back taker | open-guard-top | 5 | 19.2% | 59.9% | 59.9% | 23.4% | 1 | Passing open guard 6 |
+| 13 | Guard player | All-rounder | standing | 6 | 21% | 60% | 60% | 30.3% | 2 | Standing 1, Closed guard 5 |
+| 14 | Leg-lock specialist | Wrestler | standing | 6 | 35.6% | 77.7% | 77.7% | 40.9% | 3 | Side control 6 |
+| 15 | Judo black belt | Wrestler | side-control-bottom | 4 | 7.8% | 43.3% | 43.3% | 12.5% | 2 | Closed guard 6 |
+| 16 | Judo black belt | Wrestler | standing | 5 | 13% | 40.1% | 40.1% | 17.4% | 1 | Standing 2, Side control 4 |
+| 17 | Scrambler | All-rounder | standing | 5 | 16.6% | 45.8% | 45.8% | 21.5% | 1 | Standing 1, Closed guard 5 |
+| 18 | Judo black belt | Back taker | standing | 4 | 1.1% | 16.1% | 16.1% | 1.8% | 2 | Standing 5, Side control 1 |
+| 19 | Leg-lock specialist | Back taker | standing | 4 | 17.9% | 43.4% | 43.4% | 21% | 1 | Standing 2, Side control 4 |
+| 20 | Ex-D1 wrestler | Pressure passer | standing | 5 | 5.2% | 36.3% | 36.3% | 8.5% | 1 | Standing 5, Chokes 1 |
+| 21 | Leg-lock specialist | Back taker | standing | 6 | 25.3% | 64.6% | 52.3% | 33% | 1 | Side control 6 |
+| 22 | Ex-D1 wrestler | Back taker | standing | 6 | 8.3% | 50.1% | 50.1% | 12.8% | 2 | Standing 6 |
+| 23 | Scrambler | Wrestler | standing | 4 | 8.7% | 35.9% | 35.9% | 11.9% | 1 | Standing 1, Side control 5 |
+| 24 | Leg-lock specialist | Guard player | side-control-bottom | 4 | 26.8% | 58.8% | 58.8% | 32.4% | 1 | Closed guard 4, Arm locks 2 |
+| 25 | Judo black belt | Wrestler | half-guard-top | 6 | 31.4% | 66.5% | 66.5% | 37.6% | 1 | Passing half guard 4, Side control 2 |
+| 26 | Judo black belt | Wrestler | side-control-bottom | 4 | 7.4% | 40.1% | 29.3% | 10.6% | 1 | Closed guard 6 |
+| 27 | Leg-lock specialist | Guard player | open-guard-top | 6 | 16.3% | 48% | 48% | 22.6% | 1 | Passing open guard 4, Knee on belly 2 |
+| 28 | Judo black belt | Back taker | open-guard-top | 4 | 25.4% | 60.7% | 60.7% | 28.6% | 1 | Passing open guard 5, Back 1 |
+| 29 | Ex-D1 wrestler | Pressure passer | closed-guard-bottom | 4 | 26.2% | 74.8% | 74.8% | 34.2% | 1 | Closed guard 6 |
+| 30 | Ex-D1 wrestler | Pressure passer | open-guard-top | 5 | 42.8% | 76.7% | 76.7% | 47.2% | 1 | Passing open guard 3, Back 3 |
+| 31 | Guard player | Guard player | open-guard-top | 6 | 18.6% | 42% | 39.6% | 22.6% | 1 | Passing open guard 6 |
+| 32 | Judo black belt | Back taker | half-guard-top | 4 | 12.6% | 54% | 54% | 17% | 1 | Passing half guard 6 |
+| 33 | Scrambler | Pressure passer | closed-guard-bottom | 4 | 21.6% | 74.1% | 74.1% | 28.4% | 1 | Closed guard 6 |
+| 34 | Scrambler | All-rounder | closed-guard-bottom | 5 | 37.8% | 86.1% | 86.1% | 45.3% | 2 | Closed guard 6 |
+| 35 | Ex-D1 wrestler | All-rounder | standing | 5 | 1.5% | 16.4% | 4.1% | 2.2% | 1 | Standing 6 |
+| 36 | Scrambler | All-rounder | closed-guard-bottom | 6 | 46.9% | 91.1% | 91.1% | 54.9% | 3 | Closed guard 6 |
+| 37 | Leg-lock specialist | Back taker | closed-guard-bottom | 5 | 23.2% | 73.9% | 73.9% | 30.1% | 1 | Closed guard 6 |
+| 38 | Leg-lock specialist | Pressure passer | side-control-bottom | 4 | 13% | 44.4% | 38.6% | 17.3% | 1 | Closed guard 6 |
+| 39 | Leg-lock specialist | Wrestler | closed-guard-bottom | 5 | 15.5% | 70.7% | 70.7% | 22.6% | 1 | Closed guard 6 |
+| 40 | Ex-D1 wrestler | All-rounder | closed-guard-bottom | 5 | 19.4% | 64.1% | 51.7% | 25.4% | 1 | Closed guard 6 |
+| 41 | Leg-lock specialist | All-rounder | open-guard-top | 6 | 17% | 47.3% | 40.4% | 20.9% | 1 | Passing open guard 5, Back 1 |
+| 42 | Judo black belt | Wrestler | standing | 4 | 6.4% | 23.7% | 23.7% | 9% | 1 | Standing 3, Side control 3 |
+| 43 | Guard player | Back taker | side-control-bottom | 5 | 29.9% | 64.4% | 58.5% | 35.2% | 1 | Closed guard 6 |
+| 44 | Leg-lock specialist | All-rounder | side-control-bottom | 4 | 12.9% | 46.7% | 46.7% | 19% | 2 | Closed guard 6 |
+| 45 | Ex-D1 wrestler | Wrestler | open-guard-top | 4 | 29% | 56.6% | 56.6% | 32.9% | 1 | Passing open guard 3, Back 3 |
+| 46 | Ex-D1 wrestler | Back taker | closed-guard-bottom | 6 | 44.3% | 87.5% | 73% | 52% | 1 | Closed guard 6 |
+| 47 | Guard player | Pressure passer | standing | 6 | 36.4% | 73.1% | 73.1% | 42.3% | 1 | Standing 3, Side control 3 |
+| 48 | Leg-lock specialist | All-rounder | open-guard-top | 6 | 8.8% | 23.9% | 23.1% | 10.4% | 1 | Passing open guard 6 |
+| 49 | Ex-D1 wrestler | Wrestler | open-guard-top | 5 | 41.6% | 74.3% | 74.3% | 46.9% | 1 | Passing open guard 3, Back 3 |
+| 50 | Leg-lock specialist | Back taker | closed-guard-bottom | 4 | 40.6% | 81.8% | 81.8% | 48.6% | 3 | Closed guard 6 |
+| 51 | Scrambler | Pressure passer | half-guard-top | 6 | 46.8% | 88.7% | 88.7% | 54.4% | 1 | Passing half guard 6 |
+| 52 | Judo black belt | Pressure passer | side-control-bottom | 6 | 19% | 44.5% | 43.4% | 23.1% | 1 | Closed guard 6 |
+| 53 | Ex-D1 wrestler | Back taker | standing | 5 | 2.6% | 25.6% | 4.9% | 3.1% | 1 | Standing 6 |
+| 54 | Judo black belt | Guard player | standing | 4 | 0.9% | 10.9% | 2.6% | 1.3% | 1 | Standing 5, Side control 1 |
+| 55 | Leg-lock specialist | Wrestler | closed-guard-bottom | 5 | 15.8% | 65% | 65% | 21.3% | 1 | Closed guard 6 |
+| 56 | Scrambler | Wrestler | side-control-bottom | 4 | 20% | 56.9% | 56.9% | 25.1% | 3 | Half guard 6 |
+| 57 | Scrambler | Wrestler | half-guard-top | 6 | 24.4% | 78.2% | 78.2% | 31.2% | 1 | Passing half guard 6 |
+| 58 | Guard player | Wrestler | standing | 5 | 35.7% | 73.2% | 73.2% | 41% | 3 | Side control 6 |
+| 59 | Judo black belt | Back taker | half-guard-top | 6 | 30.5% | 77.9% | 66.8% | 37.3% | 1 | Passing half guard 6 |
+| 60 | Leg-lock specialist | Guard player | open-guard-top | 5 | 18.7% | 54.1% | 54.1% | 22.2% | 1 | Passing open guard 5, Back 1 |

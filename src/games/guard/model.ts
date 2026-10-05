@@ -1,4 +1,4 @@
-import type { Belt, Kind, PositionId } from "./graph";
+import type { Belt, Family, Kind, PositionId } from "./graph";
 
 // The fight model's numbers, in one place so they can be tuned (docs/guard/MODEL.md explains each).
 // A skill and a defence are 0 to 10; every chance in the game comes from `chance` or `escapeChance`.
@@ -19,11 +19,15 @@ export const STATS = [
   "mount",
   "back",
   "escapes",
+  "chokes",
+  "arm-locks",
+  "leg-locks",
 ] as const;
 export type Stat = (typeof STATS)[number];
 
 export const STAT_NAMES: Record<Stat, string> = {
-  takedowns: "Takedowns",
+  // Takedowns and guard pulls: the standing game.
+  takedowns: "Standing",
   "closed-guard": "Closed guard",
   "open-guard": "Open guard",
   "half-guard": "Half guard",
@@ -37,6 +41,9 @@ export const STAT_NAMES: Record<Stat, string> = {
   mount: "Mount",
   back: "Back",
   escapes: "Escapes",
+  chokes: "Chokes",
+  "arm-locks": "Arm locks",
+  "leg-locks": "Leg locks",
 };
 
 /** Index of each stat in a skills or defence array. */
@@ -47,9 +54,10 @@ export const STAT_INDEX = Object.fromEntries(STATS.map((stat, i) => [stat, i])) 
 
 /**
  * The stat that governs every move out of a position: your skill there against their defence there.
- * Submissions too: there is no separate finishing stat, since one would help every submission and
- * every camp would buy it (step 5 measured finishing in 52 of 60 best camps). Grouped the way players
- * talk about their game:
+ * A submission also uses its family's stat (`FAMILY_STAT`), averaged with the position's: every
+ * route then needs two stats, where you attack from and what you finish with. A single finishing stat
+ * helped every submission and every camp bought it (step 5: finishing in 52 of 60 best camps); a
+ * family only helps its own submissions. Grouped the way players talk about their game:
  * De la Riva, X and single-leg X count as open guard, north-south and turtle as side control.
  */
 export const STAT_OF: Record<PositionId, Stat> = {
@@ -82,6 +90,13 @@ export const STAT_OF: Record<PositionId, Stat> = {
   "back-mount-bottom": "escapes",
   "back-control-bottom": "escapes",
   "turtle-bottom": "escapes",
+};
+
+/** The stat each submission family uses. */
+export const FAMILY_STAT: Record<Family, Stat> = {
+  choke: "chokes",
+  "arm-lock": "arm-locks",
+  "leg-lock": "leg-locks",
 };
 
 export const MAX_SKILL = 10;

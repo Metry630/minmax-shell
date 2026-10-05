@@ -15,31 +15,31 @@ is in `docs/DESIGN.md` (arcade fighting game).
 
 Steps 3 and 4 are done: the IBJJF scoring model (`rules.ts`, `docs/guard/RULES.md`, signed off) and the
 position graph (`graph.ts`, `docs/guard/GRAPH.md`; base signed off, the opponent's counters added in
-step 5 await sign-off). Joshua redesigned the puzzle on 2026-10-05 into a **training camp**: your
-fighter starts as the underdog against today's opponent, you spend 6 sessions on 14 stats, and the score
-is the exact chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built: meta broken, median start
-22%, lift 52 points, but greedy still finds the best camp on 75% of puzzles (gate 50%). The rule book
-PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
+step 5 await sign-off). Joshua redesigned the puzzle on 2026-10-05 into a **training camp**: "Help the
+underdog win." Your fighter always starts below 50% against today's opponent, you spend 6 sessions on 16
+stats, and the score is the exact chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built: the
+meta and lift gates pass, but greedy finds the best camp on 73% of puzzles (gate 50%). The rule book PDF
+and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **5** (greedy gate: Joshua's call below) |
+| Guard to Sub | `docs/steps/guard.md` | **5** (the greedy gate: Joshua's call below) |
 
 ### Step 5's gate: Joshua's call (2026-10-05)
 
-Three rounds so far: round 1 found a meta (finishing in 52 of 60 best camps); round 2 broke it; round 3
-made your fighter the underdog (median start 22%, best 80%, lift 52 points). Greedy still finds the
-best camp on 75% (gate 50%), and the best camp uses 1.3 stats on average: every short route needs only
-one stat, so the answer is "find it and pour everything in".
+Four rounds (MODEL.md, "Why each rule is there"): the meta is broken (closed guard in 40% of best
+camps, the most of any stat), every puzzle starts as the underdog (median 20%, best camp 60%, none
+rejected), and the camp moves a fighter 35 points. One gate fails: greedy, which knows every session's
+exact value including the opponent's hidden defences, finds the best camp on 73% of puzzles (gate 50%).
 
-**Proposal: submission families.** Three stats for finishing (chokes, arm locks, leg locks), and a
-submission uses the average of its position's stat and its family's. Every route then needs two stats
-(where you attack from, and what you finish with), so camps split. Unlike the old finishing stat no
-family helps everywhere, and the opponent card points at one ("chokes are their weakness"), so the
-best family changes with the opponent. 16 stats; measure greedy, the meta gate and stats per camp.
+What a person would actually try does much worse: your 6 best stats land a median 29 points below the
+best camp, your 6 worst 34, the card's stats 34, about as bad as a random camp (30). So the options:
 
-Other options still open: judge against what a person would do instead of exact greedy (which knows
-every session's true value); techniques that unlock at a skill level; more sessions.
+1. **Judge against people, not greedy (recommended).** Replace the greedy gate with "the obvious
+   strategies land at least 15 points below the best"; today they're at 29 to 34. The puzzle then
+   passes, and the human-strategy numbers stay in QUALITY.md to watch.
+2. **Keep the greedy gate and keep tuning:** techniques that unlock at a skill level, more sessions.
+   More rounds of the model before any UI.
 
 ## Gates
 

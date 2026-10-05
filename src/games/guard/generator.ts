@@ -1,5 +1,6 @@
 import type { Rng } from "@/kit/seed";
 
+import { compileBoard, finishChance } from "./engine";
 import type { Belt, PositionId } from "./graph";
 import { MAX_SKILL, STATS, type Stat } from "./model";
 import { ARCHETYPES, DEFAULT, STYLES } from "./opponents";
@@ -49,6 +50,16 @@ export function generate(rng: Rng): GuardPuzzle {
   const exchanges = rng.int(EXCHANGES.min, EXCHANGES.max);
   const start = rng.next() < 0.4 ? "standing" : rng.pick(OTHER_STARTS);
   const belt = rng.pick(BELTS);
+
+  // Always the underdog (Joshua, 2026-10-05): while the fighter would start at 50% or better, take a
+  // point off their best stat. No draws, so the puzzle stays a pure function of the seed.
+  const board = compileBoard(belt);
+  const chanceNow = () => finishChance(board, { skills, defence, exchanges, start });
+  while (chanceNow() >= 0.5) {
+    const best = Math.max(...skills);
+    if (best <= 1) break;
+    skills[skills.indexOf(best)] = best - 1;
+  }
 
   // The card shows their three best defences (ties to the earlier stat) and both hints.
   const revealed = STATS.map((stat, i) => ({ stat, d: defence[i] ?? 0 }))

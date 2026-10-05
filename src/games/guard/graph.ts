@@ -261,12 +261,40 @@ export type EscapeEdge = {
   name: string;
 };
 
+/** The finishing families; a submission uses its family's stat as well as its position's. */
+export type Family = "choke" | "arm-lock" | "leg-lock";
+
+/** Each submission's family, by name, in one place for review. `sub` refuses a name not listed. */
+export const FAMILY: Record<string, Family> = {
+  Armbar: "arm-lock",
+  "Armbar from the back": "arm-lock",
+  "Far-side armbar": "arm-lock",
+  Kimura: "arm-lock",
+  Americana: "arm-lock",
+  Omoplata: "arm-lock",
+  "Wrist lock": "arm-lock",
+  Triangle: "choke",
+  "Cross collar choke": "choke",
+  Guillotine: "choke",
+  "Ezekiel choke": "choke",
+  "Arm triangle": "choke",
+  "Baseball bat choke": "choke",
+  "North-south choke": "choke",
+  "Rear naked choke": "choke",
+  "Bow and arrow choke": "choke",
+  "Clock choke": "choke",
+  "Straight ankle lock": "leg-lock",
+  "Toe hold": "leg-lock",
+  "Knee bar": "leg-lock",
+};
+
 /** Ends the line (choice 6). `tableRow` names its row on p.29 when it has one. */
 export type SubmissionEdge = {
   kind: "submission";
   id: string;
   from: PositionId;
   name: string;
+  family: Family;
   minBelt: Belt;
   tableRow?: string;
   aliases?: readonly string[];
@@ -303,11 +331,14 @@ const sub = (
 ): SubmissionEdge => {
   const minBelt = tableRow === undefined ? "white" : BELT_TABLE[tableRow];
   if (!minBelt) throw new Error(`${id}: ${tableRow} is illegal in the gi at every belt`);
+  const family = FAMILY[name];
+  if (!family) throw new Error(`${id}: ${name} has no family in FAMILY`);
   return {
     kind: "submission",
     id,
     from,
     name,
+    family,
     minBelt,
     ...(tableRow === undefined ? {} : { tableRow }),
     ...(aliases === undefined ? {} : { aliases }),

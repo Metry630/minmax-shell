@@ -254,7 +254,7 @@ Their moves from here: They sprawl on your shot → Turtled.
 | Open the guard | Open guard (bottom) | none | 0 |
 | Switch to butterfly hooks | Butterfly guard (bottom) | none | 0 |
 
-Submissions: Armbar (all belts), Triangle (all belts), Omoplata (all belts), Cross collar choke (all belts), Kimura (all belts), Guillotine (all belts), Wrist lock (blue belt and up).
+Submissions: Armbar (arm lock, all belts), Triangle (choke, all belts), Omoplata (arm lock, all belts), Cross collar choke (choke, all belts), Kimura (arm lock, all belts), Guillotine (choke, all belts), Wrist lock (arm lock, blue belt and up).
 
 Their moves from here: They stack and pass your guard → Under side control.
 
@@ -271,7 +271,7 @@ Their moves from here: They stack and pass your guard → Under side control.
 | Enter single-leg X | Single-leg X (bottom) | none | 0 |
 | Technical stand-up | Standing | none | 0 |
 
-Submissions: Triangle (all belts).
+Submissions: Triangle (choke, all belts).
 
 Their moves from here: They pass your open guard → Under side control.
 
@@ -287,7 +287,7 @@ Their moves from here: They pass your open guard → Under side control.
 | Recover full guard | Closed guard (bottom) | none | 0 |
 | Insert a butterfly hook | Butterfly guard (bottom) | none | 0 |
 
-Submissions: Kimura (all belts).
+Submissions: Kimura (arm lock, all belts).
 
 Their moves from here: They flatten and pass → Under side control.
 
@@ -304,7 +304,7 @@ Their moves from here: They flatten and pass → Under side control.
 | Switch to half guard | Half guard (bottom) | none | 0 |
 | Lie back to open guard | Open guard (bottom) | none | 0 |
 
-Submissions: Guillotine (all belts).
+Submissions: Guillotine (choke, all belts).
 
 Their moves from here: They flatten you to half guard → Half guard (bottom).
 
@@ -330,7 +330,7 @@ Their moves from here: They strip the hook → Open guard (bottom).
 | X-guard sweep | In their open guard | sweep | 2 |
 | Switch to single-leg X | Single-leg X (bottom) | none | 0 |
 
-Submissions: Straight ankle lock (all belts).
+Submissions: Straight ankle lock (leg lock, all belts).
 
 Their moves from here: They step out of X → Open guard (bottom).
 
@@ -343,7 +343,7 @@ Their moves from here: They step out of X → Open guard (bottom).
 | Single-leg X sweep | In their open guard | sweep | 2 |
 | Switch to X guard | X guard (bottom) | none | 0 |
 
-Submissions: Straight ankle lock (all belts), Toe hold (brown belt and up), Knee bar (brown belt and up).
+Submissions: Straight ankle lock (leg lock, all belts), Toe hold (leg lock, brown belt and up), Knee bar (leg lock, brown belt and up).
 
 Their moves from here: They free their leg → Open guard (bottom).
 
@@ -356,7 +356,7 @@ Their moves from here: They free their leg → Open guard (bottom).
 | Stand and break the guard | In their open guard | none | 0 |
 | Open with the knee into half guard | In their half guard | none | 0 |
 
-Submissions: Ezekiel choke (all belts).
+Submissions: Ezekiel choke (choke, all belts).
 
 Their moves from here: They sweep you to mount → Mounted.
 
@@ -373,7 +373,7 @@ Their moves from here: They sweep you to mount → Mounted.
 | Leg drag to the back | Back control (top) | back control | 4 |
 | Disengage and stand | Standing | none | 0 |
 
-Submissions: Straight ankle lock (all belts).
+Submissions: Straight ankle lock (leg lock, all belts).
 
 Their moves from here: They stand back up → Standing.
 
@@ -388,7 +388,7 @@ Their moves from here: They stand back up → Standing.
 | Backstep pass | Side control (top) | guard pass | 3 |
 | Free the leg straight to mount | Mount (top) | guard pass + mount | 7 |
 
-Submissions: Kimura (all belts), Arm triangle (all belts).
+Submissions: Kimura (arm lock, all belts), Arm triangle (choke, all belts).
 
 Their moves from here: They recover full guard → In their closed guard.
 
@@ -432,7 +432,7 @@ Their moves from here: They X-guard sweep you → Open guard (bottom).
 |---|---|---|---|
 | Backstep out and pass | Side control (top) | guard pass | 3 |
 
-Submissions: Straight ankle lock (all belts).
+Submissions: Straight ankle lock (leg lock, all belts).
 
 Their moves from here: They sweep you from single-leg X → Open guard (bottom).
 
@@ -447,7 +447,7 @@ Their moves from here: They sweep you from single-leg X → Open guard (bottom).
 | Walk to north-south | North-south (top) | none | 0 |
 | Take the back as they turn | Back control (top) | back control | 4 |
 
-Submissions: Americana (all belts), Kimura (all belts), Arm triangle (all belts), Baseball bat choke (all belts).
+Submissions: Americana (arm lock, all belts), Kimura (arm lock, all belts), Arm triangle (choke, all belts), Baseball bat choke (choke, all belts).
 
 Their moves from here: They recover half guard → In their half guard; They recover full guard → In their closed guard; They turn to turtle → On their turtle.
 
@@ -459,7 +459,7 @@ Their moves from here: They recover half guard → In their half guard; They rec
 |---|---|---|---|
 | Walk back to side control | Side control (top) | none | 0 |
 
-Submissions: North-south choke (all belts), Kimura (all belts).
+Submissions: North-south choke (choke, all belts), Kimura (arm lock, all belts).
 
 Their moves from here: They spin back to guard → In their open guard.
 
@@ -472,7 +472,7 @@ Their moves from here: They spin back to guard → In their open guard.
 | Swing over to mount | Mount (top) | mount | 4 |
 | Drop back to side control | Side control (top) | none | 0 |
 
-Submissions: Far-side armbar (all belts), Baseball bat choke (all belts).
+Submissions: Far-side armbar (arm lock, all belts), Baseball bat choke (choke, all belts).
 
 Their moves from here: They push the knee off → Side control (top).
 
@@ -487,7 +487,7 @@ Their moves from here: They push the knee off → Side control (top).
 | Ride them face down | Back mount (top) | back mount | 4 |
 | Step down to side control | Side control (top) | none | 0 |
 
-Submissions: Armbar (all belts), Americana (all belts), Cross collar choke (all belts), Ezekiel choke (all belts), Arm triangle (all belts).
+Submissions: Armbar (arm lock, all belts), Americana (arm lock, all belts), Cross collar choke (choke, all belts), Ezekiel choke (choke, all belts), Arm triangle (choke, all belts).
 
 Their moves from here: They elbow-knee escape to half guard → In their half guard; They bridge and roll you (upa) → Closed guard (bottom).
 
@@ -500,7 +500,7 @@ Their moves from here: They elbow-knee escape to half guard → In their half gu
 | Insert the hooks | Back control (top) | back control | 4 |
 | Mount as they turn over | Mount (top) | mount | 4 |
 
-Submissions: Rear naked choke (all belts).
+Submissions: Rear naked choke (choke, all belts).
 
 Their moves from here: They come up to all fours → On their turtle.
 
@@ -513,7 +513,7 @@ Their moves from here: They come up to all fours → On their turtle.
 | Follow them into mount | Mount (top) | mount | 4 |
 | Flatten them out | Back mount (top) | back mount | 4 |
 
-Submissions: Rear naked choke (all belts), Bow and arrow choke (all belts), Armbar from the back (all belts).
+Submissions: Rear naked choke (choke, all belts), Bow and arrow choke (choke, all belts), Armbar from the back (arm lock, all belts).
 
 Their moves from here: They escape the back into your guard → Closed guard (bottom); They clear the hooks to turtle → On their turtle.
 
@@ -526,7 +526,7 @@ Their moves from here: They escape the back into your guard → Closed guard (bo
 | Seatbelt and hooks | Back control (top) | back control | 4 |
 | Spin to side control | Side control (top) | none | 0 |
 
-Submissions: Clock choke (all belts).
+Submissions: Clock choke (choke, all belts).
 
 Their moves from here: They stand up → Standing.
 

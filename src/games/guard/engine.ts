@@ -2,6 +2,7 @@ import { EDGES, POSITIONS, type Belt, type Edge, type PositionId } from "./graph
 import {
   BASE,
   CHAIN_MAX,
+  FAMILY_STAT,
   MAX_SKILL,
   STATS,
   STAT_INDEX,
@@ -27,7 +28,8 @@ export type Fight = {
   start: PositionId;
 };
 
-type Move = { to: number; stat: number; submission: boolean; base: number };
+/** `family` is the stat index of a submission's family, or -1 for every other move. */
+type Move = { to: number; stat: number; family: number; submission: boolean; base: number };
 type Escape = { to: number };
 
 /** The graph as arrays for the DP, with today's belt applied. */
@@ -50,15 +52,16 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
     const from = at(edge.from);
     const stat = STAT_INDEX[STAT_OF[edge.from]];
     if (edge.kind === "technique") {
-      // Pulling guard is judged by the guard you pull into against their defence of it.
+      // Pulling guard is a real exchange of the standing game; the guard you land in is the next
+      // stat the route needs, so a guard route takes standing, the guard and a family.
       const pull = edge.from === "standing" && POSITIONS[edge.to].perspective === "bottom";
       const base = pull ? BASE.guardPull : edge.events.length > 0 ? BASE.scoring : BASE.transition;
-      const moveStat = pull ? STAT_INDEX[STAT_OF[edge.to]] : stat;
-      moves[from]?.push({ to: at(edge.to), stat: moveStat, submission: false, base });
+      moves[from]?.push({ to: at(edge.to), stat, family: -1, submission: false, base });
     } else if (edge.kind === "submission" && beltAllows(belt, edge.minBelt)) {
       const { kind, perspective } = POSITIONS[edge.from];
       const base = submissionBase(kind, perspective === "bottom");
-      moves[from]?.push({ to: -1, stat, submission: true, base });
+      const family = STAT_INDEX[FAMILY_STAT[edge.family]];
+      moves[from]?.push({ to: -1, stat, family, submission: true, base });
     } else if (edge.kind === "escape") escapes[from]?.push({ to: at(edge.to) });
   }
   return {
@@ -103,7 +106,14 @@ export function finishChance(board: Board, fight: Fight): number {
     (moves[p] ?? []).forEach((move, m) => {
       // Only submissions chain (armbar to triangle to omoplata): a failed one sets up the next.
       const bonus = move.submission && last !== -1 && last !== m ? chain : 0;
-      const works = chance(move.base, (skills[move.stat] ?? 0) + bonus, defence[move.stat] ?? 0);
+      // A submission averages where you attack from and what you finish with, on both sides.
+      let skill = skills[move.stat] ?? 0;
+      let guard = defence[move.stat] ?? 0;
+      if (move.family !== -1) {
+        skill = (skill + (skills[move.family] ?? 0)) / 2;
+        guard = (guard + (defence[move.family] ?? 0)) / 2;
+      }
+      const works = chance(move.base, skill + bonus, guard);
       const success = move.submission ? 1 : value(move.to, n - 1, -1, 0);
       // A failed submission grows the chain (a different one) or starts it (the same one again);
       // any other failed move ends it.

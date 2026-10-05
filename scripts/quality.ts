@@ -99,6 +99,7 @@ writeFileSync(
     `| Median lift (best minus start) | ${pts(m.medianLift!)} (smallest ${pts(m.minLift!)}) |`,
     `| Greedy finds the best | ${(m.greedyOptimalShare! * 100).toFixed(0)}% of puzzles; median gap ${pts(m.medianGreedyGap!)} |`,
     `| A random camp | median ${pts(m.medianRandomGap!)} below the best |`,
+    `| What a person might try | your best stats ${pts(m.medianStrengthsGap!)} below the best; your worst ${pts(m.medianWeaknessesGap!)}; the card's stats ${pts(m.medianCardGap!)} (medians) |`,
     `| Camps tied for best | median ${m.medianOptimalCamps} |`,
     `| Stats a best camp uses | ${m.meanStatsPerCamp!.toFixed(1)} on average |`,
     `| Rejected by the per-puzzle check | ${Math.round(m.rejectedShare! * count)} of ${count} (start not below 50%, lift under 5 points, or best above 95%) |`,

@@ -158,14 +158,15 @@ await his sign-off in `docs/guard/GRAPH.md`)
 
 ## Step 5. Engine, solver, generator, quality gate (the training camp)
 
-**Status:** built 2026-10-05; meta broken, fighter starts as the underdog (median 22%, lift 52 points);
-**greedy gate still fails** (75%, gate 50%) because routes need one stat; awaiting Joshua's call. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
+**Status:** built 2026-10-05; meta gate and lift pass, every puzzle starts as the underdog (median 20%,
+none rejected); **greedy gate fails** (73%, gate 50%) while what a person would try lands ~30 points
+below the best; awaiting Joshua's call on the gate. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
 
 **Goal:** prove the puzzle is worth building UI for.
 
 **The puzzle** (Joshua's redesign, 2026-10-05; replaces "chain moves for IBJJF points"): your fighter
 is at X% to finish today's opponent. A scouting card shows the opponent's archetype, three best
-defences and two hints. You spend a short camp (6 sessions) on 14 per-position stats, submit once,
+defences and two hints. You spend a short camp (6 sessions) on 16 stats (13 positions, 3 submission families), submit once,
 and watch one replayed fight. The score is the exact chance the camp gives you; the best camp is
 solver-proven.
 
@@ -198,8 +199,8 @@ points. Report the numbers and propose changes instead of building UI on a shall
 1. Claude Code first writes `src/games/guard/ui-contract.ts`: the hooks and prop types the UI uses
    (`useGuardPuzzle`, `useCamp` with add/remove session, `useSubmit`, the replay and results view
    models).
-2. Lovable batch A, before the fight: the **scouting card** (archetype, their 2 to 3 best defences, the
-   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 14
+2. Lovable batch A, before the fight, under the tagline **"Help the underdog win."**: the **scouting card** (archetype, their 2 to 3 best defences, the
+   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 16
    scrollable, sessions left, your chance updating live as you place sessions), submit behind a
    confirm since it's **one submission**. Mobile-first at 400 px.
 3. Lovable batch B, after: the **fight replay** (one random fight from the best plan for your camp),

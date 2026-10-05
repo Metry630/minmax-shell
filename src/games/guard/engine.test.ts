@@ -27,6 +27,7 @@ const toy: Edge[] = [
     id: "ezekiel",
     from: "closed-guard-top",
     name: "Ezekiel",
+    family: "choke",
     minBelt: "white",
   },
 ];
@@ -78,6 +79,7 @@ describe("the chain bonus", () => {
       id: "armbar",
       from: "closed-guard-bottom",
       name: "Armbar",
+      family: "arm-lock",
       minBelt: "white",
     },
     {
@@ -85,6 +87,7 @@ describe("the chain bonus", () => {
       id: "triangle",
       from: "closed-guard-bottom",
       name: "Triangle",
+      family: "choke",
       minBelt: "white",
     },
   ];
@@ -106,6 +109,7 @@ describe("counters", () => {
       id: "ezekiel",
       from: "closed-guard-top",
       name: "Ezekiel",
+      family: "choke",
       minBelt: "white",
     },
     {

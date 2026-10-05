@@ -90,7 +90,10 @@ function positionBlock(id: PositionId): string {
     out.push("");
   }
   if (subs.length > 0) {
-    out.push(`Submissions: ${subs.map((edge) => `${edge.name} (${belt(edge)})`).join(", ")}.`, "");
+    out.push(
+      `Submissions: ${subs.map((edge) => `${edge.name} (${edge.family.replace("-", " ")}, ${belt(edge)})`).join(", ")}.`,
+      "",
+    );
   }
   if (theirs.length > 0) {
     out.push(
