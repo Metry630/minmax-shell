@@ -54,12 +54,9 @@ for (let k = 0; k < runs; k++) finishChance(board, baseOf(sample));
 const engineMs = (performance.now() - t1) / runs;
 
 const m = summarize(measured);
-const humanGap = Math.min(
-  m.medianStrengthsGap!,
-  m.medianWeaknessesGap!,
-  m.medianCardGap!,
-  m.medianPlanGap!,
-);
+// The game plan only shows after you submit (Joshua, 2026-10-05), so following it isn't a strategy a
+// player has before the camp; it stays in the table to watch how much the plan would give away.
+const humanGap = Math.min(m.medianStrengthsGap!, m.medianWeaknessesGap!, m.medianCardGap!);
 const shares = statShares(measured);
 const top = shares[0];
 const topName = top ? STAT_NAMES[STATS[top.stat]!] : "none";
@@ -105,7 +102,7 @@ writeFileSync(
     `| Median lift (best minus start) | ${pts(m.medianLift!)} (smallest ${pts(m.minLift!)}) |`,
     `| Greedy finds the best | ${(m.greedyOptimalShare! * 100).toFixed(0)}% of puzzles; median gap ${pts(m.medianGreedyGap!)} |`,
     `| A random camp | median ${pts(m.medianRandomGap!)} below the best |`,
-    `| What a person might try | your best stats ${pts(m.medianStrengthsGap!)} below the best; your worst ${pts(m.medianWeaknessesGap!)}; the card's stats ${pts(m.medianCardGap!)}; following the game plan ${pts(m.medianPlanGap!)} (medians) |`,
+    `| What a person might try | your best stats ${pts(m.medianStrengthsGap!)} below the best; your worst ${pts(m.medianWeaknessesGap!)}; the card's stats ${pts(m.medianCardGap!)} (medians). Following the game plan, which only shows after you submit: ${pts(m.medianPlanGap!)} |`,
     `| Camps tied for best | median ${m.medianOptimalCamps} |`,
     `| Stats a best camp uses | ${m.meanStatsPerCamp!.toFixed(1)} on average |`,
     `| Rejected by the per-puzzle check | ${Math.round(m.rejectedShare! * count)} of ${count} (start not below 50%, lift under 5 points, or best above 95%) |`,

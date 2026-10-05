@@ -96,16 +96,26 @@ every camp. Scoring one camp takes 0.08 ms, far inside the Worker's 10 ms.
 | Guard pulls against their posture | Against takedown defence, pulling guard on a judoka was 2% in 2 of 4 puzzles, the opposite of the mat. |
 | Underdog by a little off everything | Lowering the best stat could strip a guard player of their guard. |
 
-## Where it stands
+## What the player sees
+
+- **Before the camp:** the scouting card, your fighter's stats with one line each (`STAT_HELP`), and an
+  info page with the whole model in three lines: each move uses the stat of where you are; a
+  submission also uses its type, chokes or joint locks; pulling guard is your standing against their
+  posture. No chance and no plan.
+- **After you submit:** your chance against the best camp's, the replay, and **your game plan next to
+  the best camp's** (`gamePlan`: each step with the stats it uses and low / medium / high), so the
+  player learns which route their camp opened and which one the best camp took.
+
+Why the plan waits (Joshua's call): before the camp, following it lands at the best camp (0 points
+below, median), and even a plan with no words lands 8 below. Without it, the obvious strategies land
+25 to 31 below.
+
+## Where it stands (60 puzzles, `QUALITY.md`)
 
 | Gate | Now | Needs |
 |---|---|---|
 | No stat in more than half the best camps | guard 40%, passing 38%, standing 32%, top control 27% | ✅ at most 50% |
 | Median lift (best camp minus start) | 37 points | ✅ at least 10 |
-| What a person would try, without a plan | 25 to 31 points below the best | ✅ at least 15 |
-| Following the game plan preview | 0 to 8 points below the best | ❌ at least 15 |
+| What a person would try before submitting | 25 to 31 points below the best | ✅ at least 15 |
 
-**The game plan gives the answer away.** With 8 stats, seeing the route tells you which 2 or 3 stats
-matter. Training the weakest step and looking again lands 0 points below the best (median); even a
-plan shown once with no low/medium/high words lands 8 below. Greedy, which knows every exact value,
-finds the best camp on 97%. Joshua's call (START-HERE).
+Median start 21%, best camp 61%, none rejected, 0.02 s to solve, 0.08 ms to score a camp.

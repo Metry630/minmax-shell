@@ -20,7 +20,8 @@ import {
 // time. Each exchange you attempt one move from your position or hold: a move works with `chance`;
 // if it fails you stay put, a failed submission sets up the next different one (the chain bonus),
 // and the opponent may counter with one of their moves. The score is this chance; the replay's dice
-// are only drama. `gamePlan` is what the camp screen shows instead of the number.
+// are only drama. `gamePlan` is what the results show after you submit: your fighter's line next to
+// the best camp's.
 
 export type Fight = {
   /** The fighter's skills after the camp, one per stat in STATS order. */

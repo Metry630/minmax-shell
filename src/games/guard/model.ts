@@ -95,8 +95,8 @@ export const FAMILY_STAT: Record<Family, Stat> = {
 };
 
 /**
- * How the game plan shows a step's chance before you submit: a word, never a number, so the camp
- * can't be solved by watching a figure move (Joshua, 2026-10-05).
+ * How the game plan shows a step's chance: a word. The plan itself only appears after you submit
+ * (yours next to the best camp's): shown before, it gave the best camp away (Joshua, 2026-10-05).
  */
 export const BAND = { low: 0.25, high: 0.5 } as const;
 export type Band = "low" | "medium" | "high";

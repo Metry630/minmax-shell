@@ -477,3 +477,12 @@ round, so a guard player stays a guard player. 60 puzzles: median start 21%, bes
 points, none rejected; solve 0.02 s. With 8 stats greedy finds the best camp on 97%, which no longer
 gates. His fourth call, a game plan instead of a number, is measured and open: following the plan
 lands 0 to 8 points below the best, inside the 15-point gate, against 25 to 31 without it.
+
+## 2026-10-05: The game plan shows after you submit
+
+Joshua's call. Shown before the camp, the plan gives the best camp away: training its weakest step
+and looking again lands 0 points below the best (median of 60), and even a plan with no low / medium /
+high words lands 8 below, inside the 15-point gate. Without it, the obvious strategies land 25 to 31
+below. So before the camp the player gets the scouting card, a line per stat and an info page with the
+model in three lines; after submitting, their plan next to the best camp's, which is the lesson that
+makes the next card readable. "Following the plan" stays in QUALITY.md but out of the gate.

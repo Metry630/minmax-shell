@@ -158,9 +158,9 @@ await his sign-off in `docs/guard/GRAPH.md`)
 
 ## Step 5. Engine, solver, generator, quality gate (the training camp)
 
-**Status:** done 2026-10-05; all gates pass after Joshua replaced the greedy gate with a human one (the
-closest strategy a person would try lands 29 points below the best). A player's-eye review is open in
-START-HERE (dead stats, explaining routes, no live chance) before step 6. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
+**Status:** done 2026-10-05; all gates pass (the closest strategy a person would try lands 25 points
+below the best). After Joshua's player's-eye review: 8 stats, guard pulls against posture, a varied
+underdog, and the game plan shown only after you submit. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
 
 **Goal:** prove the puzzle is worth building UI for.
 
@@ -202,12 +202,14 @@ greedy knows every session's exact value and no player does.)
 1. Claude Code first writes `src/games/guard/ui-contract.ts`: the hooks and prop types the UI uses
    (`useGuardPuzzle`, `useCamp` with add/remove session, `useSubmit`, the replay and results view
    models).
-2. Lovable batch A, before the fight, under the tagline **"Help the underdog win."**: the **scouting card** (archetype, their 2 to 3 best defences, the
-   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 8, each with its line from `STAT_HELP`
-   scrollable, sessions left, your chance updating live as you place sessions), submit behind a
-   confirm since it's **one submission**. Mobile-first at 400 px.
+2. Lovable batch A, before the fight, under the tagline **"Help the underdog win."**, with **no chance
+   and no plan shown** (either gives the best camp away, `MODEL.md`): the **scouting card** (archetype,
+   their 2 to 3 best defences, the hints, today's belt) and the **camp screen** (your fighter's top
+   stats highlighted, all 8 scrollable, a tap on any stat for its `STAT_HELP` line, sessions left),
+   submit behind a confirm since it's **one submission**. Mobile-first at 400 px.
 3. Lovable batch B, after: the **fight replay** (one random fight from the best plan for your camp),
-   then results: your chance against the best camp, **"better than X% of players"**, the histogram
+   then results: your chance against the best camp, **your game plan next to the best camp's**
+   (`gamePlan`), **"better than X% of players"**, the histogram
    with "you" marked, and what the camp changed ("passing 30% to 52% against a guard player") so
    players learn the model day to day. **Share**: copy to clipboard, X/Twitter, and the phone's share
    sheet for Instagram, WhatsApp and the rest; the text is `armbar.day #12 31% → 58% (best 64%)`.
@@ -226,7 +228,9 @@ once, watch the replay, see the histogram and the best camp; a second submit is 
 **Goal:** what ad review and players both expect, plus a buffer of verified days.
 
 **Do:**
-1. Pages: How to play, Rules (from `RULES.md` and `MODEL.md`, with citations), About (pseudonymous is
+1. Pages: How to play (the model in three lines, from `MODEL.md`: each move uses the stat of where you
+   are; a submission also uses its type; pulling guard is your standing against their posture), Rules
+   (from `RULES.md` and `MODEL.md`, with citations), About (pseudonymous is
    fine), Privacy (PostHog, localStorage, no accounts), Contact, Terms, and an **Archive where past
    puzzles are playable** (yesterday's and older; they don't count toward the streak, and results show
    straight away since the kit releases a past puzzle's optimum and histogram to anyone). Write the first page by hand, then

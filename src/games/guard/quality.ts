@@ -40,7 +40,10 @@ export type PuzzleQuality = {
   strengths: number;
   weaknesses: number;
   card: number;
-  /** Following the game plan: each session into the weakest step's stat, re-planning each time. */
+  /**
+   * Following the game plan: each session into the weakest step's stat, re-planning each time. Not a
+   * gate: the plan only shows after you submit, because before it this lands at the best (0 points).
+   */
   plan: number;
 };
 

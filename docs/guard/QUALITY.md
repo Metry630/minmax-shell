@@ -4,7 +4,7 @@
 
 60 puzzles, 6 sessions each. The gate (docs/steps/guard.md, step 5):
 
-- ❌ the closest strategy a person would try lands 0.0 points below the best (median) (needs at least 15.0 points)
+- ✅ the closest strategy a person would try lands 24.6 points below the best (median) (needs at least 15.0 points)
 - ✅ median lift 36.7 points (needs at least 10.0 points)
 - ✅ Guard is in 40% of best camps, the most of any stat (needs at most 50%)
 
@@ -15,13 +15,13 @@
 | Median lift (best minus start) | 36.7 points (smallest 18.4 points) |
 | Greedy finds the best | 97% of puzzles; median gap 0.0 points |
 | A random camp | median 25.6 points below the best |
-| What a person might try | your best stats 24.6 points below the best; your worst 26.4 points; the card's stats 31.4 points; following the game plan 0.0 points (medians) |
+| What a person might try | your best stats 24.6 points below the best; your worst 26.4 points; the card's stats 31.4 points (medians). Following the game plan, which only shows after you submit: 0.0 points |
 | Camps tied for best | median 1 |
 | Stats a best camp uses | 1.5 on average |
 | Rejected by the per-puzzle check | 0 of 60 (start not below 50%, lift under 5 points, or best above 95%) |
 | Most-used stats in best camps | Guard 40%, Passing 38%, Standing 32%, Top control 27%, Back 8% |
 | Solver | 0.02 s per puzzle, 114 exact evaluations (of 1,716 camps) |
-| Engine, one camp | 0.08 ms (the Worker allows 10 ms of CPU per request) |
+| Engine, one camp | 0.09 ms (the Worker allows 10 ms of CPU per request) |
 
 | # | Opponent | Your fighter | Start | Exchanges | Start % | Best | Greedy | Random | Ties | A best camp |
 |---|---|---|---|---|---|---|---|---|---|---|
