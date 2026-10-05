@@ -273,3 +273,22 @@ histogram against the optimum from D1 (which days were too easy or too hard). Re
 tuning and game #2, with the numbers.
 
 **Done when:** the readout exists and `DECISIONS.md` records the pick for game #2.
+
+---
+
+## Later: graph depth (after the base game ships)
+
+**Status:** backlog (Joshua, 2026-10-05)
+
+The base graph is deliberately thin: 29 positions and 86 techniques against real BJJ's hundreds.
+Depth comes after launch, steered by the step 9 readout (which positions and moves players actually
+use). Candidates Joshua named: half guard split into knee shield, flat and deep half; more
+submissions, transitions and sweeps per position.
+
+- Each addition is data in `graph.ts`; `check-graph` re-derives its scoring, `graph-doc` regenerates
+  GRAPH.md, and Joshua signs off the new edges.
+- **A graph change re-solves the unplayed schedule.** New moves can raise the optimum of puzzles
+  already in D1, so rerun `scripts/schedule.ts` for days not yet played. Played days keep their
+  optimum and histogram.
+- Watch two costs as it grows: solve time per puzzle (technique-once makes the solver a path search)
+  and how many moves a phone screen can show from one position.
