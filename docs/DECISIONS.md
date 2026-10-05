@@ -366,3 +366,15 @@ are `startOnly`, and the check fails if a start-only one becomes reachable, so t
 GRAPH.md is generated from the data and a test fails when it's stale, so the sign-off copy is the
 data. The checker was checked too: eight planted mistakes (wrong event, a number on an edge, a dead
 end, a wrong belt, a scoring opponent move...) each produce exactly the expected problem.
+
+## 2026-10-05: Four graph calls checked against sources
+
+Joshua wasn't sure of four calls, so they were looked up (reddit stays blocked to our tools). The rule
+book settled most of them: its 4.6.2 photos (p.23) show an arm drag from seated guard ending behind an
+opponent on all fours, scored as a sweep, so sweeps to the back stay sweep + back control (6); 4.2
+plus 5.6.2 (passing into a turtled opponent's back is an advantage) keep leg drag to the back at back
+control only and turtle to side control at 0. Exponential Jiu-Jitsu's passing guide confirms pass into
+knee on belly or mount (3 + 2, 3 + 4). The butterfly sweep's classic finish is mount, so it got a mount
+edge beside the side control one (86 techniques). Two calls rest on the book alone with no referee
+source: the berimbolo (scored like 4.6.2) and turtle to side control. Technical and sideways mount
+became aliases of mount, since the p.21 photos score them as mount.
