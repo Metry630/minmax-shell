@@ -51,14 +51,23 @@ export function generate(rng: Rng): GuardPuzzle {
   const start = rng.next() < 0.4 ? "standing" : rng.pick(OTHER_STARTS);
   const belt = rng.pick(BELTS);
 
-  // Always the underdog (Joshua, 2026-10-05): while the fighter would start at 50% or better, take a
-  // point off their best stat. No draws, so the puzzle stays a pure function of the seed.
+  // Always the underdog (Joshua, 2026-10-05): while the fighter would start at 50% or better, every
+  // stat above 1 loses a point with a 60% chance, so the style keeps its shape with some variation.
+  // If no stat drops in a round, the best one does. Seeded draws, so the puzzle stays deterministic.
   const board = compileBoard(belt);
   const chanceNow = () => finishChance(board, { skills, defence, exchanges, start });
-  while (chanceNow() >= 0.5) {
-    const best = Math.max(...skills);
-    if (best <= 1) break;
-    skills[skills.indexOf(best)] = best - 1;
+  while (chanceNow() >= 0.5 && Math.max(...skills) > 1) {
+    let dropped = false;
+    skills.forEach((skill, i) => {
+      if (skill > 1 && rng.next() < 0.6) {
+        skills[i] = skill - 1;
+        dropped = true;
+      }
+    });
+    if (!dropped) {
+      const best = Math.max(...skills);
+      skills[skills.indexOf(best)] = best - 1;
+    }
   }
 
   // The card shows their three best defences (ties to the earlier stat) and both hints.

@@ -166,7 +166,7 @@ START-HERE (dead stats, explaining routes, no live chance) before step 6. Model 
 
 **The puzzle** (Joshua's redesign, 2026-10-05; replaces "chain moves for IBJJF points"): your fighter
 is at X% to finish today's opponent. A scouting card shows the opponent's archetype, three best
-defences and two hints. You spend a short camp (6 sessions) on 16 stats (13 positions, 3 submission families), submit once,
+defences and two hints. You spend a short camp (6 sessions) on 8 stats, submit once,
 and watch one replayed fight. The score is the exact chance the camp gives you; the best camp is
 solver-proven.
 
@@ -203,7 +203,7 @@ greedy knows every session's exact value and no player does.)
    (`useGuardPuzzle`, `useCamp` with add/remove session, `useSubmit`, the replay and results view
    models).
 2. Lovable batch A, before the fight, under the tagline **"Help the underdog win."**: the **scouting card** (archetype, their 2 to 3 best defences, the
-   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 16
+   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 8, each with its line from `STAT_HELP`
    scrollable, sessions left, your chance updating live as you place sessions), submit behind a
    confirm since it's **one submission**. Mobile-first at 400 px.
 3. Lovable batch B, after: the **fight replay** (one random fight from the best plan for your camp),

@@ -1,9 +1,11 @@
 import type { Stat } from "./model";
 
 // Today's opponent and your fighter come from these. A defence is how well the opponent handles your
-// moves from that position (their takedown defence, their guard retention, their escapes from under
-// your mount...). Unlisted stats sit at DEFAULT. The generator adds ±1 to every number, so no two days
-// are the same, and the scouting card shows the opponent's three best defences plus the hints.
+// moves in that area: their takedown defence (standing), their posture in your guard (guard), their
+// guard retention (passing), their escapes from your pins (top) and from your back (back), their
+// pressure when you're escaping (escapes), their choke and joint-lock defence. Unlisted stats sit at
+// DEFAULT. The generator adds ±1 to every number, so no two days are the same, and the scouting card
+// shows the opponent's three best defences plus the hints, each of which is true of these numbers.
 // Wording and numbers are Joshua's to change (docs/guard/MODEL.md).
 
 export const DEFAULT = { defence: 5, skill: 4 };
@@ -12,7 +14,7 @@ export type Archetype = {
   id: string;
   title: string;
   defence: Partial<Record<Stat, number>>;
-  /** True statements the scouting card may show. */
+  /** True statements the scouting card shows. */
   hints: readonly string[];
 };
 
@@ -20,74 +22,31 @@ export const ARCHETYPES: readonly Archetype[] = [
   {
     id: "wrestler",
     title: "Ex-D1 wrestler",
-    defence: {
-      chokes: 3,
-      takedowns: 9,
-      escapes: 8,
-      "side-control": 7,
-      mount: 6,
-      back: 3,
-      "pass-closed": 3,
-      "pass-open": 3,
-    },
+    defence: { standing: 9, escapes: 8, top: 7, back: 3, passing: 3, chokes: 3 },
     hints: ["Wrestled D1. Nobody takes them down.", "Careless with their neck."],
   },
   {
     id: "judoka",
     title: "Judo black belt",
-    defence: {
-      "leg-locks": 2,
-      "arm-locks": 7,
-      takedowns: 10,
-      "closed-guard": 7,
-      escapes: 6,
-      back: 3,
-      "pass-half": 4,
-      "pass-butterfly": 4,
-    },
-    hints: ["Throws anyone who shoots.", "Never trained leg locks."],
+    defence: { standing: 10, guard: 7, "joint-locks": 7, escapes: 6, back: 3, passing: 4 },
+    hints: ["Throws anyone who shoots.", "Turtles when in trouble."],
   },
   {
     id: "leg-locker",
     title: "Leg-lock specialist",
-    defence: {
-      "leg-locks": 9,
-      "arm-locks": 4,
-      "pass-open": 8,
-      "pass-butterfly": 7,
-      "open-guard": 7,
-      takedowns: 3,
-      mount: 4,
-    },
+    defence: { passing: 8, "joint-locks": 8, guard: 6, standing: 3, top: 4 },
     hints: ["Lives in single-leg X.", "Easy to take down."],
   },
   {
     id: "guard-player",
     title: "Guard player",
-    defence: {
-      chokes: 3,
-      "arm-locks": 7,
-      "pass-closed": 8,
-      "pass-open": 8,
-      "pass-half": 7,
-      "pass-butterfly": 7,
-      takedowns: 3,
-      escapes: 4,
-    },
+    defence: { passing: 9, "joint-locks": 7, standing: 3, escapes: 4, chokes: 3 },
     hints: ["Guard retention like a wall.", "Taps to chokes."],
   },
   {
     id: "scrambler",
     title: "Scrambler",
-    defence: {
-      "arm-locks": 3,
-      chokes: 7,
-      "side-control": 8,
-      "knee-on-belly": 8,
-      mount: 7,
-      back: 7,
-      "pass-half": 4,
-    },
+    defence: { top: 8, back: 7, chokes: 7, "joint-locks": 3, passing: 4 },
     hints: ["Escapes everything.", "Leaves their arms out."],
   },
 ];
@@ -99,45 +58,10 @@ export const STYLES: readonly Style[] = [
   {
     id: "guard-player",
     title: "Guard player",
-    skills: {
-      "arm-locks": 5,
-      chokes: 5,
-      "closed-guard": 6,
-      "open-guard": 6,
-      "half-guard": 6,
-      butterfly: 5,
-      takedowns: 2,
-    },
+    skills: { guard: 7, chokes: 5, "joint-locks": 5, passing: 3, standing: 3 },
   },
-  {
-    id: "passer",
-    title: "Pressure passer",
-    skills: {
-      chokes: 5,
-      "pass-half": 6,
-      "pass-closed": 6,
-      "pass-open": 5,
-      "side-control": 6,
-      mount: 5,
-      "closed-guard": 2,
-    },
-  },
-  {
-    id: "wrestler",
-    title: "Wrestler",
-    skills: {
-      takedowns: 7,
-      "side-control": 6,
-      escapes: 6,
-      "knee-on-belly": 5,
-      "open-guard": 2,
-      butterfly: 2,
-    },
-  },
-  {
-    id: "back-taker",
-    title: "Back taker",
-    skills: { back: 7, mount: 5, chokes: 6, butterfly: 5, "half-guard": 5, takedowns: 3 },
-  },
+  { id: "passer", title: "Pressure passer", skills: { passing: 7, top: 6, chokes: 5, guard: 2 } },
+  { id: "wrestler", title: "Wrestler", skills: { standing: 7, top: 6, escapes: 6, guard: 2 } },
+  { id: "back-taker", title: "Back taker", skills: { back: 7, chokes: 6, top: 5, standing: 3 } },
   { id: "all-rounder", title: "All-rounder", skills: {} },
 ];

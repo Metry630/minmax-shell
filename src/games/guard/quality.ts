@@ -1,7 +1,7 @@
 import type { QualityReport, Scheduled } from "@/kit/game";
 import { sfc32 } from "@/kit/seed";
 
-import { applyCamp, compileBoard, finishChance, toScore } from "./engine";
+import { applyCamp, compileBoard, finishChance, gamePlan, toScore, type Board } from "./engine";
 import type { GuardPuzzle } from "./generator";
 import type { GuardSolution } from "./module";
 import { greedyCamp, type Base } from "./solver";
@@ -40,7 +40,27 @@ export type PuzzleQuality = {
   strengths: number;
   weaknesses: number;
   card: number;
+  /** Following the game plan: each session into the weakest step's stat, re-planning each time. */
+  plan: number;
 };
+
+const BAND_RANK = { low: 0, medium: 1, high: 2 } as const;
+
+/** What the camp screen invites: train the weakest step on the plan you can see, then look again. */
+function planFollowerCamp(board: Board, base: Base, sessions: number): number[] {
+  const camp = STATS.map(() => 0);
+  const skills = [...base.skills];
+  for (let s = 0; s < sessions; s++) {
+    const steps = gamePlan(board, { ...base, skills });
+    const weakest = [...steps].sort((a, b) => BAND_RANK[a.band] - BAND_RANK[b.band])[0];
+    const options = (weakest?.stats ?? []).map((stat) => STATS.indexOf(stat));
+    const pick = options.find((i) => (skills[i] ?? 0) < 10) ?? skills.findIndex((k) => k < 10);
+    if (pick === -1) break;
+    skills[pick] = (skills[pick] ?? 0) + 1;
+    camp[pick] = (camp[pick] ?? 0) + 1;
+  }
+  return camp;
+}
 
 /** One session per stat in this order, skipping capped stats, until the sessions run out. */
 function campFrom(
@@ -111,6 +131,7 @@ export function measure({ puzzle, optimum }: Scheduled<GuardPuzzle, GuardSolutio
     strengths: scoreCamp(campFrom(byskill.slice(0, puzzle.sessions), base.skills, puzzle.sessions)),
     weaknesses: scoreCamp(campFrom(byskill.slice(-puzzle.sessions), base.skills, puzzle.sessions)),
     card: scoreCamp(campFrom(cardStats, base.skills, puzzle.sessions)),
+    plan: scoreCamp(planFollowerCamp(board, base, puzzle.sessions)),
   };
 }
 
@@ -154,6 +175,7 @@ export function summarize(measured: readonly PuzzleQuality[]): Record<string, nu
     medianStrengthsGap: median(measured.map((q) => q.optimum - q.strengths)),
     medianWeaknessesGap: median(measured.map((q) => q.optimum - q.weaknesses)),
     medianCardGap: median(measured.map((q) => q.optimum - q.card)),
+    medianPlanGap: median(measured.map((q) => q.optimum - q.plan)),
   };
 }
 

@@ -8,9 +8,9 @@ number here is a feel call. Tagline for the camp screen (Joshua): **"Help the un
 ## The day's puzzle
 
 - **Your fighter, always the underdog:** a style (guard player, pressure passer, wrestler, back
-  taker, all-rounder) and a skill from 1 to 8 in each of 16 stats, set 2 below the style's. If the
-  fighter would still start at 50% or better, the generator takes a point off their best stat until
-  they don't, so every puzzle starts below 50% (median 20%).
+  taker, all-rounder) and a skill from 1 to 8 in each of 8 stats, set 2 below the style's. If the
+  fighter would still start at 50% or better, every stat above 1 loses a point with a 60% chance, round
+  after round, until they don't: the style keeps its shape, with some variation (median start 21%).
 - **Today's opponent:** an archetype (ex-D1 wrestler, judo black belt, leg-lock specialist, guard
   player, scrambler) and a defence from 1 to 9 in each stat. Both get ±1 noise per stat, so no two
   days match.
@@ -21,18 +21,24 @@ number here is a feel call. Tagline for the camp screen (Joshua): **"Help the un
   your guard or under side control. Today's belt (white, blue or brown) decides which submissions are
   legal (GRAPH.md, Belts).
 
-## Stats (16)
+## Stats (8)
 
-- **Positions (13).** A move uses the stat of the position it starts from: standing (takedowns and
-  guard pulls), closed guard, open guard (with De la Riva, X and single-leg X), half guard, butterfly,
-  passing closed / open / half / butterfly guard (on top in each), side control (with north-south and
-  turtle), knee on belly, mount, back (with back mount), escapes (every bottom pin).
-- **Submission families (3):** chokes, arm locks, leg locks. A submission uses the average of its
-  position's stat and its family's (`FAMILY` in `graph.ts` lists each one). A single finishing stat
-  helped every submission, so every camp bought it; a family only helps its own.
+| Stat | What it covers |
+|---|---|
+| Standing | Takedowns and pulling guard. |
+| Guard | Sweeps and attacks from your guard: closed, open, half, butterfly, De la Riva, X, single-leg X. |
+| Passing | Getting past their guard, any guard. |
+| Top control | Side control, north-south, knee on belly and mount: moving between them and attacking. |
+| Back | Taking the back, holding it, attacking from it. |
+| Escapes | Getting out from under side control, mount, the back or a turtle. |
+| Chokes | Every choke, from wherever you attack. |
+| Joint locks | Every arm lock and leg lock, from wherever you attack. |
 
-The opponent's defence in a stat is how well they handle your moves from there: their takedown
-defence, their guard retention, their escapes from under your mount, their choke defence.
+A move uses the stat of the position it starts from; a submission averages that with its family's
+(chokes or joint locks; `FAMILY` in `graph.ts` lists each one). Pulling guard is the one crossover:
+your standing against their defence of the guard you pull into, their posture. The opponent's defence
+in a stat is how well they handle your moves there. These lines are `STAT_HELP` in `model.ts`, ready
+for the camp screen and the info page.
 
 ## A move's chance
 
@@ -41,7 +47,7 @@ defence, their guard retention, their escapes from under your mount, their choke
 | Move | Base (even skill) |
 |---|---|
 | A plain transition: opening the guard, stepping down | 85% |
-| Pulling guard (judged by standing) | 40% |
+| Pulling guard (your standing against their posture) | 40% |
 | A move that scores: takedown, sweep, pass, a better position | 40% |
 | A submission from the back | 30% |
 | from mount | 25% |
@@ -70,10 +76,10 @@ points" or "hold a dominant position" objective.
 
 ## The solver
 
-Trying every camp is 74,613 evaluations. The solver prunes instead: since more skill never hurts, "these
+Trying every camp is 1,716 evaluations with 8 stats. The solver prunes anyway: since more skill never hurts, "these
 sessions so far plus every remaining session in every open stat" bounds a whole branch, and a branch
-that can't beat the best camp found is skipped. 0.06 s a puzzle, and a test checks it against trying
-every camp. Scoring one camp takes 0.07 ms, far inside the Worker's 10 ms.
+that can't beat the best camp found is skipped. 0.02 s a puzzle, and a test checks it against trying
+every camp. Scoring one camp takes 0.08 ms, far inside the Worker's 10 ms.
 
 ## Why each rule is there (step 5, measured on 60 puzzles)
 
@@ -86,14 +92,20 @@ every camp. Scoring one camp takes 0.07 ms, far inside the Worker's 10 ms.
 | No standing guillotine; 4 in 10 standing starts | A one-move finish on takedowns alone took takedowns to 57% of best camps. It counters a shot the opponent never takes. |
 | Pulling guard judged by standing, at 40% | Judged by the guard you pull into, one stat carried the whole guard route (closed guard in 57% of best camps). |
 | The underdog | The fighter often started near 50% and 13 of 60 best camps passed 95%. Now median start 20%, best 60%, and no puzzle is rejected. |
+| 8 stats, not 16 | 10 of 16 were almost never worth a session (passing butterfly never mattered in 60 puzzles): traps on a phone. |
+| Guard pulls against their posture | Against takedown defence, pulling guard on a judoka was 2% in 2 of 4 puzzles, the opposite of the mat. |
+| Underdog by a little off everything | Lowering the best stat could strip a guard player of their guard. |
 
 ## Where it stands
 
 | Gate | Now | Needs |
 |---|---|---|
-| No stat in more than half the best camps | closed guard 40%, then standing 25%, side control 20% | ✅ at most 50% |
-| Median lift (best camp minus start) | 35 points | ✅ at least 10 |
-| What a person would try (best stats, worst stats, the card's) | 29 to 34 points below the best | ✅ at least 15 |
+| No stat in more than half the best camps | guard 40%, passing 38%, standing 32%, top control 27% | ✅ at most 50% |
+| Median lift (best camp minus start) | 37 points | ✅ at least 10 |
+| What a person would try, without a plan | 25 to 31 points below the best | ✅ at least 15 |
+| Following the game plan preview | 0 to 8 points below the best | ❌ at least 15 |
 
-Greedy (73% optimal) was the first gate; Joshua replaced it, since greedy knows every session's exact
-value, hidden defences included, and no player does. It stays in QUALITY.md to watch.
+**The game plan gives the answer away.** With 8 stats, seeing the route tells you which 2 or 3 stats
+matter. Training the weakest step and looking again lands 0 points below the best (median); even a
+plan shown once with no low/medium/high words lands 8 below. Greedy, which knows every exact value,
+finds the best camp on 97%. Joshua's call (START-HERE).

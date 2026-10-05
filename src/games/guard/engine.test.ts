@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { DEV_SALT, rngFor } from "@/kit/seed";
 
-import { applyCamp, compileBoard, finishChance, toScore, type Fight } from "./engine";
+import { applyCamp, compileBoard, finishChance, gamePlan, toScore, type Fight } from "./engine";
 import type { Edge, PositionId } from "./graph";
 import { BASE, CHANCE, STATS, STAT_INDEX, chance, escapeChance } from "./model";
 import { guard } from "./module";
@@ -69,6 +69,33 @@ describe("finishChance on a hand-worked board", () => {
 
   it("a submission from where you start finishes with its chance", () => {
     expect(finishChance(board, toyFight(1, "closed-guard-top"))).toBeCloseTo(sub);
+  });
+});
+
+describe("gamePlan", () => {
+  const board = compileBoard("white", toy);
+  it("is the line the fighter takes if every step works, with words instead of numbers", () => {
+    expect(gamePlan(board, toyFight(2))).toEqual([
+      {
+        id: "shot",
+        label: "Double leg",
+        from: "standing",
+        submission: false,
+        band: "medium",
+        stats: ["standing"],
+      },
+      {
+        id: "ezekiel",
+        label: "Ezekiel",
+        from: "closed-guard-top",
+        submission: true,
+        band: "low",
+        stats: ["passing", "chokes"],
+      },
+    ]);
+  });
+  it("is empty when there's no time to finish", () => {
+    expect(gamePlan(board, toyFight(1))).toEqual([]);
   });
 });
 
@@ -178,10 +205,10 @@ describe("applyCamp", () => {
 
   it("adds sessions to skills", () => {
     const sessions = flat(0);
-    sessions[STAT_INDEX.mount] = 2;
+    sessions[STAT_INDEX.top] = 2;
     sessions[STAT_INDEX.back] = 4;
     const skills = applyCamp(flat(4), sessions, 6);
-    expect(skills?.[STAT_INDEX.mount]).toBe(6);
+    expect(skills?.[STAT_INDEX.top]).toBe(6);
     expect(skills?.[STAT_INDEX.back]).toBe(8);
   });
 

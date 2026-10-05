@@ -16,28 +16,30 @@ is in `docs/DESIGN.md` (arcade fighting game).
 Steps 3 to 5 are done: the IBJJF scoring model (`rules.ts`, `docs/guard/RULES.md`, signed off), the
 position graph (`graph.ts`, `docs/guard/GRAPH.md`; base signed off, the opponent's counters await
 sign-off), and the **training camp** ("Help the underdog win."): your fighter always starts below 50%
-against today's opponent, you spend 6 sessions on 16 stats, and the score is the exact chance the camp
-gives (`docs/guard/MODEL.md`, `QUALITY.md`; all gates pass). The rule book PDF and its text live in
-`.sources/ibjjf/` on Joshua's machine only.
+against today's opponent, you spend 6 sessions on 8 stats, and the score is the exact chance the camp
+gives (`docs/guard/MODEL.md`, `QUALITY.md`). One call is open before step 6: how much the camp screen
+shows. The rule book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **6** (after the player's-eye review below) |
+| Guard to Sub | `docs/steps/guard.md` | **6** (after the camp-screen call below) |
 
-### Open before step 6: the player's-eye review (2026-10-05)
+### Open before step 6: how much the camp screen shows (2026-10-05)
 
-Step 5's gates pass (Joshua replaced the greedy gate with a human one). Looking at it as a player:
+Joshua's review calls are in: 8 stats (each now matters; the most-used is in 40% of best camps), guard
+pulls against their posture, the underdog made by a little off everything with variation, and a
+game plan instead of a number. Measured, the plan gives the answer away:
 
-1. **10 of 16 stats are traps.** On 60 puzzles, passing butterfly never matters (0 of 60), knee on belly
-   2, leg locks 8; mount, open guard, butterfly, escapes, chokes and arm locks matter but are almost
-   never in a best camp (0 to 2 of 60). Six stats carry every best camp.
-2. **Pulling guard on a judoka is near-impossible** (2% in 2 of 4 such puzzles), the opposite of the
-   mat, because it uses your standing against their takedown defence.
-3. **Nothing shows how stats connect to the fight.** A player can't know a triangle uses closed guard
-   and chokes, or which route the fighter will take.
-4. **A live chance on the camp screen would solve the puzzle for them** by trial and error (step 6's
-   draft had one).
-5. **The underdog fix strips the fighter's best stat**, so a "guard player" can lose their guard.
+| What the player sees before submitting | Doing the obvious with it lands below the best |
+|---|---|
+| Live plan with low / medium / high per step | 0 to 4 points |
+| Live plan, no words | 8 points |
+| Today's plan once, no words | 8 points |
+| No plan: card, stat help, info page | 25 to 31 points |
+
+The gate is 15. Options: **show the plan after you submit** (yours, then the best camp's: the lesson
+that makes tomorrow's card readable), keeping the info page and stat help before; or keep a plan before
+and accept a shallow puzzle, with scores bunched near the best.
 
 ## Gates
 

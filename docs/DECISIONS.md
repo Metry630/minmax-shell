@@ -465,3 +465,15 @@ strategies a person would try (a session in each of your best stats, your worst,
 least 15 points below the best; the closest is 29 points below (median of 60). Greedy stays in
 QUALITY.md to watch. With that, step 5's gates all pass. A follow-up check from the player's side
 found 10 of the 16 stats almost never in a best camp, and is open in START-HERE.
+
+## 2026-10-05: Eight stats, guard pulls against posture, a varied underdog
+
+Joshua's calls after the player's-eye check. 16 stats became 8 (standing, guard, passing, top
+control, back, escapes, chokes, joint locks): 10 of the 16 were almost never worth a session, and now
+the most-used stat is in 40% of best camps and four sit between 27% and 40%. Pulling guard is your
+standing against their posture in that guard, not their takedown defence, which had a judoka stopping
+guard pulls at 2%. The underdog is made by taking a point off each stat with a 60% chance, round after
+round, so a guard player stays a guard player. 60 puzzles: median start 21%, best camp 61%, lift 37
+points, none rejected; solve 0.02 s. With 8 stats greedy finds the best camp on 97%, which no longer
+gates. His fourth call, a game plan instead of a number, is measured and open: following the plan
+lands 0 to 8 points below the best, inside the 15-point gate, against 25 to 31 without it.
