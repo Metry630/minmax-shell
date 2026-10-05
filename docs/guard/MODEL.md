@@ -8,13 +8,13 @@ number here is a feel call.
 ## The day's puzzle
 
 - **Your fighter:** a style (guard player, pressure passer, wrestler, back taker, all-rounder) and a
-  skill from 1 to 8 in each of 15 stats.
+  skill from 1 to 8 in each of 14 stats.
 - **Today's opponent:** an archetype (ex-D1 wrestler, judo black belt, leg-lock specialist, guard
   player, scrambler) and a defence from 1 to 9 in each stat. Both get ±1 noise per stat, so no two
   days match.
 - **The scouting card:** the archetype, its three best defences and two hints. The rest is hidden.
 - **The camp:** 6 sessions, each +1 to one stat, no stat above 10.
-- **The fight:** 4 to 6 exchanges, starting standing on 7 days in 10 and otherwise in their guard,
+- **The fight:** 4 to 6 exchanges, starting standing on 4 days in 10 and otherwise in their guard,
   your guard or under side control. Today's belt (white, blue or brown) decides which submissions are
   legal (GRAPH.md, Belts).
 
@@ -23,7 +23,10 @@ number here is a feel call.
 A move uses the stat of the position it starts from: takedowns (standing), closed guard, open guard
 (with De la Riva, X and single-leg X), half guard, butterfly, passing closed / open / half / butterfly
 guard (on top in each), side control (with north-south and turtle), knee on belly, mount, back (with
-back mount), escapes (every bottom pin). A submission uses the average of that stat and finishing.
+back mount), escapes (every bottom pin). A submission uses its position's stat too: there's no
+separate finishing stat, because one would help every submission and every camp would buy it. Pulling
+guard is the exception to "the position you start from": it uses the guard you pull into, so a judoka
+with good posture makes pulling closed guard expensive.
 The opponent's defence in a stat is how well they handle your moves from there: their takedown
 defence, their guard retention, their escapes from under your mount.
 
@@ -33,7 +36,8 @@ defence, their guard retention, their escapes from under your mount.
 
 | Move | Base (even skill) |
 |---|---|
-| A plain transition: pulling guard, opening the guard, stepping down | 85% |
+| A plain transition: opening the guard, stepping down | 85% |
+| Pulling guard | 40% |
 | A move that scores: takedown, sweep, pass, a better position | 40% |
 | A submission from the back | 30% |
 | from mount | 25% |
@@ -102,4 +106,13 @@ best stat lands only 1.7 points below the best camp (median).
 average. The meta is "pull guard, attack from closed guard, train finishing", which players would
 learn within a week. Two causes in this model: finishing helps every submission, so it's good
 everywhere; and pulling guard is an 85% transition, so the shortest route beats working to mount or
-the back within 4 to 6 exchanges. Joshua decides what to do; the options are in START-HERE.
+the back within 4 to 6 exchanges.
+
+**Breaking the meta (Joshua's call, round 2).** Finishing dropped and pulling guard made a 40%
+exchange: greedy 68%, but takedowns jumped to 57% of best camps, through the standing guillotine
+(a one-move finish on the takedowns stat against anyone with weak takedown defence). It counters
+their shot and the opponent never shoots, so it went, and starts moved from 7 in 10 standing to 4 in
+10. Now **no stat is in more than 40% of best camps** (closed guard 40%, takedowns 33%, escapes 27%,
+half guard 17%), passing that new gate. Still open: greedy finds the best camp on 70% (gate 50%), and
+puzzles got easy (median best 89.5%; 13 of 60 above 95%, which the per-puzzle check rejects). Fewer
+exchanges or stronger counters would fix the second; START-HERE has the options.

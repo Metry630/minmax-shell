@@ -52,10 +52,9 @@ export const ARCHETYPES: readonly Archetype[] = [
       "pass-butterfly": 7,
       "open-guard": 7,
       takedowns: 3,
-      finishing: 7,
       mount: 4,
     },
-    hints: ["Lives in single-leg X.", "Knows every submission escape."],
+    hints: ["Lives in single-leg X.", "Easy to take down."],
   },
   {
     id: "guard-player",
@@ -78,10 +77,9 @@ export const ARCHETYPES: readonly Archetype[] = [
       "knee-on-belly": 8,
       mount: 7,
       back: 7,
-      finishing: 4,
       "pass-half": 4,
     },
-    hints: ["Escapes everything.", "Taps once you're past the scramble."],
+    hints: ["Escapes everything.", "Weakest in half guard."],
   },
 ];
 
@@ -98,7 +96,6 @@ export const STYLES: readonly Style[] = [
       "half-guard": 6,
       butterfly: 5,
       takedowns: 2,
-      finishing: 5,
     },
   },
   {
@@ -128,7 +125,7 @@ export const STYLES: readonly Style[] = [
   {
     id: "back-taker",
     title: "Back taker",
-    skills: { back: 7, finishing: 6, butterfly: 5, "half-guard": 5, takedowns: 3 },
+    skills: { back: 7, mount: 5, butterfly: 5, "half-guard": 5, takedowns: 3 },
   },
   { id: "all-rounder", title: "All-rounder", skills: {} },
 ];

@@ -10,7 +10,6 @@ import {
   chance,
   escapeChance,
   submissionBase,
-  submissionSkill,
 } from "./model";
 
 // The exact chance a fighter finishes the opponent within N exchanges, playing the best move every
@@ -51,8 +50,11 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
     const from = at(edge.from);
     const stat = STAT_INDEX[STAT_OF[edge.from]];
     if (edge.kind === "technique") {
-      const base = edge.events.length > 0 ? BASE.scoring : BASE.transition;
-      moves[from]?.push({ to: at(edge.to), stat, submission: false, base });
+      // Pulling guard is judged by the guard you pull into against their defence of it.
+      const pull = edge.from === "standing" && POSITIONS[edge.to].perspective === "bottom";
+      const base = pull ? BASE.guardPull : edge.events.length > 0 ? BASE.scoring : BASE.transition;
+      const moveStat = pull ? STAT_INDEX[STAT_OF[edge.to]] : stat;
+      moves[from]?.push({ to: at(edge.to), stat: moveStat, submission: false, base });
     } else if (edge.kind === "submission" && beltAllows(belt, edge.minBelt)) {
       const { kind, perspective } = POSITIONS[edge.from];
       const base = submissionBase(kind, perspective === "bottom");
@@ -67,8 +69,6 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
     maxMoves: Math.max(...moves.map((list) => list.length)),
   };
 }
-
-const FINISHING = STAT_INDEX.finishing;
 
 export function finishChance(board: Board, fight: Fight): number {
   const { moves, escapes, stat, maxMoves } = board;
@@ -103,13 +103,7 @@ export function finishChance(board: Board, fight: Fight): number {
     (moves[p] ?? []).forEach((move, m) => {
       // Only submissions chain (armbar to triangle to omoplata): a failed one sets up the next.
       const bonus = move.submission && last !== -1 && last !== m ? chain : 0;
-      const skill = move.submission
-        ? submissionSkill(skills[move.stat] ?? 0, skills[FINISHING] ?? 0)
-        : (skills[move.stat] ?? 0);
-      const guard = move.submission
-        ? submissionSkill(defence[move.stat] ?? 0, defence[FINISHING] ?? 0)
-        : (defence[move.stat] ?? 0);
-      const works = chance(move.base, skill + bonus, guard);
+      const works = chance(move.base, (skills[move.stat] ?? 0) + bonus, defence[move.stat] ?? 0);
       const success = move.submission ? 1 : value(move.to, n - 1, -1, 0);
       // A failed submission grows the chain (a different one) or starts it (the same one again);
       // any other failed move ends it.

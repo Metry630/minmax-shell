@@ -146,7 +146,7 @@ describe("belts", () => {
 
 describe("more skill never lowers the chance", () => {
   // The solver's pruning depends on this, so it's checked across random fights and every stat.
-  it("holds on 1,500 fights × 15 stats", () => {
+  it("holds on 1,500 fights × every stat", () => {
     let seed = 7;
     const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
     const int = (lo: number, hi: number) => lo + Math.floor(rnd() * (hi - lo + 1));
@@ -169,23 +169,35 @@ describe("more skill never lowers the chance", () => {
 });
 
 describe("applyCamp", () => {
-  const base = flat(4);
+  /** A camp with these sessions in the first stats and none elsewhere, always the right length. */
+  const camp = (...first: number[]) => STATS.map((_, i) => first[i] ?? 0);
+
   it("adds sessions to skills", () => {
-    const camp = flat(0);
-    camp[STAT_INDEX.mount] = 2;
-    camp[STAT_INDEX.finishing] = 4;
-    expect(applyCamp(base, camp, 6)?.[STAT_INDEX.mount]).toBe(6);
+    const sessions = flat(0);
+    sessions[STAT_INDEX.mount] = 2;
+    sessions[STAT_INDEX.back] = 4;
+    const skills = applyCamp(flat(4), sessions, 6);
+    expect(skills?.[STAT_INDEX.mount]).toBe(6);
+    expect(skills?.[STAT_INDEX.back]).toBe(8);
   });
+
+  it("accepts a legal camp, so the refusals below are for their stated reason", () => {
+    expect(applyCamp(flat(4), camp(6), 6)).toBeDefined();
+  });
+
   it.each([
-    ["too few sessions", [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-    ["a fraction", [5.5, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-    ["a negative", [7, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-    ["past the cap of 10", [6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-    ["the wrong length", [6]],
-  ])("refuses %s", (_name, camp) => {
+    ["too few sessions", camp(1)],
+    ["a fraction", camp(5.5, 0.5)],
+    ["a negative", camp(7, -1)],
+    ["the wrong length", [...camp(6), 0]],
+  ])("refuses %s", (_name, sessions) => {
+    expect(applyCamp(flat(4), sessions, 6)).toBeUndefined();
+  });
+
+  it("refuses a stat past the cap of 10", () => {
     const high = flat(4);
-    high[0] = 5; // so 6 sessions in it would make 11, past the cap
-    expect(applyCamp(high, camp, 6)).toBeUndefined();
+    high[0] = 5;
+    expect(applyCamp(high, camp(6), 6)).toBeUndefined();
   });
 });
 

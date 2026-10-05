@@ -3,7 +3,14 @@
 import { writeFileSync } from "node:fs";
 
 import { compileBoard, finishChance } from "../src/games/guard/engine";
-import { GATE, baseOf, measure, summarize, type PuzzleQuality } from "../src/games/guard/quality";
+import {
+  GATE,
+  baseOf,
+  measure,
+  statShares,
+  summarize,
+  type PuzzleQuality,
+} from "../src/games/guard/quality";
 import { guard } from "../src/games/guard/module";
 import { STATS, STAT_NAMES } from "../src/games/guard/model";
 import { solveCamp } from "../src/games/guard/solver";
@@ -47,6 +54,12 @@ for (let k = 0; k < runs; k++) finishChance(board, baseOf(sample));
 const engineMs = (performance.now() - t1) / runs;
 
 const m = summarize(measured);
+const shares = statShares(measured);
+const top = shares[0];
+const topName = top ? STAT_NAMES[STATS[top.stat]!] : "none";
+// C(sessions + stats - 1, stats - 1): every way to spread the sessions.
+const choose = (n: number, k: number): number => (k === 0 ? 1 : (choose(n - 1, k - 1) * n) / k);
+const allCampsCount = Math.round(choose(6 + STATS.length - 1, STATS.length - 1));
 const pct = (x: number) => `${(x / 10).toFixed(1)}%`;
 // A difference between two chances is in percentage points, not percent.
 const pts = (x: number) => `${(x / 10).toFixed(1)} points`;
@@ -60,6 +73,11 @@ const gate = [
     `median lift ${pts(m.medianLift!)}`,
     m.medianLift! >= GATE.minMedianLift,
     `at least ${pts(GATE.minMedianLift)}`,
+  ],
+  [
+    `${topName} is in ${Math.round((top?.share ?? 0) * 100)}% of best camps, the most of any stat`,
+    (top?.share ?? 0) <= GATE.maxStatShare,
+    `at most ${GATE.maxStatShare * 100}%`,
   ],
 ] as const;
 
@@ -82,7 +100,12 @@ writeFileSync(
     `| Greedy finds the best | ${(m.greedyOptimalShare! * 100).toFixed(0)}% of puzzles; median gap ${pts(m.medianGreedyGap!)} |`,
     `| A random camp | median ${pts(m.medianRandomGap!)} below the best |`,
     `| Camps tied for best | median ${m.medianOptimalCamps} |`,
-    `| Solver | ${(solveMs / count / 1000).toFixed(2)} s per puzzle, ${Math.round(evaluations / count)} exact evaluations (of 38,760 camps) |`,
+    `| Stats a best camp uses | ${m.meanStatsPerCamp!.toFixed(1)} on average |`,
+    `| Most-used stats in best camps | ${shares
+      .slice(0, 5)
+      .map(({ stat, share }) => `${STAT_NAMES[STATS[stat]!]} ${Math.round(share * 100)}%`)
+      .join(", ")} |`,
+    `| Solver | ${(solveMs / count / 1000).toFixed(2)} s per puzzle, ${Math.round(evaluations / count)} exact evaluations (of ${allCampsCount.toLocaleString("en")} camps) |`,
     `| Engine, one camp | ${engineMs.toFixed(2)} ms (the Worker allows 10 ms of CPU per request) |`,
     "",
     "| # | Opponent | Your fighter | Start | Exchanges | Start % | Best | Greedy | Random | Ties | A best camp |",

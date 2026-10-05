@@ -345,7 +345,8 @@ export const EDGES: readonly Edge[] = [
   move("ankle-pick", "standing", "open-guard-top", "Ankle pick", ["takedown"]),
   move("osoto-gari", "standing", "side-control-top", "Osoto gari", ["takedown"]),
   move("seoi-nage", "standing", "side-control-top", "Seoi nage", ["takedown"]),
-  sub("standing-guillotine", "standing", "Standing guillotine", "Frontal guillotine choke"),
+  // No standing guillotine: it counters their shot, and the opponent never shoots, so in the fight it
+  // was a one-move finish on takedowns alone (step 5: takedowns in 57% of best camps).
 
   // Closed guard, bottom
   move(

@@ -158,14 +158,14 @@ await his sign-off in `docs/guard/GRAPH.md`)
 
 ## Step 5. Engine, solver, generator, quality gate (the training camp)
 
-**Status:** built 2026-10-05; **quality gate failed** (greedy finds the best camp on 80% of puzzles,
-gate 50%), awaiting Joshua's call. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
+**Status:** built 2026-10-05; meta broken (no stat in more than 40% of best camps); **greedy gate still
+fails** (70%, gate 50%) and 13 of 60 puzzles are too easy; awaiting Joshua's call. Model and numbers: `docs/guard/MODEL.md`, `docs/guard/QUALITY.md`.
 
 **Goal:** prove the puzzle is worth building UI for.
 
 **The puzzle** (Joshua's redesign, 2026-10-05; replaces "chain moves for IBJJF points"): your fighter
 is at X% to finish today's opponent. A scouting card shows the opponent's archetype, three best
-defences and two hints. You spend a short camp (6 sessions) on 15 per-position stats, submit once,
+defences and two hints. You spend a short camp (6 sessions) on 14 per-position stats, submit once,
 and watch one replayed fight. The score is the exact chance the camp gives you; the best camp is
 solver-proven.
 
@@ -199,7 +199,7 @@ points. Report the numbers and propose changes instead of building UI on a shall
    (`useGuardPuzzle`, `useCamp` with add/remove session, `useSubmit`, the replay and results view
    models).
 2. Lovable batch A, before the fight: the **scouting card** (archetype, their 2 to 3 best defences, the
-   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 15
+   hints, today's belt) and the **camp screen** (your fighter's top stats highlighted, all 14
    scrollable, sessions left, your chance updating live as you place sessions), submit behind a
    confirm since it's **one submission**. Mobile-first at 400 px.
 3. Lovable batch B, after: the **fight replay** (one random fight from the best plan for your camp),

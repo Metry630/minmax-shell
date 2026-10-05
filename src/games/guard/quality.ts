@@ -11,13 +11,16 @@ import { STATS } from "./model";
 // camp reaches, what greedy (each session where it adds most right now) and a random camp reach.
 // One puzzle passes if a camp can move it by 5 points and the best isn't a foregone 95%. A batch
 // (scripts/quality.ts) also needs greedy to miss the best on at least half the puzzles and a median
-// lift of 10 points, or step 5 stops (docs/steps/guard.md).
+// lift of 10 points, or step 5 stops (docs/steps/guard.md). It also needs no stat in more than half
+// of the best camps, or the game has a meta players would learn in a week (step 5 found finishing in
+// 52 of 60 before the finishing stat was dropped).
 
 export const GATE = {
   minLift: 50,
   maxOptimum: 950,
   maxGreedyOptimalShare: 0.5,
   minMedianLift: 100,
+  maxStatShare: 0.5,
 };
 
 const RANDOM_CAMPS = 100;
@@ -28,6 +31,8 @@ export type PuzzleQuality = {
   greedy: number;
   randomMean: number;
   optimalCamps: number;
+  /** Stats the first best camp spends sessions on, by index. */
+  used: number[];
 };
 
 export const baseOf = (puzzle: GuardPuzzle): Base => ({
@@ -69,6 +74,7 @@ export function measure({ puzzle, optimum }: Scheduled<GuardPuzzle, GuardSolutio
     greedy: scoreCamp(greedyCamp(board, base, puzzle.sessions)),
     randomMean: Math.round(randomTotal / RANDOM_CAMPS),
     optimalCamps: optimum.solutions.length,
+    used: (optimum.solutions[0]?.camp ?? []).flatMap((k, i) => (k > 0 ? [i] : [])),
   };
 }
 
@@ -77,6 +83,14 @@ const median = (xs: readonly number[]) => {
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? (sorted[mid] ?? 0) : ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2;
 };
+
+/** Share of best camps that use each stat, highest first. */
+export function statShares(measured: readonly PuzzleQuality[]): { stat: number; share: number }[] {
+  return STATS.map((_, stat) => ({
+    stat,
+    share: measured.filter((q) => q.used.includes(stat)).length / measured.length,
+  })).sort((a, b) => b.share - a.share);
+}
 
 export function summarize(measured: readonly PuzzleQuality[]): Record<string, number> {
   const lifts = measured.map((q) => q.optimum - q.baseline);
@@ -92,6 +106,8 @@ export function summarize(measured: readonly PuzzleQuality[]): Record<string, nu
     medianGreedyGap: median(measured.map((q) => q.optimum - q.greedy)),
     medianRandomGap: median(measured.map((q) => q.optimum - q.randomMean)),
     medianOptimalCamps: median(measured.map((q) => q.optimalCamps)),
+    maxStatShare: statShares(measured)[0]?.share ?? 0,
+    meanStatsPerCamp: measured.reduce((sum, q) => sum + q.used.length, 0) / measured.length,
   };
 }
 

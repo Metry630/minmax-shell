@@ -16,34 +16,29 @@ is in `docs/DESIGN.md` (arcade fighting game).
 Steps 3 and 4 are done: the IBJJF scoring model (`rules.ts`, `docs/guard/RULES.md`, signed off) and the
 position graph (`graph.ts`, `docs/guard/GRAPH.md`; base signed off, the opponent's counters added in
 step 5 await sign-off). Joshua redesigned the puzzle on 2026-10-05 into a **training camp**: your
-fighter is at X% against today's opponent, you spend 6 sessions on 15 stats, and the score is the exact
-chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built and its quality gate fails: greedy finds
-the best camp on 80% of puzzles (gate 50%), though the camp matters (median lift 29 points). The rule
-book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
+fighter is at X% against today's opponent, you spend 6 sessions on 14 stats, and the score is the exact
+chance the camp gives (`docs/guard/MODEL.md`). Step 5 is built and the meta is broken (no stat in more
+than 40% of best camps), but greedy still finds the best camp on 70% of puzzles (gate 50%) and 13 of 60
+puzzles are too easy. The rule book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **5** (gate failed; Joshua's call below) |
+| Guard to Sub | `docs/steps/guard.md` | **5** (greedy gate and difficulty: Joshua's call below) |
 
 ### Step 5's gate: Joshua's call (2026-10-05)
 
-Greedy (each session where it adds most) finds the best camp on 80% of puzzles; the gate is 50%. Worse,
-the best camps share a meta: finishing in 52 of 60, closed guard in 27, mount in none (MODEL.md). Options:
+Round 1 found a meta (finishing in 52 of 60 best camps); round 2 broke it (finishing stat dropped,
+guard pulls a real exchange, no standing guillotine, fewer standing starts): no stat is now in more
+than 40% of best camps. Two things remain:
 
-0. **Break the meta first (recommended).** Drop the universal finishing stat, so a submission uses only
-   its position's stat, and make pulling guard a real exchange instead of an 85% transition. Then
-   re-measure the gate and which stats the best camps use; the target is no stat in more than half
-   of them.
-1. **Change the gate, not the game.** Exact greedy knows every session's true value, which no player
-   does; a player's real problem is reading the card and the route. Judge against what a person would
-   do instead (spread evenly, all-in on one stat, train against the card's top defences) and keep a
-   median lift of 10 points. Cheapest; the camp already moves a fighter 29 points and random camps
-   land 22 below the best.
-2. **Add thresholds that matter on the route.** Techniques that unlock at a skill level (a berimbolo
-   needs open guard 6) make "invest 2 to open a route" decisions where greedy's first step sees
-   nothing. Needs per-technique data and a new gate run; the one threshold tried (relative to their
-   defence) changed nothing.
-3. **Make camps lumpier.** 10 sessions brought greedy to 67%; combined with option 2 it may pass 50%.
+1. **Greedy finds the best camp on 70% of puzzles; the gate is 50%.** Options: change the gate, since
+   exact greedy knows every session's true value and no player does, and judge against what a person
+   would do instead (spread evenly, all-in on one stat, train against the card's top defences); or
+   add skill thresholds that unlock techniques (a berimbolo needs open guard 6), so "invest 2 to open
+   a route" decisions exist; or more sessions (10 brought greedy to 67% in round 1).
+2. **Puzzles are easy:** median best camp 89.5%, and 13 of 60 go above 95%, which the per-puzzle check
+   rejects. Fewer exchanges (3 to 5) or stronger counters would bring it down; a one-line change each,
+   then re-measure.
 
 ## Gates
 

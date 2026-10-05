@@ -425,3 +425,14 @@ best. Stopped for Joshua's call (START-HERE lists the options). A second finding
 best camps share a meta. Finishing is in 52 of 60 (top stat in 23), closed guard in 27, mount in
 none, the back in 2, 2 stats per camp on average: pull guard and finish, because finishing helps
 every submission and pulling guard is an 85% transition.
+
+## 2026-10-05: Breaking the meta: no finishing stat, real guard pulls, no standing guillotine
+
+Joshua's call after round 1. Dropping the finishing stat (a submission uses its position's stat) and
+making pulling guard a 40% exchange judged by the guard you pull into took greedy from 80% to 68%,
+but takedowns rose to 57% of best camps: the standing guillotine was a one-move finish on the
+takedowns stat. It counters their shot and the opponent never shoots, so the edge went, and starts
+moved from 7 in 10 standing to 4 in 10. Result on 60 puzzles: the most-used stat is closed guard at
+40% (new gate: at most 50%), then takedowns 33%, escapes 27%, half guard 17%; median lift 36 points;
+solve 0.02 s. Still failing: greedy 70% (gate 50%), and median best 89.5% with 13 of 60 puzzles above
+the 95% cap. The meta gate is now part of `quality.ts`.

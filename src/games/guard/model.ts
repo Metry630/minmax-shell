@@ -19,7 +19,6 @@ export const STATS = [
   "mount",
   "back",
   "escapes",
-  "finishing",
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -38,7 +37,6 @@ export const STAT_NAMES: Record<Stat, string> = {
   mount: "Mount",
   back: "Back",
   escapes: "Escapes",
-  finishing: "Finishing",
 };
 
 /** Index of each stat in a skills or defence array. */
@@ -49,7 +47,9 @@ export const STAT_INDEX = Object.fromEntries(STATS.map((stat, i) => [stat, i])) 
 
 /**
  * The stat that governs every move out of a position: your skill there against their defence there.
- * Submissions also use finishing (see `submissionSkill`). Grouped the way players talk about game:
+ * Submissions too: there is no separate finishing stat, since one would help every submission and
+ * every camp would buy it (step 5 measured finishing in 52 of 60 best camps). Grouped the way players
+ * talk about their game:
  * De la Riva, X and single-leg X count as open guard, north-south and turtle as side control.
  */
 export const STAT_OF: Record<PositionId, Stat> = {
@@ -93,6 +93,8 @@ export const MAX_SKILL = 10;
  */
 export const BASE = {
   transition: 0.85,
+  /** Pulling guard is a real exchange (step 5: at 85% it made "pull and submit" the whole meta). */
+  guardPull: 0.4,
   scoring: 0.4,
   submission: {
     "back-control": 0.3,
@@ -129,9 +131,6 @@ export const chance = (base: number, skill: number, defence: number) =>
 
 export const escapeChance = (theirs: number, yours: number) =>
   clamp(ESCAPE.even + ESCAPE.perPoint * (theirs - yours), 0, ESCAPE.ceiling);
-
-/** A submission is the position stat and finishing together. */
-export const submissionSkill = (position: number, finishing: number) => (position + finishing) / 2;
 
 const BELT_RANK: Record<Belt, number> = { white: 0, blue: 1, brown: 2 };
 export const beltAllows = (belt: Belt, minBelt: Belt) => BELT_RANK[belt] >= BELT_RANK[minBelt];

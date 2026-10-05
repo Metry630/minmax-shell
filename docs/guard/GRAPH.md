@@ -2,7 +2,7 @@
 
 <!-- Generated from src/games/guard/graph.ts by `npx tsx scripts/graph-doc.ts`. Don't edit by hand. -->
 
-Base graph signed off by Joshua on 2026-10-05; the opponent's counters (added in step 5) await his sign-off. 29 positions, 86 techniques, 32 opponent moves, 38 submissions. `npx tsx scripts/check-graph.ts` checks it.
+Base graph signed off by Joshua on 2026-10-05; the opponent's counters (added in step 5) await his sign-off. 29 positions, 86 techniques, 32 opponent moves, 37 submissions. `npx tsx scripts/check-graph.ts` checks it.
 
 ## How to read it
 
@@ -57,8 +57,8 @@ reaping are illegal in the gi at every belt, so they're not here. Rows used:
 
 | Row on p.29 | Lowest belt | Used by |
 |---|---|---|
-| Frontal guillotine choke | white | `standing-guillotine`, `closed-guard-guillotine`, `butterfly-guillotine` |
 | Omoplata | white | `closed-guard-omoplata` |
+| Frontal guillotine choke | white | `closed-guard-guillotine`, `butterfly-guillotine` |
 | Wrist lock | blue | `closed-guard-wrist-lock` |
 | Straight foot lock | white | `x-guard-ankle-lock`, `single-leg-x-ankle-lock`, `open-guard-top-ankle-lock`, `single-leg-x-top-ankle-lock` |
 | Toe hold | brown | `single-leg-x-toe-hold` |
@@ -239,8 +239,6 @@ flowchart LR
 | Ankle pick | In their open guard | takedown | 2 |
 | Osoto gari | Side control (top) | takedown | 2 |
 | Seoi nage | Side control (top) | takedown | 2 |
-
-Submissions: Standing guillotine (all belts).
 
 Their moves from here: They sprawl on your shot → Turtled.
 

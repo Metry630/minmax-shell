@@ -21,7 +21,7 @@ export type GuardPuzzle = {
 export const SESSIONS = 6;
 export const EXCHANGES = { min: 4, max: 6 };
 
-/** Most days start standing; the rest drop you into a position. */
+/** Four days in ten start standing; the rest drop you into a position, so no opening stat rules. */
 const OTHER_STARTS: readonly PositionId[] = [
   "closed-guard-bottom",
   "half-guard-top",
@@ -42,7 +42,7 @@ export function generate(rng: Rng): GuardPuzzle {
     clamp((style.skills[stat] ?? DEFAULT.skill) + rng.int(-1, 1), 1, MAX_SKILL - 2),
   );
   const exchanges = rng.int(EXCHANGES.min, EXCHANGES.max);
-  const start = rng.next() < 0.7 ? "standing" : rng.pick(OTHER_STARTS);
+  const start = rng.next() < 0.4 ? "standing" : rng.pick(OTHER_STARTS);
   const belt = rng.pick(BELTS);
 
   // The card shows their three best defences (ties to the earlier stat) and both hints.
