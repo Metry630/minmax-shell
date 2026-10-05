@@ -274,3 +274,44 @@ numbers from 2026-10-05; step 1's rows (UTC day ~20,730) stay in D1, unused. The
 the page switches on `navigator.language`: one frame of English for Indonesian readers, but no
 hydration mismatch. The share bar floors to 10 cells so a full bar always means the optimum (16/17
 shows 9). Phones get the share sheet, everything else the clipboard, like Wordle.
+
+## 2026-10-05: The source is IBJJF Rule Book 6.1
+
+ibjjf.com/books-videos links one rule book, `2024JUN_IBJJF_Rules_EN.pdf` (52 pages, made 2024-06-05).
+The site calls it "Rule Book (v6.0)", but every page footer says "VERSION 6.1 2024", so `rules.ts`
+records 6.1 with the site label beside it, plus the PDF's sha256 so a silent swap under the same name
+shows up. Printed page numbers equal PDF pages here (p.17's footer reads 17), which is what lets a
+form-feed split give pages. The site's "Rules Update Guide 2024" touches nothing in Articles 2 to 5, so
+it isn't cited. The passages were located by grepping the `pdftotext -layout` output by page rather
+than with `/bulk-read`: exact, and it wasn't installed in this session.
+
+## 2026-10-05: Seven events, back mount separate from back control
+
+The 2.5.2 table (p.16) lists back mount and back control as separate 4-point positions, and 4.4.1 says
+mount to back mount scores 4 + 4 "for being distinct positions". Back mount is a mount on a face-down
+opponent (checked against the photo captioned BACK MOUNT on p.21, not assumed from the name), back
+control is hooks in (4.5). Keeping both costs one bit of scoring state and lets step 4 use either.
+
+## 2026-10-05: rules.ts decides what scores, the engine decides what's legal
+
+Step 3 needs totals for hand-worked lines, and the re-score rule is a rule book fact with a quote, so
+`award`/`tally` live in `rules.ts`; step 5's engine adds graph legality and the budget on top. Scoring
+state is a bitmask of events already awarded: 7 events, 128 states, so the solver's state is
+positions × budget × 128.
+
+## 2026-10-05: Each event scores once per line
+
+3.2 refuses points for re-taking a position after a *voluntary* exit, and every move in a line is the
+player's own, so every exit is voluntary. Result: each event scores at most once, and one line tops out
+at 21 (2 + 2 + 3 + 2 + 4 + 4 + 4). If a later step adds opponent actions, involuntary exits would need a
+reset; nothing does yet. This and the other "our choice" readings are listed for sign-off in
+`docs/guard/RULES.md`.
+
+## 2026-10-05: Quotes are checked against the book, not trusted
+
+`rules.test.ts` normalises whitespace, line-end `-`/`/` breaks and curly quotes on both sides, then
+asserts each of the 13 quotes and 7 headings appears on its stated page. Checked both ways: changing
+"torso" to "chest" in one quote failed 1 test, moving takedown to page 19 failed 2, and the restored
+file passed 54 of 54. The book's text is gitignored, so the check skips in CI and forks. Two fields
+beyond step 3's sketch: `heading` (the printed "Takedown (2 points)", so the point value is sourced as
+well as the definition) and `article` (the results page will cite rules by article).

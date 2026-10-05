@@ -106,7 +106,7 @@ logic, share text, server re-score rejects a tampered score); `/demo` runs on th
 
 ## Step 3. Scoring rules 🧑 sign-off
 
-**Status:** todo
+**Status:** done 2026-10-05 (`docs/guard/RULES.md` awaiting Joshua's sign-off)
 
 **Goal:** the IBJJF scoring model as code, every line traceable to the official rule book.
 

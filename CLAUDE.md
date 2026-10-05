@@ -87,6 +87,9 @@ npx wrangler dev --config .output/server/wrangler.json --port 8788 --persist-to 
 npx wrangler deploy --config .output/server/wrangler.json   # deploy the build (run npm run build first)
 npx wrangler d1 migrations apply minmax --remote --config wrangler.jsonc   # apply migrations (--local for dev)
 npx wrangler d1 execute minmax --remote --config wrangler.jsonc --command "select count(*) from scores"
+npx vitest run src/games/guard           # guard rules tests; the quote-vs-rule-book check runs only where .sources/ibjjf/ exists
+mkdir -p .sources/ibjjf && curl -sSL -o .sources/ibjjf/2024JUN_IBJJF_Rules_EN.pdf 'https://ibjjf.com/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbTRaIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c53798f1b94f5ebc202702cb44e9428a7606a19b/2024JUN_IBJJF_Rules_EN.pdf' && pdftotext -layout .sources/ibjjf/2024JUN_IBJJF_Rules_EN.pdf .sources/ibjjf/rules-v6.1.layout.txt
+                                         # fetch the rule book (gitignored); shasum -a 256 must match RULEBOOK.sha256 in rules.ts
 ```
 
 Local secrets: `.dev.vars` (PUZZLE_SALT) and `.env.local` (VITE_POSTHOG_KEY, VITE_POSTHOG_HOST), both
