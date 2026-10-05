@@ -5,7 +5,7 @@ import { DEV_SALT, rngFor } from "@/kit/seed";
 
 import { applyCamp, compileBoard, finishChance, gamePlan, toScore, type Fight } from "./engine";
 import type { Edge, PositionId } from "./graph";
-import { BASE, CHANCE, STATS, STAT_INDEX, chance, escapeChance } from "./model";
+import { BASE, CHANCE, STATS, STAT_INDEX, THREAT, chance, escapeChance } from "./model";
 import { guard } from "./module";
 import { allCamps, solveCamp } from "./solver";
 
@@ -120,11 +120,20 @@ describe("the chain bonus", () => {
   ];
   const board = compileBoard("white", chained);
   const sub = BASE.submission.guardBottom;
-  const withBonus = chance(sub, 5 + 1, 5);
 
-  it("a failed armbar sets up the triangle", () => {
+  it("a failed armbar that was a real threat sets up the triangle", () => {
+    // Skill 7 against 5: the armbar is 15% + 12 points = 27%, over the 25% threat line.
+    const fight = { ...toyFight(2, "closed-guard-bottom"), skills: flat(7) };
+    const armbar = chance(sub, 7, 5);
+    expect(armbar).toBeGreaterThanOrEqual(THREAT);
+    expect(finishChance(board, fight)).toBeCloseTo(armbar + (1 - armbar) * chance(sub, 7 + 1, 5));
+  });
+
+  it("a fake sets nothing up", () => {
+    // Even skill: the armbar is 15%, under the threat line, so the triangle gets no bonus.
     const fight = toyFight(2, "closed-guard-bottom");
-    expect(finishChance(board, fight)).toBeCloseTo(sub + (1 - sub) * withBonus);
+    expect(chance(sub, 5, 5)).toBeLessThan(THREAT);
+    expect(finishChance(board, fight)).toBeCloseTo(sub + (1 - sub) * sub);
   });
 });
 

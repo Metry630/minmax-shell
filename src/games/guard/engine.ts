@@ -7,6 +7,7 @@ import {
   STATS,
   STAT_INDEX,
   STAT_OF,
+  THREAT,
   bandOf,
   beltAllows,
   chance,
@@ -43,6 +44,8 @@ type Move = {
   /** A submission's family stat, averaged in on both sides; -1 for every other move. */
   family: number;
   submission: boolean;
+  /** A submission or a move that scores; only attacks chain. */
+  attack: boolean;
   base: number;
 };
 type Escape = { to: number };
@@ -79,6 +82,7 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
         guard,
         family: -1,
         submission: false,
+        attack: edge.events.length > 0,
         base,
       });
     } else if (edge.kind === "submission" && beltAllows(belt, edge.minBelt)) {
@@ -91,6 +95,7 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
         guard: stat,
         family: STAT_INDEX[FAMILY_STAT[edge.family]],
         submission: true,
+        attack: true,
         base: submissionBase(kind, perspective === "bottom"),
       });
     } else if (edge.kind === "escape") escapes[from]?.push({ to: at(edge.to) });
@@ -119,8 +124,8 @@ function solveFight(board: Board, fight: Fight) {
 
   /** A move's chance of working right now, chain bonus included. */
   const works = (move: Move, m: number, last: number, chain: number) => {
-    // Only submissions chain (armbar to triangle to omoplata): a failed one sets up the next.
-    const bonus = move.submission && last !== -1 && last !== m ? chain : 0;
+    // A failed real threat sets up the next different attack (armbar to triangle, sweep to armbar).
+    const bonus = move.attack && last !== -1 && last !== m ? chain : 0;
     let skill = skills[move.skill] ?? 0;
     let guard = defence[move.guard] ?? 0;
     if (move.family !== -1) {
@@ -137,11 +142,12 @@ function solveFight(board: Board, fight: Fight) {
     if (!move) return 0;
     const w = works(move, m, last, chain);
     const success = move.submission ? 1 : value(move.to, n - 1, -1, 0);
-    // A failed submission grows the chain (a different one) or starts it (the same one again);
-    // any other failed move ends it.
-    const stay = move.submission
-      ? value(p, n - 1, m, last !== -1 && last !== m ? Math.min(chain + 1, CHAIN_MAX) : 1)
-      : value(p, n - 1, -1, 0);
+    // A failed attack that was a real threat grows the chain (a different one) or starts it (the
+    // same one again); a fake, or any other failed move, ends it.
+    const stay =
+      move.attack && w >= THREAT
+        ? value(p, n - 1, m, last !== -1 && last !== m ? Math.min(chain + 1, CHAIN_MAX) : 1)
+        : value(p, n - 1, -1, 0);
     // When a move fails, they may counter. They pick the counter that's worst for you, and skip it
     // if staying put is worse for you anyway. Together with holding, this makes more skill never
     // lower the chance (engine.test.ts checks it), which the solver's pruning relies on.

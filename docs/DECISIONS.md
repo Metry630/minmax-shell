@@ -486,3 +486,14 @@ high words lands 8 below, inside the 15-point gate. Without it, the obvious stra
 below. So before the camp the player gets the scouting card, a line per stat and an info page with the
 model in three lines; after submitting, their plan next to the best camp's, which is the lesson that
 makes the next card readable. "Following the plan" stays in QUALITY.md but out of the gate.
+
+## 2026-10-05: Any real threat chains
+
+Joshua's point: on the mat a failed sweep sets up the armbar as much as a failed armbar sets up the
+triangle, but only if the threat was real. So any failed attack (submission, sweep, pass, takedown)
+with at least a 25% chance gives the next different attack from there +1, up to +2; a fake gives
+nothing. The earlier "submissions only" rule was a guess at fixing a monotonicity bug whose real cause
+was the naive opponent: with smart counters and holding, chaining every attack is monotone in 36,000
+checks with or without the threshold, so the threshold is realism, not a patch. 60 puzzles: all gates
+pass (closest human strategy 25 points below the best, lift 36, the most-used stat 43%), and chokes
+now appear in 22% of best camps.

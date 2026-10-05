@@ -140,8 +140,14 @@ export function submissionBase(kind: Kind, bottom: boolean): number {
 /** After your move fails, they get out with 10%, 5 points more per point of their edge, at most 60%. */
 export const ESCAPE = { even: 0.1, perPoint: 0.05, ceiling: 0.6 };
 
-/** Each consecutive failed submission adds 1 to the next different one, up to 2 (armbar, triangle, omoplata). */
+/**
+ * A failed attack (a submission, or a move that scores: sweep, pass, takedown) sets up the next
+ * different attack from the same spot, +1 skill per link, up to 2: armbar to triangle to omoplata, or
+ * a sweep that makes them post into an armbar. Only a real threat sets anything up (Joshua): the failed
+ * attack needs at least THREAT chance, so a fake does nothing.
+ */
 export const CHAIN_MAX = 2;
+export const THREAT = 0.25;
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
 

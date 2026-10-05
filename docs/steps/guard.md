@@ -228,8 +228,9 @@ once, watch the replay, see the histogram and the best camp; a second submit is 
 **Goal:** what ad review and players both expect, plus a buffer of verified days.
 
 **Do:**
-1. Pages: How to play (the model in three lines, from `MODEL.md`: each move uses the stat of where you
-   are; a submission also uses its type; pulling guard is your standing against their posture), Rules
+1. Pages: How to play (the model in four lines, from `MODEL.md`: each move uses the stat of where you
+   are; a submission also uses its type; pulling guard is your standing against their posture; a failed
+   real threat makes the next attack easier), Rules
    (from `RULES.md` and `MODEL.md`, with citations), About (pseudonymous is
    fine), Privacy (PostHog, localStorage, no accounts), Contact, Terms, and an **Archive where past
    puzzles are playable** (yesterday's and older; they don't count toward the streak, and results show
@@ -303,5 +304,11 @@ submissions, transitions and sweeps per position.
 - **A graph change re-solves the unplayed schedule.** New moves can raise the optimum of puzzles
   already in D1, so rerun `scripts/schedule.ts` for days not yet played. Played days keep their
   optimum and histogram.
-- Watch two costs as it grows: solve time per puzzle (technique-once makes the solver a path search)
-  and how many moves a phone screen can show from one position.
+- Watch two costs as it grows: solve time per puzzle and how many moves the results' game plan shows.
+- **More opponent options** (Joshua, 2026-10-05): front headlock from turtle, and many more escapes and
+  counters per position. More counters make a failed move costlier, so rerun the quality gate after.
+- **Many more opponent archetypes and fighter styles** (Joshua, 2026-10-05), with ideas researched
+  online. A first list to research: berimbolo / De la Riva player, lapel (worm) guard player, half guard
+  specialist, old-school closed guard, flexible rubber guard player, 50/50 and leg-lock player, sambo
+  player, MMA fighter (strong top, weak guard), heavy pressure passer, back-attack specialist, sit-down
+  staller. Each needs defences that its hints describe truthfully, and the meta gate rerun.

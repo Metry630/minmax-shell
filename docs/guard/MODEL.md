@@ -60,8 +60,11 @@ for the camp screen and the info page.
 Each exchange you attempt one move, or hold position.
 
 - **It works:** you move there, or the submission finishes the fight.
-- **It fails:** you stay. A failed submission sets up the next *different* one: +1 skill, +2 after two
-  in a row (armbar, triangle, omoplata). Then the opponent may counter: 10% plus 5 points per point
+- **It fails:** you stay. A failed attack (a submission, or a sweep, pass or takedown) that was a real
+  threat, at least a 25% chance, sets up the next *different* attack from there: +1 skill, +2 after
+  two in a row (armbar, triangle, omoplata; or a sweep that makes them post into an armbar). A fake,
+  under 25%, sets nothing up (Joshua: "if the threat isn't actually present it won't work"). Then the
+  opponent may counter: 10% plus 5 points per point
   of their edge in that position, at most 60%. They pick the counter that's worst for you (they pass
   you, sweep you, sprawl, mount you, take your back; GRAPH.md lists them), and they don't counter if
   that would help you.
@@ -87,7 +90,7 @@ every camp. Scoring one camp takes 0.08 ms, far inside the Worker's 10 ms.
 |---|---|
 | Bases by move type | Every move at 50% let a fighter finish a stronger opponent 62% of the time in two exchanges and 99% in ten. Now 11% and 55% in five. |
 | Smart counters, holding | A random counter could sweep a guard player into their own guard, so more skill sometimes lowered the chance (40 of 13,500 checks). Now 0, which the solver's pruning needs; a test re-checks 1,500 fights each run. |
-| Chains only for submissions | Failing a cheap move on purpose built the bonus. |
+| Chains need a real threat | Any failed attack chains, but only from a 25% chance up, so a fake does nothing. (An earlier "submissions only" rule was a guess at a bug that turned out to be the naive opponent: with smart counters and holding, chaining every attack is monotone in 36,000 checks with or without the threshold. The threshold is there because it's how BJJ works.) |
 | No finishing stat; families instead | Finishing was in 52 of 60 best camps: "pull guard and finish". |
 | No standing guillotine; 4 in 10 standing starts | A one-move finish on takedowns alone took takedowns to 57% of best camps. It counters a shot the opponent never takes. |
 | Pulling guard judged by standing, at 40% | Judged by the guard you pull into, one stat carried the whole guard route (closed guard in 57% of best camps). |
@@ -99,9 +102,10 @@ every camp. Scoring one camp takes 0.08 ms, far inside the Worker's 10 ms.
 ## What the player sees
 
 - **Before the camp:** the scouting card, your fighter's stats with one line each (`STAT_HELP`), and an
-  info page with the whole model in three lines: each move uses the stat of where you are; a
+  info page with the whole model in four lines: each move uses the stat of where you are; a
   submission also uses its type, chokes or joint locks; pulling guard is your standing against their
-  posture. No chance and no plan.
+  posture; a failed attack that was a real threat makes your next different attack from there easier.
+  No chance and no plan.
 - **After you submit:** your chance against the best camp's, the replay, and **your game plan next to
   the best camp's** (`gamePlan`: each step with the stats it uses and low / medium / high), so the
   player learns which route their camp opened and which one the best camp took.
@@ -114,8 +118,8 @@ below, median), and even a plan with no words lands 8 below. Without it, the obv
 
 | Gate | Now | Needs |
 |---|---|---|
-| No stat in more than half the best camps | guard 40%, passing 38%, standing 32%, top control 27% | ✅ at most 50% |
-| Median lift (best camp minus start) | 37 points | ✅ at least 10 |
+| No stat in more than half the best camps | passing 43%, guard 35%, top control 32%, standing 25%, chokes 22% | ✅ at most 50% |
+| Median lift (best camp minus start) | 36 points | ✅ at least 10 |
 | What a person would try before submitting | 25 to 31 points below the best | ✅ at least 15 |
 
-Median start 21%, best camp 61%, none rejected, 0.02 s to solve, 0.08 ms to score a camp.
+Median start 15%, best camp 56%, none rejected, 0.02 s to solve, 0.07 ms to score a camp.
