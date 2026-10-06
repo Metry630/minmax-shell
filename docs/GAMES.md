@@ -34,6 +34,13 @@ Already taken: `pass.gg`, `lineup.gg`, `mise-en.place`.
 | 4 | Plates | `loadthe.bar` (available 2026-10-04) | Load the bar for today's sets in order (last plate on, first off) with the fewest plate moves. | BFS over sleeve states | lifters | plate calculators only; single-weight greedy is optimal, so the spike must show the *sequence* has depth | idea, depth unproven |
 | 5 | Imbuh | TBD | Build Indonesian words from today's root + affix tiles (meN-, ber-, di-, ter-, ke-…-an, -kan, -i); English glosses shown. | word list from a licensable source (Wiktionary via kaikki.org, CC BY-SA) | Indonesian speakers, learners | classroom crosswords only | idea |
 | 6 | Serapan | TBD | Guess the source language (Dutch, Portuguese, Arabic, Sanskrit, Hokkien, English…) of each of today's 5 Indonesian words; etymology card after. | 2 independent sources per etymology | linguistics nerds, ID + EN | classroom quizzes only | idea |
+| 7 | Pit Wall | TBD (no "F1" in it) | Pick tyres and pit laps for today's race to finish in the least time. | DP over lap × compound × tyre age | F1 fans (r/formula1) | Driverle, Paddockdle, Formudle, Stewardle (all guessers); console F1 Manager | idea, spike first (`MARKET.md`) |
+| 8 | Fairway | TBD | Play today's hole in the fewest expected strokes by choosing a club and a target each shot. | value iteration over the hole | golfers (r/golf) | ShotSense Golf (app, AI caddie); mini-golf dailies | idea (`MARKET.md`) |
+| 9 | Third Attempt | TBD | Pick your nine attempts, one at a time, to give today's lifter the best chance of winning the class. | DP over attempts × rivals | powerlifters | attempt calculators only; could absorb Plates | idea (`MARKET.md`) |
+| 10 | Negative Split | TBD | Set your power per segment of today's real climb to reach the top fastest without emptying the tank. | DP over segments × W′ | cyclists (Strava, Zwift) | myWindsock (analysis tool, not a game) | idea (`MARKET.md`) |
+| 11 | Overs | TBD | Share today's 20 overs among your bowlers to concede the fewest expected runs. | DP over overs × quotas | cricket fans (reach lane) | none in the directory | idea (`MARKET.md`) |
+
+Why these five, and the market survey behind them (buckets, crowding, rejected niches): `docs/MARKET.md`.
 
 Imbuh and Serapan are word games rather than optimisation puzzles, and Indonesian traffic earns far
 less per view. They're the bilingual lane, for reach rather than revenue.
