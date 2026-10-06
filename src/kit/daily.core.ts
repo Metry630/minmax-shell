@@ -157,7 +157,15 @@ export async function submit(
 
   const parsed = module.solutionSchema.safeParse(input.solution);
   if (!parsed.success) return reject("illegal", "Malformed solution.");
-  const scored = module.engine.score(loaded.puzzle, parsed.data);
+  // A game scored from its spars ignores what the client sent beyond its shape: the score is what the
+  // stored spars (validated when they were made) add up to.
+  const final = module.spar?.final;
+  const scored = final
+    ? final(
+        loaded.puzzle,
+        (await deps.scores.spars(game, puzzleNo, anonId)).map((r) => r.solution as Json),
+      )
+    : module.engine.score(loaded.puzzle, parsed.data);
   if (!scored.ok) return reject("illegal", scored.reason);
   // Tampering, or a stale client bundle whose engine disagrees with the server's. Either way the
   // player saw a score we won't store, so refuse loudly instead of quietly storing a different one.

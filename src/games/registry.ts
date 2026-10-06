@@ -1,11 +1,12 @@
 import type { GameModule } from "@/kit/game";
 
 import { demo } from "./demo/module";
-import { guard } from "./guard/module";
+import { guardPlans } from "./guard/planModule";
 
-// Every game the API serves, by id. Guard has no puzzles in D1 until step 7 schedules them, so
-// production answers `no_puzzle` for it until then; dev and previews generate it on request.
+// Every game the API serves, by id. Guard is game-plan Wordle (planModule.ts, LOOP.md v7); the camp
+// (guard/module.ts) stays for the lab pages. Production serves what scripts/schedule.ts wrote to
+// D1; dev and previews generate the day on request.
 export const games: Readonly<Record<string, GameModule>> = {
   demo,
-  guard,
+  guard: guardPlans,
 };

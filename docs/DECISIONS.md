@@ -757,3 +757,22 @@ The greedy test: always playing the likeliest answer matches the bot (3.22 again
 depth is in staying consistent with the colours, not in choosing among plans that fit; players who
 don't reason fail about 70%. Offcut's own greedy test (GAMES.md) has not been run: Offcut hasn't
 started.
+
+## 2026-10-06: Guard to Sub becomes game-plan Wordle at /g/guard
+
+Joshua: make it the real game, with the rules on a first visit, streaks, share and a comparison with
+other players, built by Claude Code this time. The registry's `guard` is now `planModule.ts`:
+
+- **Each plan is a spar,** graded on the server with the day's profile, which never reaches the
+  browser (the headless test checked every response before the end).
+- **The score is how many plans it took** (7 for X), computed by a new kit hook (`spar.final`) from
+  the stored spars, not from what the client sends. A test submits only the answer after two spars
+  and gets 2.
+- **D1 stores the day already worked out** (move ids, profile, clues), so a request only grades a
+  plan, inside the 10 ms Worker budget. Gating stays offline in `scripts/schedule.ts`.
+- **"The coach needed 3" became "PAR 3"** (Joshua: "what does this even mean"), with a line saying
+  par is what a perfect reader needs from the same notes.
+- **The plan builder only offers moves that can still end in a submission.** The headless test
+  walked into a dead end without it.
+
+`/g/guard` renders `PlanGame.tsx`; the camp components stay in the repo, unused.

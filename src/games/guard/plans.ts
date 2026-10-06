@@ -1,6 +1,6 @@
 import { compileBoard, type Board } from "./engine";
 import type { GuardPuzzle } from "./generator";
-import { EDGES, POSITIONS, type Edge, type PositionId } from "./graph";
+import { EDGES, POSITIONS, type Belt, type Edge, type PositionId } from "./graph";
 import { STATS, STAT_OF } from "./model";
 import { DEFAULT, STYLES } from "./opponents";
 import { CONFIG as FIGHT_CONFIG, pickMoves } from "./play";
@@ -128,14 +128,16 @@ export type Plan = readonly Step[];
 export type Colour = "🟩" | "🟨" | "⬛" | "⬜";
 
 export type PlansSetup = {
-  puzzle: GuardPuzzle;
   config: PlansConfig;
   board: Board;
   /** Each board move's area, by position then move index. */
   areas: Area[][];
-  profile: Profile;
+  /** Today's hidden profile; null in the browser, which only ever sees the server's colours. */
+  profile: Profile | null;
   clues: Clue[];
   start: number;
+  /** Today's move list as edge ids: with the belt and start, all a browser needs to draw the board. */
+  moves: string[];
   /** Every legal plan today. */
   plans: Plan[];
   /** The plans that are all 🟩 today. */
@@ -175,11 +177,13 @@ function stepColour(setup: PlansSetup, step: Step, state: State): Colour {
 
 /** A plan's colours against profile `id` (or today's profile, by default). */
 export function grade(setup: PlansSetup, plan: Plan, id?: number): Colour[] {
+  const { profile } = setup;
+  if (id === undefined && !profile) throw new Error("grading needs today's profile (server only)");
   let stopped = false;
   return plan.map((step) => {
     if (stopped) return "⬜";
     const area = setup.areas[step.p]![step.m]!;
-    const state = id === undefined ? setup.profile[area] : stateIn(id, area);
+    const state = id === undefined ? profile![area] : stateIn(id, area);
     const colour = stepColour(setup, step, state);
     if (colour === "⬛" && setup.config.stopAtBlock) stopped = true;
     return colour;
@@ -339,15 +343,62 @@ export const PLAN_TRIES = 8;
  * Today's puzzle. `rng` draws the move list, the day's noise and the clues; redrawn until there are
  * a few answers (not a field of them) and best play solves within the guesses.
  */
+/** A day as stored: the belt, the start, today's move ids, and (server side) the profile and clues. */
+export type PlanParts = {
+  belt: Belt;
+  start: PositionId;
+  moves: readonly string[];
+  profile: Profile | null;
+  clues: Clue[];
+};
+
+/** Builds a day's board, plans and answers from its parts: the scheduler, the server and the browser. */
+export function assemble(parts: PlanParts, config = PLANS_CONFIG): PlansSetup {
+  const keep = new Set(parts.moves);
+  const board = compileBoard(
+    parts.belt,
+    EDGES.filter((edge) => edge.kind === "escape" || keep.has(edge.id)),
+  );
+  const areas = board.moves.map((list) => list.map((mv) => planArea(EDGE_BY_ID.get(mv.id)!)));
+  const start = board.ids.indexOf(parts.start);
+  const setup: PlansSetup = {
+    config,
+    board,
+    areas,
+    profile: parts.profile,
+    clues: parts.clues,
+    start,
+    moves: board.moves.flat().map((mv) => mv.id),
+    plans: legalPlans(board, start, config.maxLength),
+    answers: [],
+    routes: [],
+    ok: false,
+  };
+  if (parts.profile) {
+    setup.answers = setup.plans.filter((plan) => solved(grade(setup, plan)));
+    setup.routes = [
+      ...new Set(setup.answers.map((plan) => plan.map((st) => areas[st.p]![st.m]!).join(" > "))),
+    ];
+  }
+  return setup;
+}
+
+/** A generated day: its setup plus the puzzle it came from (the lab pages show the cast and card). */
+export type PlansDay = PlansSetup & { puzzle: GuardPuzzle };
+
+/**
+ * Today's puzzle. `rng` draws the move list, the day's noise and the clues; redrawn until there are
+ * a few kinds of answer (not a field of them) and best play solves within the guesses.
+ */
 export function setUpPlans(
   puzzle: GuardPuzzle,
   rng: { next(): number },
   config = PLANS_CONFIG,
-): PlansSetup {
+): PlansDay {
   const style = STYLES.find((s) => s.id === puzzle.fighter.style);
   const skills = STATS.map((stat) => style?.skills[stat] ?? DEFAULT.skill);
   const readConfig = { ...READ_CONFIG, ...config, clues: config.clues };
-  let setup: PlansSetup | null = null;
+  let day: PlansDay | null = null;
   for (let tries = 0; tries < PLAN_TRIES; tries++) {
     const edges = pickMoves(
       skills,
@@ -355,38 +406,22 @@ export function setUpPlans(
       { ...FIGHT_CONFIG, moveList: config.moveList },
       puzzle.start,
     );
-    const board = compileBoard(puzzle.belt, edges);
-    const areas = board.moves.map((list) => list.map((mv) => planArea(EDGE_BY_ID.get(mv.id)!)));
     const profile = profileOf(puzzle, rng, readConfig);
     const clues = cluesOf(puzzle, profile, rng, readConfig);
-    const start = board.ids.indexOf(puzzle.start);
-    const plans = legalPlans(board, start, config.maxLength);
-    setup = {
+    const moves = edges.flatMap((edge) => (edge.kind === "escape" ? [] : [edge.id]));
+    day = {
+      ...assemble({ belt: puzzle.belt, start: puzzle.start, moves, profile, clues }, config),
       puzzle,
-      config,
-      board,
-      areas,
-      profile,
-      clues,
-      start,
-      plans,
-      answers: [],
-      routes: [],
-      ok: false,
     };
-    setup.answers = plans.filter((plan) => solved(grade(setup!, plan)));
-    setup.routes = [
-      ...new Set(setup.answers.map((plan) => plan.map((st) => areas[st.p]![st.m]!).join(" > "))),
-    ];
     // The cheap check first: most draws fail on the number of answers, and best play is the costly part.
     const fewAnswers =
-      setup.routes.length >= config.answers.min && setup.routes.length <= config.answers.max;
+      day.routes.length >= config.answers.min && day.routes.length <= config.answers.max;
     if (!fewAnswers) continue;
-    const best = bestPath(setup);
-    setup.ok = best.solved && best.tried.length >= config.minBest;
-    if (setup.ok) break;
+    const best = bestPath(day);
+    day.ok = best.solved && best.tried.length >= config.minBest;
+    if (day.ok) break;
   }
-  return setup!;
+  return day!;
 }
 
 /**
@@ -399,8 +434,8 @@ export const PLAN_VARIANTS = 200;
 export function planDay(
   draw: (variant: number) => { puzzle: GuardPuzzle; rng: { next(): number } },
   config = PLANS_CONFIG,
-): PlansSetup {
-  let setup: PlansSetup | null = null;
+): PlansDay {
+  let setup: PlansDay | null = null;
   for (let variant = 0; variant < PLAN_VARIANTS; variant++) {
     const { puzzle, rng } = draw(variant);
     setup = setUpPlans(puzzle, rng, config);

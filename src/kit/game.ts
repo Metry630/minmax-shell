@@ -46,7 +46,16 @@ export interface GameModule<P extends Json = Json, S extends Json = Json, Pub ex
    * its score and `view` (what the player learns from it, built from the full puzzle on the server,
    * so it must not leak what `publicPuzzle` hides). Guard shows the route the fighter took.
    */
-  spar?: { budget: number; view(puzzle: P, solution: S): Json };
+  spar?: {
+    budget: number;
+    view(puzzle: P, solution: S): Json;
+    /**
+     * When present, a submission is scored from this player's stored spars, in order, not from the
+     * solution sent: game-plan Wordle's score is how many guesses it took, so a client mustn't be able
+     * to learn the answer through spars and then submit it as a first guess.
+     */
+    final?(puzzle: P, spars: S[]): Scored;
+  };
   /** Checks the shape of a submitted solution before the engine sees it; the client is untrusted. */
   solutionSchema: z.ZodType<S>;
   engine: { score(puzzle: P, solution: S): Scored };

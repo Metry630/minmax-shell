@@ -390,8 +390,12 @@ function Game({ n, next }: { n: number; next(): void }) {
                 {solvedIt ? COPY.tap : COPY.time}
               </p>
               <p className="arcade-display text-sm">
-                {solvedIt ? `SOLVED IN ${rows.length}/${guesses}` : `X/${guesses}`} · THE COACH
-                NEEDED {bestPath(setup).tried.length}
+                {solvedIt ? `SOLVED IN ${rows.length}/${guesses}` : `X/${guesses}`} · PAR{" "}
+                {bestPath(setup).tried.length}
+              </p>
+              <p className="text-xs text-[var(--arcade-muted)]">
+                Par: a perfect reader, starting from the same notes, needs{" "}
+                {bestPath(setup).tried.length} plans today.
               </p>
               {!solvedIt && (
                 <div className="text-left text-sm">
@@ -404,7 +408,7 @@ function Game({ n, next }: { n: number; next(): void }) {
                 <ul className="mt-1 space-y-0.5">
                   {AREAS.map((area) => (
                     <li key={area}>
-                      {AREA_NAMES[area]} {stateWords(area, setup.profile[area])}
+                      {AREA_NAMES[area]} {stateWords(area, setup.profile![area])}
                     </li>
                   ))}
                 </ul>

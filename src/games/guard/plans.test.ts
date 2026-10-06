@@ -35,7 +35,7 @@ const day = (n: number) => days.get(n)!;
 const trueId = (setup: PlansSetup) =>
   [...everything()].find((id) => {
     const one = Int16Array.of(id);
-    return AREAS.every((a) => certain(one, a) === setup.profile[a]);
+    return AREAS.every((a) => certain(one, a) === setup.profile![a]);
   })!;
 
 describe("game-plan Wordle", () => {
@@ -88,7 +88,7 @@ describe("game-plan Wordle", () => {
           const c = colours[i]!;
           if (stopped) return expect(c).toBe("⬜");
           const area = setup.areas[step.p]![step.m]!;
-          const state = setup.profile[area];
+          const state = setup.profile![area];
           const at = setup.board.ids[step.p]!;
           if (state === "open") expect(c).toBe("🟩");
           if (state === "shut") expect(c).toBe("⬛");
