@@ -357,6 +357,12 @@
   color: var(--arcade-ink);
 }
 
+.arcade-button-fight,
+.arcade-button-fight:hover:not(:disabled) {
+  background: var(--arcade-p1);
+  color: var(--arcade-panel);
+}
+
 .arcade-button:focus-visible,
 .arcade-stepper:focus-visible,
 .arcade-stat-name:focus-visible {
@@ -411,6 +417,16 @@
   width: 0.85rem;
   height: 0.85rem;
   border: 2px solid var(--arcade-line);
+}
+
+.arcade-spar-card {
+  border: 2px solid var(--arcade-line);
+  padding: 0.85rem;
+  background: var(--arcade-bg);
+}
+
+.arcade-spar-new {
+  animation: arcade-spar-new 0.7s steps(2, jump-none) 1;
 }
 
 .arcade-dialog {
@@ -594,6 +610,11 @@
   100% { transform: translate(0); }
 }
 
+@keyframes arcade-spar-new {
+  0%, 50% { background: var(--arcade-hi); }
+  100% { background: var(--arcade-bg); }
+}
+
 .arcade-finish {
   animation: arcade-finish 0.38s steps(2, jump-none) 1;
 }
@@ -657,6 +678,10 @@
   }
 
   .arcade-finish {
+    animation: none;
+  }
+
+  .arcade-spar-new {
     animation: none;
   }
 

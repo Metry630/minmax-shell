@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   AlertDialog,
@@ -14,9 +14,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { PositionScene, Portrait, StatIcon } from "@/games/guard/art/Art";
 import { COPY, TAGLINE, fill } from "@/games/guard/copy";
-import { useGuardPuzzle, type CampControls } from "@/games/guard/ui-contract";
-import type { Scouting } from "@/games/guard/view";
-import { GuardHeader, GuardResults } from "./GuardResults";
+import {
+  useGuardPuzzle,
+  usePrefersReducedMotion,
+  type CampControls,
+  type SparControls,
+} from "@/games/guard/ui-contract";
+import type { PlanRow, Scouting, SparRow } from "@/games/guard/view";
+import { GuardHeader, GuardResults, PlanItem } from "./GuardResults";
 
 const arcadeButton =
   "arcade-button min-h-11 rounded-none border-2 px-4 font-[family-name:var(--font-arcade-display)] text-[10px] tracking-normal shadow-none";
@@ -38,6 +43,7 @@ export function GuardGame() {
       puzzleNo={game.puzzleNo}
       scouting={game.scouting}
       camp={game.camp}
+      spar={game.spar}
       submitting={game.submit.submitting}
       rejection={game.submit.rejection}
       onSubmit={game.submit.submit}
@@ -57,17 +63,41 @@ type PlayingScreenProps = {
   puzzleNo: number;
   scouting: Scouting;
   camp: CampControls;
+  spar: SparControls;
   submitting: boolean;
   rejection: string | null;
   onSubmit(): Promise<void>;
 };
 
-function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubmit }: PlayingScreenProps) {
+function PlayingScreen({ puzzleNo, scouting, camp, spar, submitting, rejection, onSubmit }: PlayingScreenProps) {
   const campRef = useRef<HTMLElement>(null);
+  const sparRefs = useRef(new Map<number, HTMLElement>());
+  const seenSpars = useRef(spar.history.length);
+  const reducedMotion = usePrefersReducedMotion();
   const [openHelp, setOpenHelp] = useState<string | null>(null);
+  const [flashingSpar, setFlashingSpar] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (spar.history.length <= seenSpars.current) return;
+    seenSpars.current = spar.history.length;
+    const newest = spar.history.at(-1);
+    if (!newest) return;
+    const card = sparRefs.current.get(newest.n);
+    card?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    if (reducedMotion) return;
+    setFlashingSpar(newest.n);
+    const timer = window.setTimeout(() => setFlashingSpar(null), 700);
+    return () => window.clearTimeout(timer);
+  }, [reducedMotion, spar.history]);
+
+  const sparError = spar.error === "spent"
+    ? COPY.sparSpent
+    : spar.error === "submitted"
+      ? COPY.sparSubmitted
+      : spar.error;
 
   return (
-    <main className="arcade arcade-frame min-h-screen px-4 pb-36 pt-5">
+    <main className="arcade arcade-frame min-h-screen px-4 pb-64 pt-5">
       <div className="relative z-10 mx-auto w-full max-w-md">
         <GuardHeader puzzleNo={puzzleNo} belt={scouting.belt} />
 
@@ -150,6 +180,9 @@ function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubm
           <p className="mt-3 text-sm text-[var(--arcade-muted)]">
             {fill(COPY.campHint, { n: scouting.sessions })}
           </p>
+          <p className="mt-2 text-sm text-[var(--arcade-muted)]">
+            {fill(COPY.sparHint, { n: spar.budget })}
+          </p>
           <div className="mt-5 divide-y-2 divide-[var(--arcade-line)] border-y-2 border-[var(--arcade-line)]">
             {scouting.stats.map((row, index) => {
               const expanded = openHelp === row.stat;
@@ -204,55 +237,140 @@ function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubm
             })}
           </div>
         </section>
+
+        {spar.history.length > 0 && (
+          <section className="arcade-panel mt-8 p-4" aria-label={COPY.sparring}>
+            <h2 className="arcade-section-title">{COPY.sparring}</h2>
+            <div className="mt-5 space-y-4">
+              {[...spar.history].reverse().map((row) => (
+                <SparCard
+                  key={row.n}
+                  row={row}
+                  scouting={scouting}
+                  flashing={flashingSpar === row.n}
+                  cardRef={(node) => {
+                    if (node) sparRefs.current.set(row.n, node);
+                    else sparRefs.current.delete(row.n);
+                  }}
+                  onLoad={() => spar.load(row.n)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       <div className="arcade-sticky">
-        <div className="mx-auto flex w-full max-w-md items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex gap-1.5">
-              {Array.from({ length: camp.total }, (_, index) => (
-                <span key={index} className={`arcade-token ${index < camp.total - camp.left ? "arcade-token-used" : ""}`} />
-              ))}
+        <div className="mx-auto w-full max-w-md">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="min-w-0">
+              <div className="flex gap-1.5">
+                {Array.from({ length: camp.total }, (_, index) => (
+                  <span key={index} className={`arcade-token ${index < camp.total - camp.left ? "arcade-token-used" : ""}`} />
+                ))}
+              </div>
+              <p className="arcade-hud mt-2 text-[10px]">
+                {camp.complete ? COPY.sessionsDone : fill(COPY.sessionsLeft, { n: camp.left })}
+              </p>
             </div>
-            <p className="arcade-hud mt-2 text-[10px]">
-              {camp.complete ? COPY.sessionsDone : fill(COPY.sessionsLeft, { n: camp.left })}
-            </p>
-            {rejection && <p className="mt-1 text-xs text-[var(--arcade-p1)]">{rejection}</p>}
+            <div className="min-w-0">
+              <div className="flex gap-1.5">
+                {Array.from({ length: spar.budget }, (_, index) => (
+                  <span key={index} className={`arcade-token ${index < spar.used ? "arcade-token-used" : ""}`} />
+                ))}
+              </div>
+              <p className="arcade-hud mt-2 text-[10px]">
+                {spar.left === 0 ? COPY.sparsDone : fill(COPY.sparsLeft, { n: spar.left })}
+              </p>
+            </div>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button type="button" className={`${arcadeButton} min-w-32`} disabled={!camp.complete || submitting}>
-                {COPY.fight}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="arcade arcade-dialog max-w-[calc(100%-2rem)] rounded-none border-2 p-5 shadow-none">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="arcade-display text-sm">{COPY.confirmTitle}</AlertDialogTitle>
-                <AlertDialogDescription className="mt-2 text-sm text-[var(--arcade-muted)]">
-                  {COPY.confirmBody}
-                </AlertDialogDescription>
-                {rejection && <p className="mt-2 text-xs text-[var(--arcade-p1)]">{rejection}</p>}
-              </AlertDialogHeader>
-              <AlertDialogFooter className="mt-3 gap-2 sm:space-x-0">
-                <AlertDialogCancel className={`${arcadeButton} arcade-button-secondary mt-0`}>
-                  {COPY.confirmNo}
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  className={arcadeButton}
-                  disabled={submitting}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    void onSubmit();
-                  }}
-                >
-                  {submitting ? "..." : COPY.confirmYes}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {(sparError || rejection) && (
+            <p className="mt-2 text-xs text-[var(--arcade-p1)]">{sparError ?? rejection}</p>
+          )}
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              className={arcadeButton}
+              disabled={!spar.ready}
+              onClick={() => void spar.run()}
+            >
+              {spar.running ? COPY.sparring : COPY.spar}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" className={`${arcadeButton} arcade-button-fight`} disabled={!camp.complete || submitting}>
+                  {COPY.fight}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="arcade arcade-dialog max-w-[calc(100%-2rem)] rounded-none border-2 p-5 shadow-none">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="arcade-display text-sm">{COPY.confirmTitle}</AlertDialogTitle>
+                  <AlertDialogDescription className="mt-2 text-sm text-[var(--arcade-muted)]">
+                    {COPY.confirmBody}
+                  </AlertDialogDescription>
+                  {rejection && <p className="mt-2 text-xs text-[var(--arcade-p1)]">{rejection}</p>}
+                </AlertDialogHeader>
+                <AlertDialogFooter className="mt-3 gap-2 sm:space-x-0">
+                  <AlertDialogCancel className={`${arcadeButton} arcade-button-secondary mt-0`}>
+                    {COPY.confirmNo}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    className={arcadeButton}
+                    disabled={submitting}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      void onSubmit();
+                    }}
+                  >
+                    {submitting ? "..." : COPY.confirmYes}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
     </main>
+  );
+}
+
+function SparCard({
+  row,
+  scouting,
+  flashing,
+  cardRef,
+  onLoad,
+}: {
+  row: SparRow;
+  scouting: Scouting;
+  flashing: boolean;
+  cardRef(node: HTMLElement | null): void;
+  onLoad(): void;
+}) {
+  return (
+    <article ref={cardRef} className={`arcade-spar-card ${flashing ? "arcade-spar-new" : ""}`}>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="arcade-hud text-xs">{fill(COPY.sparNo, { n: row.n })}</h3>
+        <p className="arcade-display text-xl text-[var(--arcade-p1)]">{row.chance}%</p>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-3">
+        {row.camp.flatMap((sessions, index) => sessions > 0 ? [{ sessions, stat: scouting.stats[index]?.stat }] : []).map((item) => (
+          item.stat && (
+            <span key={item.stat} className="flex items-center gap-1">
+              <StatIcon stat={item.stat} className="w-5" />
+              <span className="arcade-hud text-xs">x{item.sessions}</span>
+            </span>
+          )
+        ))}
+      </div>
+      <p className="arcade-hud mt-4 text-xs">{COPY.route}</p>
+      <div className="mt-3 space-y-3">
+        {row.plan.map((planRow: PlanRow) => <PlanItem key={planRow.id} row={planRow} />)}
+      </div>
+      <Button type="button" className={`${arcadeButton} arcade-button-secondary mt-4 w-full`} onClick={onLoad}>
+        {COPY.sparLoad}
+      </Button>
+    </article>
   );
 }
 
