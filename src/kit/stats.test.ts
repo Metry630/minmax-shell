@@ -15,6 +15,7 @@ describe("summarize", () => {
   it("returns zeros for empty history", () => {
     expect(summarize({}, 10)).toEqual({
       played: 0,
+      won: 0,
       optimal: 0,
       currentStreak: 0,
       maxStreak: 0,
@@ -24,6 +25,7 @@ describe("summarize", () => {
   it("counts a single puzzle as played, optimal, and a streak of 1", () => {
     expect(summarize(played(10), 10)).toEqual({
       played: 1,
+      won: 1,
       optimal: 1,
       currentStreak: 1,
       maxStreak: 1,
@@ -33,6 +35,7 @@ describe("summarize", () => {
   it("keeps yesterday's streak alive while today is unplayed", () => {
     expect(summarize(played(8, 9), 10)).toEqual({
       played: 2,
+      won: 2,
       optimal: 2,
       currentStreak: 2,
       maxStreak: 2,
@@ -42,15 +45,32 @@ describe("summarize", () => {
   it("breaks the streak when a day is missed", () => {
     expect(summarize(played(7, 8), 10)).toEqual({
       played: 2,
+      won: 2,
       optimal: 2,
       currentStreak: 0,
       maxStreak: 2,
     });
   });
 
+  it("counts consecutive wins: a loss breaks the streak, today's loss included", () => {
+    const history = {
+      ...played(1, 2, 3, 5, 6),
+      "4": { score: 7, optimum: 3, won: false },
+    } as Results;
+    expect(summarize(history, 6)).toMatchObject({
+      played: 6,
+      won: 5,
+      currentStreak: 2,
+      maxStreak: 3,
+    });
+    const lostToday = { ...played(8, 9), "10": { score: 7, optimum: 3, won: false } } as Results;
+    expect(summarize(lostToday, 10)).toMatchObject({ currentStreak: 0, maxStreak: 2 });
+  });
+
   it("distinguishes max streak from current streak", () => {
     expect(summarize(played(1, 2, 3, 4, 8, 9, 10), 10)).toEqual({
       played: 7,
+      won: 7,
       optimal: 7,
       currentStreak: 3,
       maxStreak: 4,
@@ -64,6 +84,7 @@ describe("summarize", () => {
     };
     expect(summarize(results, 10)).toEqual({
       played: 2,
+      won: 2,
       optimal: 1,
       currentStreak: 2,
       maxStreak: 2,

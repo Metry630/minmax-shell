@@ -1,7 +1,8 @@
 // A player's history for one game, in localStorage: no accounts, so this is where streaks live. Keyed
 // by game because on workers.dev (and the hub, if it ever exists) every game shares one origin.
 
-export type Result = { score: number; optimum: number };
+/** `won` is absent in older records and for games without wins and losses: those count as won. */
+export type Result = { score: number; optimum: number; won?: boolean };
 /** Puzzle number → result. Object keys are strings in JSON, so numbers go in as their decimal form. */
 export type Results = Record<string, Result>;
 
@@ -12,7 +13,8 @@ function isResult(value: unknown): value is Result {
     typeof value === "object" &&
     value !== null &&
     typeof (value as Result).score === "number" &&
-    typeof (value as Result).optimum === "number"
+    typeof (value as Result).optimum === "number" &&
+    ["boolean", "undefined"].includes(typeof (value as Result).won)
   );
 }
 
@@ -43,9 +45,14 @@ export function recordResult(game: string, puzzleNo: number, result: Result): Re
 
 export type Summary = {
   played: number;
+  /** Puzzles won (every played puzzle, for a game without losses). */
+  won: number;
   /** Puzzles where the score was the optimum. */
   optimal: number;
-  /** Consecutive days ending today, or yesterday while today is still unplayed. */
+  /**
+   * Consecutive days won, ending today, or yesterday while today is still unplayed. A loss or a
+   * missed day ends it, as in Wordle (Joshua, 2026-10-06: "count consecutive wins instead").
+   */
   currentStreak: number;
   maxStreak: number;
 };
@@ -54,21 +61,23 @@ export function summarize(results: Results, todayNo: number): Summary {
   const nos = Object.keys(results)
     .map(Number)
     .sort((a, b) => a - b);
-  const played = new Set(nos);
+  const wonOn = (n: number) => results[String(n)]?.won !== false;
+  const won = new Set(nos.filter(wonOn));
 
   let maxStreak = 0;
   let run = 0;
   let previous = Number.NaN;
   for (const n of nos) {
-    run = n === previous + 1 ? run + 1 : 1;
+    run = wonOn(n) ? (n === previous + 1 ? run + 1 : 1) : 0;
     maxStreak = Math.max(maxStreak, run);
     previous = n;
   }
 
-  // Not having played today yet doesn't break the streak until today is over.
+  // Not having played today yet doesn't break the streak until today is over; losing today does.
+  const played = new Set(nos);
   let currentStreak = 0;
-  for (let n = played.has(todayNo) ? todayNo : todayNo - 1; played.has(n); n--) currentStreak++;
+  for (let n = played.has(todayNo) ? todayNo : todayNo - 1; won.has(n); n--) currentStreak++;
 
   const optimal = Object.values(results).filter((r) => r.score === r.optimum).length;
-  return { played: nos.length, optimal, currentStreak, maxStreak };
+  return { played: nos.length, won: won.size, optimal, currentStreak, maxStreak };
 }

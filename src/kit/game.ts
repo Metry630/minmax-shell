@@ -56,6 +56,8 @@ export interface GameModule<P extends Json = Json, S extends Json = Json, Pub ex
      */
     final?(puzzle: P, spars: S[]): Scored;
   };
+  /** Whether a score is a win, for streaks; without it every played day counts (kit/stats.ts). */
+  won?(score: number): boolean;
   /** Checks the shape of a submitted solution before the engine sees it; the client is untrusted. */
   solutionSchema: z.ZodType<S>;
   engine: { score(puzzle: P, solution: S): Scored };

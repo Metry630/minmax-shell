@@ -187,7 +187,7 @@ function Results(props: {
   coachPlan: string[][];
   rows: Row[];
   buckets: Bucket[];
-  stats: { played: number; currentStreak: number; maxStreak: number };
+  stats: { played: number; won: number; currentStreak: number; maxStreak: number };
   puzzle: PlanPuzzle;
   share(options: { text?: string; via?: ShareVia }): Promise<ShareOutcome>;
 }) {
@@ -253,11 +253,12 @@ function Results(props: {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-4 gap-2 text-center">
         {[
           ["PLAYED", stats.played],
+          ["WIN %", stats.played ? Math.round((100 * stats.won) / stats.played) : 0],
           ["STREAK", stats.currentStreak],
-          ["BEST STREAK", stats.maxStreak],
+          ["BEST", stats.maxStreak],
         ].map(([label, value]) => (
           <div key={label} className="border-2 border-[var(--arcade-line)] p-2">
             <p className="arcade-display text-lg">{value}</p>

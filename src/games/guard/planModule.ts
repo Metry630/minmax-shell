@@ -143,6 +143,8 @@ export const guardPlans: GameModule<PlanPuzzle, PlanSolution, PlanPublic> = {
   // Puzzle numbers count from here; step 7 sets the real launch date before scheduling.
   epoch: "2026-10-05",
   goal: "min",
+  // Tapping them within the plans is a win; X breaks the streak.
+  won: (score) => score < FAILED,
   publicPuzzle,
   spar: {
     budget: PLANS_CONFIG.guesses,

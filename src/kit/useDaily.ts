@@ -59,8 +59,9 @@ function finish<P, S>(
   score: number,
   reveal: Reveal,
   duplicate: boolean,
+  won: boolean,
 ) {
-  const history = recordResult(game, puzzleNo, { score, optimum: reveal.optimum.score });
+  const history = recordResult(game, puzzleNo, { score, optimum: reveal.optimum.score, won });
   return {
     phase: "done" as const,
     puzzleNo,
@@ -94,7 +95,8 @@ export function useDaily<P extends Json, S extends Json, Pub extends Json = P>(
       if (loadResults(game)[String(puzzleNo)]) {
         const res = await getResults({ data: { game, puzzleNo, anonId: anonId() } });
         if (res.status === "ok" && res.yourScore !== null) {
-          if (live) setState(finish<P, S>(game, puzzleNo, res.yourScore, res, false));
+          const won = module.won?.(res.yourScore) ?? true;
+          if (live) setState(finish<P, S>(game, puzzleNo, res.yourScore, res, false, won));
           return;
         }
         // The server has no submission from this anon id, so let them play.
@@ -177,7 +179,14 @@ export function useDaily<P extends Json, S extends Json, Pub extends Json = P>(
           });
         }
         setState(
-          finish<P, S>(module.id, playing.puzzleNo, res.score, res, res.status === "duplicate"),
+          finish<P, S>(
+            module.id,
+            playing.puzzleNo,
+            res.score,
+            res,
+            res.status === "duplicate",
+            module.won?.(res.score) ?? true,
+          ),
         );
       } catch (error) {
         setState({ ...playing, submitting: false, rejection: messageOf(error) });
