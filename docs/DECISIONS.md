@@ -550,3 +550,24 @@ Press Start 2P (display only) and Departure Mono (HUD), both OFL, self-hosted. T
 themes (lowest: player 1 red on a dark panel, 4.98); yellow on the light ground is 1.37:1, so it's
 only ever a fill behind ink. The title says ARMBAR, the domain's name (GAMES.md), held in one constant
 (`TITLE`) because Joshua may still rename it.
+
+## 2026-10-06: The camp isn't compelling; the loop is redesigned before step 6 ships
+
+Joshua played step 6's build on his phone: it works, but "Krillion gives you direct feedback per
+query, and the other puzzles leave you thinking; this doesn't." A survey of daily games (772 dles
+plus the big ones, LOOP.md) found seven shared patterns; the camp fails five, above all feedback per
+action. It can't simply show the chance live: greedy finds the best camp on 83 to 97% of puzzles
+(step 5). He compared three shapes from a player's side and picked "build the route", then asked for
+it to be measured before any UI. Step 6 is paused with its UI on main; nothing is deployed.
+
+## 2026-10-06: "Build the route" on today's graph is a 2-move puzzle
+
+Lab script, 60 dev-salt puzzles, every plan enumerated (median 670 a day, 0.5 ms). In five rule
+variants the best route is 2 steps (median): one move into a dominant position, then a retried
+submission, because the graph has direct shortcuts and every extra step costs a retry. Only 16 to 21
+distinct best routes in 60 days, the most common 10 times. A grappler's instinct lands 3 to 7 points
+below the best and a tinkerer finds it on 73 to 80% of days; greedy is far off (11 to 41 points), so
+numbers alone aren't the issue, structure is. Steeper finishing chances (back 50%, mount 42%) and a
+softer counter lift the scores (median best 12% to 52%) but not the depth. Not built; options for
+the next session are in LOOP.md (a daily board where the opponent closes moves, a finishing combo,
+all 29 start positions, fewer shortcuts).

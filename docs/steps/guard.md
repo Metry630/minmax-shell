@@ -189,9 +189,32 @@ greedy knows every session's exact value and no player does.)
 
 ---
 
+## Step 5b. The daily loop 🧑
+
+**Status:** in design (2026-10-06). Read `docs/guard/LOOP.md` first.
+
+**Why:** step 6's build plays end to end, but on a phone it isn't compelling. A survey of daily games
+found seven shared patterns (feedback per action within a second, several small decisions, a budget,
+first action in seconds, knowledge paying off, graded near-misses, a story-shaped share); the camp
+fails five. Joshua picked "build the route" (shape A in LOOP.md). Measured on 60 puzzles, A on today's
+graph is a 2-move puzzle with 16 to 21 distinct answers in 60 days, so it isn't built yet.
+
+**Do (next session, with Joshua):** pick which of LOOP.md's options to test (a daily board where the
+opponent closes moves, a finishing combo, all 29 start positions, fewer shortcuts, or back to rounds
+or spars), measure each in the lab the same way, and turn the winner into this step's model, solver
+and quality gate (replacing the camp's in `model.ts`, `solver.ts`, `quality.ts`).
+
+**Done when:** a loop passes its gates: the best route needs more than 2 moves on most days, at least
+45 distinct best answers in 60 days, and the shortest route and a grappler's instinct land at least 10
+points below the best on median (numbers to confirm with Joshua).
+
+---
+
 ## Step 6. Game UI (Lovable)
 
-**Status:** todo
+**Status:** paused 2026-10-06. The camp's UI is on main and works end to end (VS screen, camp,
+replay, results, share; art awaiting sign-off in `docs/guard/ART.md`), not deployed. Resumes on step
+5b's loop: the VS screen, scenes, replay, results and share carry over; the camp screen is replaced.
 
 **Goal:** playable end to end on a phone.
 
