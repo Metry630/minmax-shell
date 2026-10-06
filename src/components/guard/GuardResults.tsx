@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { FightScene, Portrait, PositionScene, StatIcon } from "@/games/guard/art/Art";
-import { CALL, COPY, fill } from "@/games/guard/copy";
+import { CALL, COPY, TITLE, fill } from "@/games/guard/copy";
 import {
   useCountdown,
   useReplay,
@@ -118,7 +118,7 @@ export function GuardHeader({ puzzleNo, belt }: { puzzleNo: number; belt: string
   return (
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
       <div className="min-w-0">
-        <h1 className="arcade-logo" data-title="ARMBAR">ARMBAR</h1>
+        <h1 className="arcade-logo" data-title={TITLE}>{TITLE}</h1>
         <div>
           <span className="arcade-chip mt-3 inline-flex">
             {fill(COPY.division, { belt: belt.toUpperCase() })}
