@@ -94,6 +94,34 @@ export function planArea(edge: Edge): Area {
   return stat === "standing" ? "takedowns" : (stat as Area);
 }
 
+/** Each kind of move in words, one and all of them ("a pass", "every pass"), for explaining tiles. */
+export const KINDS: Record<Area, { one: string; all: string }> = {
+  takedowns: { one: "a takedown", all: "every takedown" },
+  guard: { one: "a guard pull or sweep", all: "every guard pull and sweep" },
+  passing: { one: "a pass", all: "every pass" },
+  top: { one: "a move between pins", all: "every move between pins" },
+  back: { one: "a back take", all: "every back take" },
+  escapes: { one: "an escape", all: "every escape" },
+  chokes: { one: "a choke", all: "every choke" },
+  "arm-locks": { one: "an arm-lock", all: "every arm-lock" },
+  "leg-locks": { one: "a leg-lock", all: "every leg-lock" },
+};
+
+/** What one tile means, in a sentence ("Knee slice is a pass. Blocked: so is every pass."). */
+export function explain(setup: PlansSetup, step: Step, colour: Colour): string {
+  const mv = setup.board.moves[step.p]![step.m]!;
+  const kind = KINDS[setup.areas[step.p]![step.m]!];
+  const what = `${mv.label} is ${kind.one}.`;
+  if (colour === "🟩") return `${what} It got through.`;
+  if (colour === "⬛") return `${what} Blocked: so is ${kind.all}.`;
+  if (colour === "🟨") {
+    const where =
+      setup.areas[step.p]![step.m] === "leg-locks" ? "single-leg X" : "mount or the back";
+    return `${what} Right finish, wrong spot: ${kind.all.replace("every ", "")}s only get through from ${where}.`;
+  }
+  return `${mv.label}: not tried. The plan stopped at the block before it.`;
+}
+
 /** One step of a plan: where it's tried from, which move (index into the board there). */
 export type Step = { p: number; m: number };
 export type Plan = readonly Step[];

@@ -9,6 +9,7 @@ import {
   PLANS_CONFIG,
   bestPath,
   endOf,
+  explain,
   grade,
   isLegal,
   isSolved,
@@ -123,6 +124,19 @@ describe("game-plan Wordle", () => {
         belief = narrow(setup, belief, plan as Plan, colours);
         expect([...belief]).toContain(truth);
       }
+    }
+  });
+
+  it("explains every tile in words: the move's kind and what its colour means", () => {
+    const setup = day(1);
+    for (const plan of setup.plans.slice(0, 30)) {
+      grade(setup, plan).forEach((colour, i) => {
+        const text = explain(setup, plan[i]!, colour);
+        if (colour === "⬛") expect(text).toMatch(/Blocked: so is every /);
+        if (colour === "🟩") expect(text).toMatch(/got through/);
+        if (colour === "🟨") expect(text).toMatch(/wrong spot/);
+        if (colour === "⬜") expect(text).toMatch(/not tried/);
+      });
     }
   });
 

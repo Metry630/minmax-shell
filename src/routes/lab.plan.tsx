@@ -6,8 +6,16 @@ import { COPY, TITLE } from "@/games/guard/copy";
 import { POSITIONS, type PositionId } from "@/games/guard/graph";
 import { guard } from "@/games/guard/module";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   bestPath,
   endOf,
+  explain,
   grade,
   isSolved,
   movesAt,
@@ -48,6 +56,73 @@ const FILL: Record<Exclude<Colour, "⬜">, { background: string; color: string }
   "🟨": { background: "var(--arcade-hi)", color: "#141425" },
   "⬛": { background: "#55556a", color: "#ffffff" },
 };
+
+/** The colour key, under the grid and in the rules. */
+const KEY: { colour: Colour; short: string; words: string }[] = [
+  { colour: "🟩", short: "gets through", words: "gets through" },
+  {
+    colour: "🟨",
+    short: "wrong spot",
+    words: "right finish, wrong spot (only from mount or the back)",
+  },
+  { colour: "⬛", short: "blocked", words: "blocked, and so is every move of that kind" },
+  { colour: "⬜", short: "not tried", words: "not tried: the plan stopped at a block" },
+];
+
+/** A small swatch of a colour, for the key. */
+function Swatch({ colour }: { colour: Colour }) {
+  return (
+    <span
+      className={`inline-block h-3 w-3 shrink-0 border-2 ${colour === "⬜" ? "border-dashed border-[var(--arcade-line)]" : "border-transparent"}`}
+      style={colour === "⬜" ? undefined : FILL[colour]}
+    />
+  );
+}
+
+/** Shown on a first visit (remembered in localStorage) and from the ? button. */
+const RULES_SEEN = "minmax:guard:rules-seen";
+
+function Rules({ open, onClose }: { open: boolean; onClose(): void }) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="arcade arcade-dialog max-h-[90vh] max-w-[calc(100%-2rem)] overflow-y-auto rounded-none border-2 p-5 shadow-none">
+        <DialogHeader>
+          <DialogTitle className="arcade-display text-sm">HOW TO PLAY</DialogTitle>
+          <DialogDescription className="mt-2 text-sm text-[var(--arcade-ink)]">
+            Find a game plan that taps them. You get 6 plans.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 text-sm">
+          <p>
+            Build a plan by tapping moves from where you start until you pick a submission, then
+            submit it. The coach marks every step:
+          </p>
+          <ul className="space-y-1.5">
+            {KEY.map((k) => (
+              <li key={k.colour} className="flex items-start gap-2">
+                <Swatch colour={k.colour} />
+                <span>{k.words}</span>
+              </li>
+            ))}
+          </ul>
+          <p>
+            Moves of a kind share a fate: if one pass is blocked, every pass is. The kinds are
+            takedowns, guard pulls and sweeps, passes, moves between pins, back takes, escapes,
+            chokes, arm-locks and leg-locks. Tap any tile to see what it meant.
+          </p>
+          <p>The coach's notes are true. Everyone gets the same opponent today.</p>
+        </div>
+        <button
+          type="button"
+          className="arcade-button mt-2 min-h-11 w-full border-2 px-4 text-[10px]"
+          onClick={onClose}
+        >
+          PLAY
+        </button>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 /** One step of a plan as a Wordle tile: the move's name on its colour. */
 // `| undefined` because exactOptionalPropertyTypes is on and rows pass `colours[j]`, typed T | undefined.
@@ -105,6 +180,24 @@ function Game({ n, next }: { n: number; next(): void }) {
   const guesses = setup.config.guesses;
   const [rows, setRows] = useState<{ plan: Plan; colours: Colour[] }[]>([]);
   const [draft, setDraft] = useState<Step[]>([]);
+  const [picked, setPicked] = useState<{ row: number; step: number } | null>(null);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  // First visit: open the rules once. Storage can be blocked (private mode); then they open every time.
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(RULES_SEEN)) setRulesOpen(true);
+    } catch {
+      setRulesOpen(true);
+    }
+  }, []);
+  function closeRules() {
+    setRulesOpen(false);
+    try {
+      localStorage.setItem(RULES_SEEN, "1");
+    } catch {
+      // Blocked storage: nothing to remember it in.
+    }
+  }
 
   const solvedIt = rows.some((r) => isSolved(r.colours));
   const over = solvedIt || rows.length >= guesses;
@@ -139,8 +232,19 @@ function Game({ n, next }: { n: number; next(): void }) {
           <h1 className="arcade-logo" data-title={TITLE}>
             {TITLE}
           </h1>
-          <p className="arcade-hud pt-1 text-xs">PLAN LAB #{n}</p>
+          <div className="flex items-center gap-2 pt-1">
+            <p className="arcade-hud text-xs">PLAN LAB #{n}</p>
+            <button
+              type="button"
+              aria-label="How to play"
+              className="arcade-button arcade-button-secondary h-8 w-8 border-2 text-xs"
+              onClick={() => setRulesOpen(true)}
+            >
+              ?
+            </button>
+          </div>
         </header>
+        <Rules open={rulesOpen} onClose={closeRules} />
 
         <section className="arcade-panel mt-6 p-4">
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2 text-center">
@@ -176,10 +280,39 @@ function Game({ n, next }: { n: number; next(): void }) {
               {rows.map((r, i) => (
                 <div key={i} className="grid grid-cols-5 gap-1">
                   {r.plan.map((s, j) => (
-                    <Tile key={j} text={label(s)} colour={r.colours[j]} />
+                    <button
+                      key={j}
+                      type="button"
+                      aria-label={`What ${label(s)} meant`}
+                      className={
+                        picked?.row === i && picked.step === j
+                          ? "outline outline-2 outline-[var(--arcade-ink)]"
+                          : ""
+                      }
+                      onClick={() => setPicked({ row: i, step: j })}
+                    >
+                      <Tile text={label(s)} colour={r.colours[j]} />
+                    </button>
                   ))}
                 </div>
               ))}
+              <p className="min-h-10 pt-1 text-sm">
+                {picked
+                  ? explain(
+                      setup,
+                      rows[picked.row]!.plan[picked.step]!,
+                      rows[picked.row]!.colours[picked.step]!,
+                    )
+                  : "Tap a tile to see what it meant."}
+              </p>
+              <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-[var(--arcade-muted)]">
+                {KEY.map((k) => (
+                  <li key={k.colour} className="flex items-center gap-1.5">
+                    <Swatch colour={k.colour} />
+                    {k.short}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -302,24 +435,6 @@ function Game({ n, next }: { n: number; next(): void }) {
               </div>
             </div>
           )}
-        </section>
-
-        <section className="arcade-panel mt-6 p-4">
-          <details>
-            <summary className="arcade-section-title cursor-pointer">HOW IT WORKS</summary>
-            <div className="mt-2 space-y-2 text-sm text-[var(--arcade-muted)]">
-              <p>
-                Build a game plan from the start to a submission. Each step comes back 🟩 (gets
-                through), 🟨 (right finish, but it only works from mount or the back) or ⬛
-                (blocked). A plan stops at its first blocked step; what's after shows ⬜.
-              </p>
-              <p>
-                Moves of a kind share a fate: if one pass is blocked, every pass is. The kinds are
-                takedowns, guard pulls and sweeps, passes, pins, back takes, escapes, chokes,
-                arm-locks and leg-locks. The coach's notes are true.
-              </p>
-            </div>
-          </details>
         </section>
       </div>
     </main>
