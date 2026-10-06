@@ -30,10 +30,33 @@ export function shareText({ domain, puzzleNo, score, optimum, goal }: ShareInput
   return `${domain} #${puzzleNo}\n${"🟩".repeat(filled)}${"⬛".repeat(CELLS - filled)} ${score}/${optimum}`;
 }
 
-/** Phones get the share sheet; everything else gets the clipboard, as Wordle does. */
-export async function shareResult(text: string): Promise<"shared" | "copied" | "failed"> {
+/** An X (Twitter) compose window with the text filled in; the intent URL needs no API key. */
+export function tweetUrl(text: string): string {
+  return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+}
+
+export type ShareVia = "auto" | "copy" | "x";
+export type ShareOutcome = "shared" | "copied" | "failed";
+
+/**
+ * "auto": phones get the share sheet (Instagram, WhatsApp and the rest), everything else the
+ * clipboard, as Wordle does. "x" opens the compose window, before any await so popup blockers still
+ * count it as the click's own window.
+ */
+export async function shareResult(text: string, via: ShareVia = "auto"): Promise<ShareOutcome> {
+  if (via === "x") {
+    // Not the "noopener" feature: with it window.open returns null even when the window opened.
+    const opened = window.open(tweetUrl(text), "_blank");
+    if (!opened) return "failed";
+    opened.opener = null;
+    return "shared";
+  }
   try {
-    if (typeof navigator.share === "function" && matchMedia("(pointer: coarse)").matches) {
+    if (
+      via === "auto" &&
+      typeof navigator.share === "function" &&
+      matchMedia("(pointer: coarse)").matches
+    ) {
       await navigator.share({ text });
       return "shared";
     }

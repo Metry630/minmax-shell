@@ -6,9 +6,10 @@ import type { Bucket, ScoreStore } from "./scores.server";
 // The puzzle and scores API as plain functions over injected stores, so tests run them without a
 // server. daily.functions.ts wraps each in a TanStack server function.
 //
-// Two rules live here. The server re-scores every solution with the shared engine and never stores a
-// score the client sent. And the optimum and histogram are shown only to an anon id that has
-// submitted, or to anyone once the puzzle has closed (DECISIONS 2026-10-05).
+// Three rules live here. The server re-scores every solution with the shared engine and never stores a
+// score the client sent. The optimum and histogram are shown only to an anon id that has submitted, or
+// to anyone once the puzzle has closed (DECISIONS 2026-10-05). And a game with `publicPuzzle` is served
+// redacted until then: the full puzzle (guard's hidden defences) comes back with the reveal.
 
 export type Deps = {
   games: Readonly<Record<string, GameModule>>;
@@ -22,7 +23,18 @@ export type RejectReason =
 
 export type Rejected = { status: "rejected"; reason: RejectReason; detail?: string };
 
-export type Reveal = { optimum: Optimum<Json>; buckets: Bucket[]; store: ScoreStore["kind"] };
+/**
+ * What submitting (or the puzzle closing) unlocks. `puzzle` is the full puzzle and `solution` the
+ * one this anon id submitted (null when they never did), so a results page can be rebuilt after a
+ * reload: guard's replay and game plans need both.
+ */
+export type Reveal = {
+  optimum: Optimum<Json>;
+  buckets: Bucket[];
+  store: ScoreStore["kind"];
+  puzzle: Json;
+  solution: Json | null;
+};
 
 export type TodayResult = { status: "ok"; puzzleNo: number; puzzle: Json } | Rejected;
 export type SubmitResult =
@@ -47,14 +59,16 @@ export async function today(deps: Deps, { game, puzzleNo }: PuzzleRef): Promise<
   if (window !== "open") return reject(window);
   const loaded = await deps.puzzles.load(module, puzzleNo);
   if (!loaded) return reject("no_puzzle");
-  // The puzzle only: the optimum comes from submit and results.
-  return { status: "ok", puzzleNo, puzzle: loaded.puzzle };
+  // The puzzle only, redacted if the game says so: the optimum and the rest come with the reveal.
+  const puzzle = module.publicPuzzle ? module.publicPuzzle(loaded.puzzle) : loaded.puzzle;
+  return { status: "ok", puzzleNo, puzzle };
 }
 
 export async function submit(
   deps: Deps,
   // `solution?` because zod infers z.unknown() as optional; a missing one fails solutionSchema.
-  input: PlayerRef & { solution?: unknown; claimedScore: number },
+  // `claimedScore` is absent for a redacted game, whose client can't score without the full puzzle.
+  input: PlayerRef & { solution?: unknown; claimedScore?: number | undefined },
 ): Promise<SubmitResult> {
   const { game, puzzleNo, anonId } = input;
   const module = deps.games[game];
@@ -70,7 +84,7 @@ export async function submit(
   if (!scored.ok) return reject("illegal", scored.reason);
   // Tampering, or a stale client bundle whose engine disagrees with the server's. Either way the
   // player saw a score we won't store, so refuse loudly instead of quietly storing a different one.
-  if (scored.score !== input.claimedScore) {
+  if (input.claimedScore !== undefined && scored.score !== input.claimedScore) {
     return reject("score_mismatch", `The server scored this ${scored.score}.`);
   }
 
@@ -81,16 +95,16 @@ export async function submit(
     score: scored.score,
     solution: parsed.data,
   });
-  // A second submission gets the first one's score back: that's the one on the histogram.
-  const score = inserted
-    ? scored.score
-    : ((await deps.scores.find(game, puzzleNo, anonId)) ?? scored.score);
+  // A second submission gets the first one back: that's the one on the histogram.
+  const first = inserted ? undefined : await deps.scores.find(game, puzzleNo, anonId);
   return {
     status: inserted ? "accepted" : "duplicate",
-    score,
+    score: first?.score ?? scored.score,
     optimum: loaded.optimum,
     buckets: await deps.scores.histogram(game, puzzleNo),
     store: deps.scores.kind,
+    puzzle: loaded.puzzle,
+    solution: (first ? first.solution : parsed.data) as Json,
   };
 }
 
@@ -102,15 +116,18 @@ export async function results(
   if (!module) return reject("unknown_game");
   const window = puzzleWindow(module.epoch, puzzleNo, deps.now);
   if (window === "not_open") return reject(window);
-  const yourScore = await deps.scores.find(game, puzzleNo, anonId);
-  if (yourScore === undefined && window === "open") return { status: "locked" };
+  const yours = await deps.scores.find(game, puzzleNo, anonId);
+  if (yours === undefined && window === "open") return { status: "locked" };
   const loaded = await deps.puzzles.load(module, puzzleNo);
   if (!loaded) return reject("no_puzzle");
   return {
     status: "ok",
-    yourScore: yourScore ?? null,
+    yourScore: yours?.score ?? null,
     optimum: loaded.optimum,
     buckets: await deps.scores.histogram(game, puzzleNo),
     store: deps.scores.kind,
+    puzzle: loaded.puzzle,
+    // Stored by this same code after solutionSchema accepted it, so it is the game's solution type.
+    solution: (yours?.solution ?? null) as Json | null,
   };
 }

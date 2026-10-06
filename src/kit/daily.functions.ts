@@ -21,7 +21,8 @@ export const getToday = createServerFn({ method: "GET" })
 export const submitSolution = createServerFn({ method: "POST" })
   .inputValidator(
     // The solution's shape is the game's to check (GameModule.solutionSchema).
-    playerRef.extend({ solution: z.unknown(), claimedScore: z.number().int() }),
+    // claimedScore is left out by games served redacted (GameModule.publicPuzzle).
+    playerRef.extend({ solution: z.unknown(), claimedScore: z.number().int().optional() }),
   )
   .handler(async ({ data }) => {
     const server = await import("./daily.server");

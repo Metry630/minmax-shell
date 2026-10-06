@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 
-import { fractionOfOptimum, shareText } from "./share";
+import { fractionOfOptimum, shareText, tweetUrl } from "./share";
 
 describe("fractionOfOptimum", () => {
   it.each([
@@ -92,5 +92,17 @@ describe("shareText", () => {
       const cellCount = Array.from(line.matchAll(/🟩|⬛/gu)).length;
       expect(cellCount).toBe(10);
     }
+  });
+});
+
+describe("tweetUrl", () => {
+  it("encodes the whole text, arrows, percent signs and newlines included", () => {
+    const url = tweetUrl("armbar.day #12 31% → 58% (best 64%)");
+    expect(url.startsWith("https://twitter.com/intent/tweet?text=")).toBe(true);
+    expect(decodeURIComponent(url.split("text=")[1] ?? "")).toBe(
+      "armbar.day #12 31% → 58% (best 64%)",
+    );
+    expect(url).not.toContain(" ");
+    expect(url).not.toContain("#");
   });
 });

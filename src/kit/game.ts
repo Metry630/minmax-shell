@@ -21,7 +21,8 @@ export type Scheduled<P, S> = { puzzle: P; optimum: Optimum<S> };
 
 export type QualityReport = { pass: boolean; metrics: Record<string, number> };
 
-export interface GameModule<P extends Json = Json, S extends Json = Json> {
+/** `Pub` is what `today` serves before you submit: the puzzle itself unless the game redacts it. */
+export interface GameModule<P extends Json = Json, S extends Json = Json, Pub extends Json = P> {
   id: string;
   name: string;
   /** Local date of puzzle #1, "YYYY-MM-DD". Fixed before launch; moving it renumbers every puzzle. */
@@ -32,6 +33,14 @@ export interface GameModule<P extends Json = Json, S extends Json = Json> {
    * Only the demo is; real games are solved offline into D1 (scripts/schedule.ts, step 7).
    */
   onDemand?: boolean;
+  /**
+   * What `today` serves before you submit, when the full puzzle would give the answer away (guard's
+   * hidden defences). Submit and results return the full puzzle. Without it, the puzzle is served as is
+   * and the client pre-scores its own solution.
+   */
+  // Method syntax, like engine.score: TS checks methods' parameters bivariantly, which lets a
+  // GameModule<GuardPuzzle> sit in the registry's Record<string, GameModule>.
+  publicPuzzle?(puzzle: P): Pub;
   /** Checks the shape of a submitted solution before the engine sees it; the client is untrusted. */
   solutionSchema: z.ZodType<S>;
   engine: { score(puzzle: P, solution: S): Scored };

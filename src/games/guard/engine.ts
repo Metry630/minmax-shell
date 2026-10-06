@@ -48,7 +48,8 @@ type Move = {
   attack: boolean;
   base: number;
 };
-type Escape = { to: number };
+/** Their counter: where it leaves you, and its name for the replay. */
+type Escape = { to: number; id: string; name: string };
 
 /** The graph as arrays for the DP, with today's belt applied. */
 export type Board = {
@@ -98,7 +99,9 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
         attack: true,
         base: submissionBase(kind, perspective === "bottom"),
       });
-    } else if (edge.kind === "escape") escapes[from]?.push({ to: at(edge.to) });
+    } else if (edge.kind === "escape") {
+      escapes[from]?.push({ to: at(edge.to), id: edge.id, name: edge.name });
+    }
   }
   return {
     ids,
@@ -107,6 +110,33 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
     stat: ids.map((id) => STAT_INDEX[STAT_OF[id]]),
     maxMoves: Math.max(...moves.map((list) => list.length)),
   };
+}
+
+/** A failed real threat sets up the next different attack (armbar to triangle, sweep to armbar). */
+const setUpBonus = (move: Move, m: number, last: number, chain: number) =>
+  move.attack && last !== -1 && last !== m ? chain : 0;
+
+/** A move's chance of working with this skill edge, `bonus` from a set-up included. */
+function moveWorks(
+  move: Move,
+  skills: readonly number[],
+  defence: readonly number[],
+  bonus: number,
+): number {
+  let skill = skills[move.skill] ?? 0;
+  let guard = defence[move.guard] ?? 0;
+  if (move.family !== -1) {
+    // A submission averages where you attack from and what you finish with, on both sides.
+    skill = (skill + (skills[move.family] ?? 0)) / 2;
+    guard = (guard + (defence[move.family] ?? 0)) / 2;
+  }
+  return chance(move.base, skill + bonus, guard);
+}
+
+/** The chain after attempt m fails: grows on a different real threat, starts on the same one. */
+function chainAfterMiss(move: Move, w: number, m: number, last: number, chain: number) {
+  if (!(move.attack && w >= THREAT)) return { last: -1, chain: 0 };
+  return { last: m, chain: last !== -1 && last !== m ? Math.min(chain + 1, CHAIN_MAX) : 1 };
 }
 
 /** The fight's exact values, memoised: `value` for the score, `choose` for the game plan. */
@@ -123,18 +153,8 @@ function solveFight(board: Board, fight: Fight) {
     ((p * (exchanges + 1) + n) * lastSlots + (last + 1)) * chainSlots + chain;
 
   /** A move's chance of working right now, chain bonus included. */
-  const works = (move: Move, m: number, last: number, chain: number) => {
-    // A failed real threat sets up the next different attack (armbar to triangle, sweep to armbar).
-    const bonus = move.attack && last !== -1 && last !== m ? chain : 0;
-    let skill = skills[move.skill] ?? 0;
-    let guard = defence[move.guard] ?? 0;
-    if (move.family !== -1) {
-      // A submission averages where you attack from and what you finish with, on both sides.
-      skill = (skill + (skills[move.family] ?? 0)) / 2;
-      guard = (guard + (defence[move.family] ?? 0)) / 2;
-    }
-    return chance(move.base, skill + bonus, guard);
-  };
+  const works = (move: Move, m: number, last: number, chain: number) =>
+    moveWorks(move, skills, defence, setUpBonus(move, m, last, chain));
 
   /** Value of attempting move m: it works, or it fails and they may counter. */
   const attempt = (p: number, n: number, last: number, chain: number, m: number): number => {
@@ -144,10 +164,8 @@ function solveFight(board: Board, fight: Fight) {
     const success = move.submission ? 1 : value(move.to, n - 1, -1, 0);
     // A failed attack that was a real threat grows the chain (a different one) or starts it (the
     // same one again); a fake, or any other failed move, ends it.
-    const stay =
-      move.attack && w >= THREAT
-        ? value(p, n - 1, m, last !== -1 && last !== m ? Math.min(chain + 1, CHAIN_MAX) : 1)
-        : value(p, n - 1, -1, 0);
+    const next = chainAfterMiss(move, w, m, last, chain);
+    const stay = value(p, n - 1, next.last, next.chain);
     // When a move fails, they may counter. They pick the counter that's worst for you, and skip it
     // if staying put is worse for you anyway. Together with holding, this makes more skill never
     // lower the chance (engine.test.ts checks it), which the solver's pruning relies on.
@@ -184,7 +202,18 @@ function solveFight(board: Board, fight: Fight) {
     return pick;
   };
 
-  return { value, choose, works };
+  /** Where a failed move leaves you: the counter worst for you, or null if staying is worse. */
+  const counterTo = (p: number, n: number, stayValue: number) => {
+    let pick: Escape | null = null;
+    let worst = stayValue;
+    for (const escape of escapes[p] ?? []) {
+      const v = value(escape.to, n - 1, -1, 0);
+      if (v < worst) [worst, pick] = [v, escape];
+    }
+    return pick;
+  };
+
+  return { value, choose, works, counterTo };
 }
 
 export function finishChance(board: Board, fight: Fight): number {
@@ -227,6 +256,132 @@ export function gamePlan(board: Board, fight: Fight): PlanStep[] {
     p = move.to;
   }
   return steps;
+}
+
+/** A move's chance from a position with these skills, no set-up; undefined if it isn't there. */
+export function moveChance(board: Board, fight: Fight, from: PositionId, moveId: string) {
+  const move = board.moves[board.ids.indexOf(from)]?.find((m) => m.id === moveId);
+  return move && moveWorks(move, fight.skills, fight.defence, 0);
+}
+
+export type Exchange = {
+  /** 1-based. */
+  n: number;
+  from: PositionId;
+  /** The move attempted; null when the fighter holds position (nothing pays this exchange). */
+  move: { id: string; label: string; submission: boolean; attack: boolean } | null;
+  /** Its chance this time, set-up included; 0 when holding. */
+  chance: number;
+  /** +1 or +2 when a failed real threat set this attack up. */
+  setUp: number;
+  worked: boolean;
+  /** Their counter after your move failed, when they got one. */
+  counter: { id: string; name: string } | null;
+  /** Where you are after the exchange (where you started it, after a finish). */
+  at: PositionId;
+};
+
+export type FightLog = {
+  exchanges: Exchange[];
+  /** The submission that ended it, or null if the exchanges ran out ("TIME!"). */
+  finish: string | null;
+};
+
+/**
+ * One fight, for the replay: the fighter plays exactly the policy the score is computed from, and
+ * `rng` rolls each move and counter. Over many fights the share that finish is the score
+ * (engine.test.ts checks it), so the replay is one honest roll of the camp's chance.
+ */
+export function simulateFight(board: Board, fight: Fight, rng: { next(): number }): FightLog {
+  const solved = solveFight(board, fight);
+  const exchanges: Exchange[] = [];
+  let p = board.ids.indexOf(fight.start);
+  let last = -1;
+  let chain = 0;
+  for (let n = fight.exchanges; n > 0; n--) {
+    const from = board.ids[p] ?? "standing";
+    const m = solved.choose(p, n, last, chain);
+    const move = board.moves[p]?.[m];
+    const k = fight.exchanges - n + 1;
+    if (!move) {
+      exchanges.push({
+        n: k,
+        from,
+        move: null,
+        chance: 0,
+        setUp: 0,
+        worked: false,
+        counter: null,
+        at: from,
+      });
+      [last, chain] = [-1, 0];
+      continue;
+    }
+    const w = solved.works(move, m, last, chain);
+    const shown = {
+      id: move.id,
+      label: move.label,
+      submission: move.submission,
+      attack: move.attack,
+    };
+    const setUp = setUpBonus(move, m, last, chain);
+    if (rng.next() < w) {
+      if (move.submission) {
+        exchanges.push({
+          n: k,
+          from,
+          move: shown,
+          chance: w,
+          setUp,
+          worked: true,
+          counter: null,
+          at: from,
+        });
+        return { exchanges, finish: move.label };
+      }
+      p = move.to;
+      [last, chain] = [-1, 0];
+      const at = board.ids[p] ?? from;
+      exchanges.push({
+        n: k,
+        from,
+        move: shown,
+        chance: w,
+        setUp,
+        worked: true,
+        counter: null,
+        at,
+      });
+      continue;
+    }
+    // It failed: the chain moves on, then they may counter, exactly as `attempt` values it.
+    const next = chainAfterMiss(move, w, m, last, chain);
+    const own = board.stat[p] ?? 0;
+    const out = board.escapes[p] ?? [];
+    const getOut =
+      out.length === 0 ? 0 : escapeChance(fight.defence[own] ?? 0, fight.skills[own] ?? 0);
+    const counter =
+      rng.next() < getOut
+        ? solved.counterTo(p, n, solved.value(p, n - 1, next.last, next.chain))
+        : null;
+    if (counter) {
+      p = counter.to;
+      [last, chain] = [-1, 0];
+    } else {
+      [last, chain] = [next.last, next.chain];
+    }
+    exchanges.push({
+      n: k,
+      from,
+      move: shown,
+      chance: w,
+      setUp,
+      worked: false,
+      counter: counter && { id: counter.id, name: counter.name },
+      at: board.ids[p] ?? from,
+    });
+  }
+  return { exchanges, finish: null };
 }
 
 /** Skills after a camp: base plus sessions per stat. Undefined if the camp isn't legal. */

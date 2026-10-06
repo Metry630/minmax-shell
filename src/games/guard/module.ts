@@ -14,6 +14,18 @@ import { solveCamp } from "./solver";
 
 export type GuardSolution = { camp: number[] };
 
+/**
+ * What the player gets before submitting: everything but the opponent's defences. With those, the
+ * public solver gives the best camp away (DECISIONS 2026-10-06); the card shows what a scout would.
+ */
+export type GuardPublicPuzzle = Omit<GuardPuzzle, "opponent"> & {
+  opponent: Omit<GuardPuzzle["opponent"], "defence">;
+};
+
+export function publicPuzzle({ opponent, ...rest }: GuardPuzzle): GuardPublicPuzzle {
+  return { ...rest, opponent: { archetype: opponent.archetype } };
+}
+
 // One compiled board per belt, built on first use.
 const boards = new Map<Belt, Board>();
 const boardFor = (belt: Belt) => {
@@ -25,12 +37,13 @@ const boardFor = (belt: Belt) => {
   return board;
 };
 
-export const guard: GameModule<GuardPuzzle, GuardSolution> = {
+export const guard: GameModule<GuardPuzzle, GuardSolution, GuardPublicPuzzle> = {
   id: "guard",
   name: "Guard to Sub",
   // Puzzle numbers count from here; step 7 sets the real launch date before scheduling.
   epoch: "2026-10-05",
   goal: "max",
+  publicPuzzle,
   solutionSchema: z.object({ camp: z.array(z.number()).length(STATS.length) }),
   engine: {
     score(puzzle, { camp }) {

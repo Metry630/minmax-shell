@@ -1,11 +1,22 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 
-import { DEV_SALT, rngFor } from "@/kit/seed";
+import { DEV_SALT, rngFor, sfc32 } from "@/kit/seed";
 
-import { applyCamp, compileBoard, finishChance, gamePlan, toScore, type Fight } from "./engine";
+import {
+  applyCamp,
+  compileBoard,
+  finishChance,
+  gamePlan,
+  moveChance,
+  simulateFight,
+  toScore,
+  type Fight,
+} from "./engine";
 import type { Edge, PositionId } from "./graph";
 import { BASE, CHANCE, STATS, STAT_INDEX, THREAT, chance, escapeChance } from "./model";
+import { EDGES } from "./graph";
+import { baseOf } from "./quality";
 import { guard } from "./module";
 import { allCamps, solveCamp } from "./solver";
 
@@ -285,5 +296,63 @@ describe("the module", () => {
     if (first)
       expect(guard.engine.score(puzzle, first)).toEqual({ ok: true, score: optimum.score });
     expect(guard.engine.score(puzzle, { camp: flat(0) }).ok).toBe(false);
+  });
+});
+
+describe("moveChance", () => {
+  it("is the move's chance with no set-up, and undefined for a move that isn't there", () => {
+    const board = compileBoard("white", toy);
+    expect(moveChance(board, toyFight(2), "standing", "shot")).toBeCloseTo(BASE.scoring);
+    expect(moveChance(board, { ...toyFight(2), skills: flat(7) }, "standing", "shot")).toBeCloseTo(
+      BASE.scoring + 2 * CHANCE.perPoint,
+    );
+    expect(moveChance(board, toyFight(2), "standing", "ezekiel")).toBeUndefined();
+  });
+});
+
+describe("simulateFight (the replay)", () => {
+  it("finishes as often as the score says: it rolls the camp's own chance", async () => {
+    // 4,000 fights on each of three real puzzles. The standard error at 50% is 0.8 points, so 2.5
+    // points is about 3 of them; the seeds are fixed, so this can't flake.
+    for (const n of [1, 2, 3]) {
+      const puzzle = guard.generator.generate(await rngFor(DEV_SALT, "guard", n));
+      const board = compileBoard(puzzle.belt);
+      const fight = baseOf(puzzle);
+      const rng = sfc32([n, 2, 3, 4]);
+      let finished = 0;
+      for (let i = 0; i < 4000; i++) if (simulateFight(board, fight, rng).finish) finished++;
+      expect(Math.abs(finished / 4000 - finishChance(board, fight))).toBeLessThan(0.025);
+    }
+  });
+
+  it("only plays moves and counters that exist, and stops at a finish or the last exchange", async () => {
+    const theirs = new Set(
+      EDGES.filter((e) => e.kind === "escape").map((e) => `${e.from}|${e.id}`),
+    );
+    for (const n of [4, 5, 6, 7]) {
+      const puzzle = guard.generator.generate(await rngFor(DEV_SALT, "guard", n));
+      const board = compileBoard(puzzle.belt);
+      const fight = baseOf(puzzle);
+      const rng = sfc32([n, 9, 9, 9]);
+      for (let i = 0; i < 200; i++) {
+        const log = simulateFight(board, fight, rng);
+        expect(log.exchanges.length).toBeLessThanOrEqual(puzzle.exchanges);
+        if (!log.finish) expect(log.exchanges).toHaveLength(puzzle.exchanges);
+        let at = puzzle.start;
+        for (const ex of log.exchanges) {
+          expect(ex.from).toBe(at);
+          if (ex.move) {
+            expect(moveChance(board, fight, ex.from, ex.move.id)).toBeDefined();
+          }
+          if (ex.counter) {
+            expect(ex.worked).toBe(false);
+            expect(theirs.has(`${ex.from}|${ex.counter.id}`)).toBe(true);
+          }
+          at = ex.at;
+        }
+        const end = log.exchanges.at(-1);
+        if (log.finish) expect(end?.move?.submission && end.worked).toBe(true);
+      }
+    }
   });
 });

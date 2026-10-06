@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 
 import { demo, type DemoPuzzle } from "@/games/demo/module";
+import { guard } from "@/games/guard/module";
 
 import { results, submit, today, type Deps } from "./daily.core";
 import { generatedPuzzles } from "./puzzles.server";
@@ -14,7 +15,7 @@ const OTHER = "9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a";
 
 function deps(): Deps {
   return {
-    games: { demo },
+    games: { demo, guard },
     puzzles: generatedPuzzles("test-salt"),
     scores: memoryStore(new Map()),
     now: NOW,
@@ -61,6 +62,8 @@ describe("submit", () => {
       optimum: { score: max, solutions: [{ value: max }] },
       buckets: [{ value: 40, count: 1 }],
       store: "memory",
+      puzzle: { max },
+      solution: { value: 40 },
     });
   });
 
@@ -86,14 +89,21 @@ describe("submit", () => {
     expect(await d.scores.histogram("demo", N)).toEqual([]);
   });
 
-  it("refuses a second submission and returns the first score", async () => {
+  it("refuses a second submission and returns the first score and solution", async () => {
     const d = deps();
     await submit(d, play(40, 40));
     expect(await submit(d, play(50, 50))).toMatchObject({
       status: "duplicate",
       score: 40,
+      solution: { value: 40 },
       buckets: [{ value: 40, count: 1 }],
     });
+  });
+
+  it("scores a solution sent without a claimed score (a redacted game's client)", async () => {
+    const d = deps();
+    const { claimedScore: _, ...unclaimed } = play(40, 40);
+    expect(await submit(d, unclaimed)).toMatchObject({ status: "accepted", score: 40 });
   });
 
   it("refuses a submission outside the window", async () => {
@@ -113,6 +123,8 @@ describe("results", () => {
     expect(await results(d, { ...ref, anonId: PLAYER })).toMatchObject({
       status: "ok",
       yourScore: 40,
+      solution: { value: 40 },
+      puzzle: { max: await todaysMax(d) },
     });
     expect(await results(d, { ...ref, anonId: OTHER })).toEqual({ status: "locked" });
   });
@@ -124,7 +136,34 @@ describe("results", () => {
     expect(await results(later, { game: "demo", puzzleNo: N, anonId: OTHER })).toMatchObject({
       status: "ok",
       yourScore: null,
+      solution: null,
       buckets: [{ value: 40, count: 1 }],
+    });
+  });
+});
+
+describe("a redacted game (guard)", () => {
+  const ref = { game: "guard", puzzleNo: N };
+  const camp = (sessions: number[]) => ({ ...ref, anonId: PLAYER, solution: { camp: sessions } });
+
+  it("serves the card without the opponent's defences, which come back after submitting", async () => {
+    const d = deps();
+    const served = await today(d, ref);
+    if (served.status !== "ok") throw new Error(served.status);
+    expect(JSON.stringify(served.puzzle)).not.toContain("defence");
+    expect(served.puzzle).toHaveProperty("card");
+    expect(served.puzzle).toHaveProperty("fighter.skills");
+
+    const res = await submit(d, camp([6, 0, 0, 0, 0, 0, 0, 0]));
+    expect(res).toMatchObject({ status: "accepted", solution: { camp: [6, 0, 0, 0, 0, 0, 0, 0] } });
+    expect(res).toHaveProperty("puzzle.opponent.defence");
+  });
+
+  it("still refuses an illegal camp, with the engine's reason", async () => {
+    const d = deps();
+    expect(await submit(d, camp([7, 0, 0, 0, 0, 0, 0, 0]))).toMatchObject({
+      status: "rejected",
+      reason: "illegal",
     });
   });
 });

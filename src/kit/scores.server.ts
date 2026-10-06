@@ -10,12 +10,15 @@ export type ScoreRow = {
 
 export type Bucket = { value: number; count: number };
 
+/** One anon id's submission: the score on the histogram and the solution behind it (for replays). */
+export type Submission = { score: number; solution: unknown };
+
 export interface ScoreStore {
   readonly kind: "d1" | "memory";
   /** false when this anon id already has a row for this puzzle: one submission a day. */
   insert(row: ScoreRow): Promise<boolean>;
-  /** The stored score of this anon id on this puzzle, if it has submitted. */
-  find(game: string, puzzleNo: number, anonId: string): Promise<number | undefined>;
+  /** This anon id's stored submission on this puzzle, if it has submitted. */
+  find(game: string, puzzleNo: number, anonId: string): Promise<Submission | undefined>;
   histogram(game: string, puzzleNo: number): Promise<Bucket[]>;
 }
 
@@ -38,10 +41,13 @@ export function d1Store(db: D1Like): ScoreStore {
     async find(game, puzzleNo, anonId) {
       // The unique key (game, puzzle_no, anon_id) is the index for this lookup.
       const { results } = await db
-        .prepare(`SELECT score FROM scores WHERE game = ? AND puzzle_no = ? AND anon_id = ?`)
+        .prepare(
+          `SELECT score, solution FROM scores WHERE game = ? AND puzzle_no = ? AND anon_id = ?`,
+        )
         .bind(game, puzzleNo, anonId)
-        .all<{ score: number }>();
-      return results[0]?.score;
+        .all<{ score: number; solution: string }>();
+      const row = results[0];
+      return row && { score: row.score, solution: JSON.parse(row.solution) as unknown };
     },
     async histogram(game, puzzleNo) {
       const { results } = await db
@@ -72,7 +78,8 @@ export function memoryStore(rows: Map<string, ScoreRow> = sharedRows): ScoreStor
       return true;
     },
     async find(game, puzzleNo, anonId) {
-      return rows.get(rowKey(game, puzzleNo, anonId))?.score;
+      const row = rows.get(rowKey(game, puzzleNo, anonId));
+      return row && { score: row.score, solution: row.solution };
     },
     async histogram(game, puzzleNo) {
       const counts = new Map<number, number>();
