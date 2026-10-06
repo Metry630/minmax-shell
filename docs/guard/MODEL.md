@@ -101,18 +101,20 @@ every camp. Scoring one camp takes 0.08 ms, far inside the Worker's 10 ms.
 
 ## What the player sees
 
-- **Before the camp:** the scouting card, your fighter's stats with one line each (`STAT_HELP`), and an
-  info page with the whole model in four lines: each move uses the stat of where you are; a
-  submission also uses its type, chokes or joint locks; pulling guard is your standing against their
-  posture; a failed attack that was a real threat makes your next different attack from there easier.
-  No chance and no plan.
-- **After you submit:** your chance against the best camp's, the replay, and **your game plan next to
-  the best camp's** (`gamePlan`: each step with the stats it uses and low / medium / high), so the
-  player learns which route their camp opened and which one the best camp took.
+- **Before the fight:** the scouting card, your fighter's stats with one line each (`STAT_HELP`), and
+  **3 spars** (step 5b, LOOP.md). A spar scores a complete camp on the server and shows its exact
+  chance plus the route your fighter would take, each step low, medium or high with the stats it
+  uses (`sparView` in `module.ts`). No per-step numbers and no defences. Spars never reach the
+  histogram, and the server enforces the budget per player.
+- **The fight:** one submission, any camp (usually your best spar).
+- **After you submit:** your chance against the best camp's, the replay, your spars, and **your game
+  plan next to the best camp's**. The share tells the story: `armbar.day #12 🥊 23 · 41 · 52 → 52%
+  (best 55%)`.
 
-Why the plan waits (Joshua's call): before the camp, following it lands at the best camp (0 points
-below, median), and even a plan with no words lands 8 below. Without it, the obvious strategies land
-25 to 31 below.
+Why spars show the route, not just the number (QUALITY.md, 60 puzzles): reading only each spar's
+chance leaves a player 20 points below the best; reading the route and moving sessions toward the
+weakest step gains 10 points on the first spar and ends 4 points below, finding the best on about a
+fifth of days. The blind first camp still lands 25 points below, so the spars have room to matter.
 
 ## Where it stands (60 puzzles, `QUALITY.md`)
 

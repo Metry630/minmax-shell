@@ -191,30 +191,30 @@ greedy knows every session's exact value and no player does.)
 
 ## Step 5b. The daily loop 🧑
 
-**Status:** in design (2026-10-06). Read `docs/guard/LOOP.md` first.
+**Status:** done 2026-10-06. The camp gets **3 spars** that show the chance and the route; all five
+gates pass (`docs/guard/QUALITY.md`). How we got here: `docs/guard/LOOP.md`.
 
-**Why:** step 6's build plays end to end, but on a phone it isn't compelling. A survey of daily games
-found seven shared patterns (feedback per action within a second, several small decisions, a budget,
-first action in seconds, knowledge paying off, graded near-misses, a story-shaped share); the camp
-fails five. Joshua picked "build the route" (shape A in LOOP.md). Measured on 60 puzzles, A on today's
-graph is a 2-move puzzle with 16 to 21 distinct answers in 60 days, so it isn't built yet.
+**Why:** step 6's build played end to end but wasn't compelling: no feedback until you submit. A
+survey of daily games found seven shared patterns; the camp failed five. "Build the route" was
+measured in about 15 variants and stayed a 1 to 2 move puzzle on a 29-position board. Depth came
+from limited feedback instead: Mastermind on a hidden opponent.
 
-**Do (next session, with Joshua):** pick which of LOOP.md's options to test (a daily board where the
-opponent closes moves, a finishing combo, all 29 start positions, fewer shortcuts, or back to rounds
-or spars), measure each in the lab the same way, and turn the winner into this step's model, solver
-and quality gate (replacing the camp's in `model.ts`, `solver.ts`, `quality.ts`).
+**What was built:** `GameModule.spar` (budget plus a view), the `spar` API with the budget enforced
+in D1 (`migrations/0002_spars.sql`, one statement so two tabs can't take the last spar), spars in
+`today` (a returning player gets them back) and in the reveal (for the share), guard's route view,
+the contract's `spar` controls, and the gates in `quality.ts`.
 
-**Done when:** a loop passes its gates: the best route needs more than 2 moves on most days, at least
-45 distinct best answers in 60 days, and the shortest route and a grappler's instinct land at least 10
-points below the best on median (numbers to confirm with Joshua).
+**Gates (60 puzzles, dev salt):** the closest blind instinct at least 15 points below the best
+(25.4); the first spar, read and acted on, gains at least 5 points (10.2); a careful player with all
+3 spars lands between 2 and 10 points below the best (4.3, best found on 22%).
 
 ---
 
 ## Step 6. Game UI (Lovable)
 
-**Status:** paused 2026-10-06. The camp's UI is on main and works end to end (VS screen, camp,
-replay, results, share; art awaiting sign-off in `docs/guard/ART.md`), not deployed. Resumes on step
-5b's loop: the VS screen, scenes, replay, results and share carry over; the camp screen is replaced.
+**Status:** resumed 2026-10-06 after step 5b. The camp's UI is on main and works end to end; the
+spar loop (SPAR button, spar log with each route, the story-shaped share) is the remaining batch,
+then the deploy and the Done-when checks.
 
 **Goal:** playable end to end on a phone.
 

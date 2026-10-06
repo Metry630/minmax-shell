@@ -12,7 +12,8 @@ const puzzleRef = z.object({
 const playerRef = puzzleRef.extend({ anonId: z.string().uuid() });
 
 export const getToday = createServerFn({ method: "GET" })
-  .inputValidator(puzzleRef)
+  // The anon id is optional: with it, a returning player gets today's spars back.
+  .inputValidator(puzzleRef.extend({ anonId: z.string().uuid().optional() }))
   .handler(async ({ data }) => {
     const server = await import("./daily.server");
     return server.today(await server.serverDeps(), data);
@@ -34,4 +35,11 @@ export const getResults = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const server = await import("./daily.server");
     return server.results(await server.serverDeps(), data);
+  });
+
+export const sparSolution = createServerFn({ method: "POST" })
+  .inputValidator(playerRef.extend({ solution: z.unknown() }))
+  .handler(async ({ data }) => {
+    const server = await import("./daily.server");
+    return server.spar(await server.serverDeps(), data);
   });

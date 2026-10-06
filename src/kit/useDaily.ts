@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { track } from "./analytics";
 import { anonId } from "./anon";
-import type { Reveal } from "./daily.core";
-import { getResults, getToday, submitSolution } from "./daily.functions";
+import type { Reveal, SparResult } from "./daily.core";
+import { getResults, getToday, sparSolution, submitSolution } from "./daily.functions";
 import { localPuzzleNo } from "./day";
 import type { GameModule, Json, Optimum } from "./game";
 import { hostForGame } from "./hosts";
@@ -25,6 +25,11 @@ export type DailyState<P, S, Pub = P> =
       puzzle: Pub;
       submitting: boolean;
       rejection: string | null;
+      /** Today's spars so far (GameModule.spar), and how many the game allows. */
+      spars: SparResult[];
+      sparBudget: number;
+      sparring: boolean;
+      sparError: string | null;
     }
   | {
       phase: "done";
@@ -39,6 +44,8 @@ export type DailyState<P, S, Pub = P> =
       puzzle: P;
       /** The solution you submitted; null only for a closed puzzle you never played. */
       solution: S | null;
+      /** Your spars before submitting. */
+      spars: SparResult[];
     };
 
 function messageOf(error: unknown): string {
@@ -66,6 +73,7 @@ function finish<P, S>(
     store: reveal.store,
     puzzle: reveal.puzzle as P,
     solution: reveal.solution as S | null,
+    spars: reveal.spars,
   };
 }
 
@@ -91,7 +99,7 @@ export function useDaily<P extends Json, S extends Json, Pub extends Json = P>(
         }
         // The server has no submission from this anon id, so let them play.
       }
-      const res = await getToday({ data: { game, puzzleNo } });
+      const res = await getToday({ data: { game, puzzleNo, anonId: anonId() } });
       if (!live) return;
       if (res.status !== "ok") {
         setState({ phase: "unavailable", reason: res.reason });
@@ -104,6 +112,10 @@ export function useDaily<P extends Json, S extends Json, Pub extends Json = P>(
         puzzle: res.puzzle as Pub,
         submitting: false,
         rejection: null,
+        spars: res.spars,
+        sparBudget: res.sparBudget,
+        sparring: false,
+        sparError: null,
       });
       track("puzzle_viewed", { game, n: puzzleNo });
     }
@@ -174,6 +186,34 @@ export function useDaily<P extends Json, S extends Json, Pub extends Json = P>(
     [module, state],
   );
 
+  /** Scores a solution without submitting it, while spars are left (GameModule.spar). */
+  const spar = useCallback(
+    async (solution: S) => {
+      if (state.phase !== "playing" || state.sparring || state.submitting) return;
+      const playing = state;
+      setState({ ...playing, sparring: true, sparError: null });
+      try {
+        const res = await sparSolution({
+          data: { game: module.id, puzzleNo: playing.puzzleNo, anonId: anonId(), solution },
+        });
+        if (res.status !== "ok") {
+          setState({ ...playing, sparring: false, sparError: res.detail ?? res.reason });
+          return;
+        }
+        track("spar_used", {
+          game: module.id,
+          n: playing.puzzleNo,
+          spar: res.spar.n,
+          score: res.spar.score,
+        });
+        setState({ ...playing, sparring: false, spars: res.spars, sparBudget: res.sparBudget });
+      } catch (error) {
+        setState({ ...playing, sparring: false, sparError: messageOf(error) });
+      }
+    },
+    [module, state],
+  );
+
   /**
    * Share the result. `text` replaces the kit's emoji bar (guard writes "31% → 58% (best 64%)");
    * `via` picks the share sheet or clipboard ("auto"), the clipboard, or an X post.
@@ -197,7 +237,7 @@ export function useDaily<P extends Json, S extends Json, Pub extends Json = P>(
     [module, state],
   );
 
-  return { state, markStarted, submit, share };
+  return { state, markStarted, submit, spar, share };
 }
 
 /** The game's own domain once it has one; the current host (workers.dev, preview) until then. */

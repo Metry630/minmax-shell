@@ -1,3 +1,4 @@
+import type { SparResult } from "@/kit/daily.core";
 import type { Optimum } from "@/kit/game";
 import { betterThan } from "@/kit/rank";
 import type { Bucket } from "@/kit/scores.server";
@@ -17,7 +18,7 @@ import {
 import type { GuardPuzzle } from "./generator";
 import { EDGES, POSITIONS, type Belt, type Kind, type Perspective, type PositionId } from "./graph";
 import { MAX_SKILL, STATS, STAT_HELP, STAT_NAMES, type Band, type Stat } from "./model";
-import type { GuardPublicPuzzle, GuardSolution } from "./module";
+import type { GuardPublicPuzzle, GuardSolution, SparView } from "./module";
 import { STYLES } from "./opponents";
 import { baseOf } from "./quality";
 
@@ -217,6 +218,8 @@ export type Results = {
   /** The histogram in ten bins of 10 points, your bin and the best camp's marked. */
   bins: Bin[];
   total: number;
+  /** Your spars before the fight, in order. */
+  spars: SparRow[];
   shareText: string;
 };
 
@@ -238,6 +241,35 @@ const planRows = (steps: PlanStep[]): PlanRow[] =>
 
 const binOf = (perMille: number) => Math.min(9, Math.floor(perMille / 100));
 
+// ---------------------------------------------------------------- spars
+
+export type SparRow = {
+  n: number;
+  /** The camp's chance to finish, whole percent; `score` is the same in per-mille. */
+  chance: number;
+  score: number;
+  /** The route your fighter took with this camp: each step low / medium / high. */
+  plan: PlanRow[];
+  /** The camp sparred, sessions per stat in STATS order (to load it back). */
+  camp: number[];
+};
+
+/** Spars as the camp screen and results show them. The view is the server's (SparView). */
+export function sparRows(spars: readonly SparResult[]): SparRow[] {
+  return spars.map((s) => {
+    const view = s.view as SparView;
+    const camp = (s.solution as GuardSolution).camp;
+    return {
+      n: s.n,
+      chance: pct(s.score),
+      score: s.score,
+      // The server built these from gamePlan, so they carry PlanStep's fields.
+      plan: planRows(view.plan as PlanStep[]),
+      camp: [...camp],
+    };
+  });
+}
+
 export type ResultsInput = {
   puzzle: GuardPuzzle;
   /** Your camp; null for a closed puzzle you never played. */
@@ -248,6 +280,8 @@ export type ResultsInput = {
   puzzleNo: number;
   /** For the share text: armbar.day once it exists, the current host until then. */
   domain: string;
+  /** Your spars before submitting (from the reveal). */
+  spars?: readonly SparResult[];
 };
 
 export function results({
@@ -258,6 +292,7 @@ export function results({
   buckets,
   puzzleNo,
   domain,
+  spars = [],
 }: ResultsInput): Results {
   const board = compileBoard(puzzle.belt);
   const base = baseOf(puzzle);
@@ -330,6 +365,23 @@ export function results({
     effects,
     bins,
     total,
-    shareText: `${domain} #${puzzleNo} ${pct(start)}% → ${pct(score)}% (best ${pct(optimum.score)}%)`,
+    spars: sparRows(spars),
+    shareText: shareLine(domain, puzzleNo, spars, score, optimum.score),
   };
+}
+
+/**
+ * The share, as the story of the attempt (LOOP.md, pattern 7): each spar's chance, then the fight.
+ *   armbar.day #12 🥊 23 · 41 · 52 → 52% (best 55%)
+ * Without spars it reads like the first version: armbar.day #12 52% (best 55%).
+ */
+export function shareLine(
+  domain: string,
+  puzzleNo: number,
+  spars: readonly { score: number }[],
+  score: number,
+  optimum: number,
+): string {
+  const story = spars.length ? `🥊 ${spars.map((s) => pct(s.score)).join(" · ")} → ` : "";
+  return `${domain} #${puzzleNo} ${story}${pct(score)}% (best ${pct(optimum)}%)`;
 }

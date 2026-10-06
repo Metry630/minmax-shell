@@ -3,7 +3,7 @@ import { sfc32 } from "@/kit/seed";
 
 import { applyCamp, compileBoard, finishChance, gamePlan, toScore, type Board } from "./engine";
 import type { GuardPuzzle } from "./generator";
-import type { GuardSolution } from "./module";
+import { SPARS, type GuardSolution } from "./module";
 import { greedyCamp, type Base } from "./solver";
 import { STATS } from "./model";
 
@@ -24,6 +24,11 @@ export const GATE = {
   minMedianLift: 100,
   minHumanGap: 150,
   maxStatShare: 0.5,
+  // Spars (step 5b, LOOP.md): the first spar must teach, a careful player with all of them gets close,
+  // and the best still isn't free.
+  minFirstSparGain: 50,
+  minSparGap: 20,
+  maxSparGap: 100,
 };
 
 const RANDOM_CAMPS = 100;
@@ -45,6 +50,13 @@ export type PuzzleQuality = {
    * gate: the plan only shows after you submit, because before it this lands at the best (0 points).
    */
   plan: number;
+  /**
+   * The spar loop, from your best stats as the first spar: a plan-reader moves two sessions toward the
+   * route's weakest step after each spar; a number-reader tries the next obvious camp. Each submits
+   * the best it saw. `sparPlan[k-1]` is the plan-reader after k spars.
+   */
+  sparPlan: number[];
+  sparNumbers: number;
 };
 
 const BAND_RANK = { low: 0, medium: 1, high: 2 } as const;
@@ -84,6 +96,52 @@ function campFrom(
     }
   }
   return camp;
+}
+
+/** Spars the plan-reader way: read the route, move two sessions toward the weakest step's stat. */
+function planReader(
+  board: Board,
+  base: Base,
+  sessions: number,
+  first: readonly number[],
+  spars: number,
+  scoreCamp: (camp: readonly number[]) => number,
+): number[] {
+  let camp = [...first];
+  let best = scoreCamp(camp);
+  const seen = [best];
+  const tried = new Set([camp.join(",")]);
+  for (let k = 1; k < spars; k++) {
+    const skills = applyCamp(base.skills, camp, sessions) ?? base.skills;
+    const plan = gamePlan(board, { ...base, skills });
+    const used = new Set(plan.flatMap((step) => step.stats.map((stat) => STATS.indexOf(stat))));
+    const weakest = [...plan].sort((a, b) => BAND_RANK[a.band] - BAND_RANK[b.band])[0];
+    const to = (weakest?.stats ?? [])
+      .map((stat) => STATS.indexOf(stat))
+      .find((i) => (base.skills[i] ?? 0) + (camp[i] ?? 0) < 10);
+    if (to === undefined) break;
+    // Take from stats the route doesn't use first, then from the biggest piles.
+    const donors = STATS.map((_, i) => i)
+      .filter((i) => (camp[i] ?? 0) > 0 && i !== to)
+      .sort((a, b) => Number(used.has(a)) - Number(used.has(b)) || (camp[b] ?? 0) - (camp[a] ?? 0));
+    const next = [...camp];
+    let moved = 0;
+    for (const d of donors) {
+      while (moved < 2 && (next[d] ?? 0) > 0 && (base.skills[to] ?? 0) + (next[to] ?? 0) < 10) {
+        next[d] = (next[d] ?? 0) - 1;
+        next[to] = (next[to] ?? 0) + 1;
+        moved++;
+      }
+      if (moved === 2) break;
+    }
+    if (moved === 0 || tried.has(next.join(","))) break;
+    tried.add(next.join(","));
+    camp = next;
+    best = Math.max(best, scoreCamp(camp));
+    seen.push(best);
+  }
+  while (seen.length < spars) seen.push(best);
+  return seen;
 }
 
 export const baseOf = (puzzle: GuardPuzzle): Base => ({
@@ -135,7 +193,41 @@ export function measure({ puzzle, optimum }: Scheduled<GuardPuzzle, GuardSolutio
     weaknesses: scoreCamp(campFrom(byskill.slice(-puzzle.sessions), base.skills, puzzle.sessions)),
     card: scoreCamp(campFrom(cardStats, base.skills, puzzle.sessions)),
     plan: scoreCamp(planFollowerCamp(board, base, puzzle.sessions)),
+    ...sparLoop(board, base, puzzle, byskill, cardStats, scoreCamp),
   };
+}
+
+/** Every session into your best stat, overflowing to the next best once it reaches 10. */
+function allIn(byskill: readonly number[], base: readonly number[], sessions: number): number[] {
+  const camp = STATS.map(() => 0);
+  let left = sessions;
+  for (const i of byskill) {
+    const add = Math.min(left, 10 - (base[i] ?? 0));
+    camp[i] = add;
+    left -= add;
+    if (left === 0) break;
+  }
+  return camp;
+}
+
+function sparLoop(
+  board: Board,
+  base: Base,
+  puzzle: GuardPuzzle,
+  byskill: readonly number[],
+  cardStats: readonly number[],
+  scoreCamp: (camp: readonly number[]) => number,
+) {
+  const strengths = campFrom(byskill.slice(0, puzzle.sessions), base.skills, puzzle.sessions);
+  const sparPlan = planReader(board, base, puzzle.sessions, strengths, SPARS, scoreCamp);
+  // The obvious camps in the order a player thinks of them: their best stats, the card's, all-in.
+  const obvious = [
+    strengths,
+    campFrom(cardStats, base.skills, puzzle.sessions),
+    allIn(byskill, base.skills, puzzle.sessions),
+  ];
+  const sparNumbers = Math.max(...obvious.slice(0, SPARS).map(scoreCamp));
+  return { sparPlan, sparNumbers };
 }
 
 const median = (xs: readonly number[]) => {
@@ -179,6 +271,11 @@ export function summarize(measured: readonly PuzzleQuality[]): Record<string, nu
     medianWeaknessesGap: median(measured.map((q) => q.optimum - q.weaknesses)),
     medianCardGap: median(measured.map((q) => q.optimum - q.card)),
     medianPlanGap: median(measured.map((q) => q.optimum - q.plan)),
+    medianFirstSparGain: median(measured.map((q) => (q.sparPlan[1] ?? 0) - (q.sparPlan[0] ?? 0))),
+    medianSparGap: median(measured.map((q) => q.optimum - (q.sparPlan.at(-1) ?? 0))),
+    sparBestShare:
+      measured.filter((q) => (q.sparPlan.at(-1) ?? 0) >= q.optimum).length / measured.length,
+    medianSparNumbersGap: median(measured.map((q) => q.optimum - q.sparNumbers)),
   };
 }
 

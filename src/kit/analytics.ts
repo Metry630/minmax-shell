@@ -40,6 +40,8 @@ export type Events = {
   puzzle_started: { game: string; n: number };
   /** Accepted submissions only; `ms` is from puzzle_started, null if the player never started. */
   puzzle_submitted: { game: string; n: number; score: number; optimum: number; ms: number | null };
+  /** A spar before submitting: which one today (1 to the budget) and what it scored. */
+  spar_used: { game: string; n: number; spar: number; score: number };
   /** `via`: "auto" (share sheet on phones, else clipboard), "copy" or "x". */
   share_clicked: { game: string; n: number; via: string };
 };

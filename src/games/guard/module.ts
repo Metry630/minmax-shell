@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { GameModule } from "@/kit/game";
 
-import { applyCamp, compileBoard, finishChance, toScore, type Board } from "./engine";
+import { applyCamp, compileBoard, finishChance, gamePlan, toScore, type Board } from "./engine";
 import { generate, type GuardPuzzle } from "./generator";
 import type { Belt } from "./graph";
 import { STATS } from "./model";
@@ -26,6 +26,40 @@ export function publicPuzzle({ opponent, ...rest }: GuardPuzzle): GuardPublicPuz
   return { ...rest, opponent: { archetype: opponent.archetype } };
 }
 
+/** Spars a day (LOOP.md: with the route shown, 3 take a careful player from 23 to 3-6 below best). */
+export const SPARS = 3;
+
+/**
+ * What a spar shows besides its chance: the route your fighter would take with that camp, each step
+ * as low / medium / high and the stats it uses. No per-step numbers (they made the puzzle easier
+ * than measured) and nothing about the opponent's defences beyond what the bands imply.
+ */
+export type SparView = {
+  plan: {
+    id: string;
+    label: string;
+    from: string;
+    submission: boolean;
+    band: string;
+    stats: string[];
+  }[];
+};
+
+export function sparView(puzzle: GuardPuzzle, { camp }: GuardSolution): SparView {
+  const skills = applyCamp(puzzle.fighter.skills, camp, puzzle.sessions) ?? puzzle.fighter.skills;
+  const plan = gamePlan(boardFor(puzzle.belt), { ...baseOf(puzzle), skills });
+  return {
+    plan: plan.map(({ id, label, from, submission, band, stats }) => ({
+      id,
+      label,
+      from,
+      submission,
+      band,
+      stats: [...stats],
+    })),
+  };
+}
+
 // One compiled board per belt, built on first use.
 const boards = new Map<Belt, Board>();
 const boardFor = (belt: Belt) => {
@@ -44,6 +78,7 @@ export const guard: GameModule<GuardPuzzle, GuardSolution, GuardPublicPuzzle> = 
   epoch: "2026-10-05",
   goal: "max",
   publicPuzzle,
+  spar: { budget: SPARS, view: sparView },
   solutionSchema: z.object({ camp: z.array(z.number()).length(STATS.length) }),
   engine: {
     score(puzzle, { camp }) {

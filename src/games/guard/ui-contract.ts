@@ -6,18 +6,20 @@ import type { ShareOutcome, ShareVia } from "@/kit/share";
 import type { Summary } from "@/kit/stats";
 import { shareDomain, useDaily } from "@/kit/useDaily";
 
-import { guard } from "./module";
+import { guard, type GuardSolution } from "./module";
 import {
   canAdd,
   canRemove,
   emptyCamp,
   replay as replayOf,
+  sparRows,
   results as resultsOf,
   scouting as scoutingOf,
   spent,
   type Replay,
   type Results,
   type Scouting,
+  type SparRow,
 } from "./view";
 
 // The UI contract for Guard to Sub (step 6): the hooks the Lovable-built screens call. Everything a
@@ -47,6 +49,24 @@ export type CampControls = {
   reset(): void;
 };
 
+export type SparControls = {
+  /** Spars a day, used and left. */
+  budget: number;
+  used: number;
+  left: number;
+  /** Your spars so far, oldest first: each camp's chance and the route it took. */
+  history: SparRow[];
+  /** Spars the current camp (all sessions spent). Costs one of today's spars. */
+  run(): Promise<void>;
+  /** The camp is complete, a spar is left, and none is in flight: the SPAR button can enable. */
+  ready: boolean;
+  running: boolean;
+  /** The server's reason when it refused a spar. */
+  error: string | null;
+  /** Puts spar n's camp back on the board, to submit it or tweak it. */
+  load(n: number): void;
+};
+
 export type SubmitControls = {
   /** Locks in the camp: call it from the confirm dialog's FIGHT!, never from the first tap. */
   submit(): Promise<void>;
@@ -64,6 +84,7 @@ export type GuardGame =
       puzzleNo: number;
       scouting: Scouting;
       camp: CampControls;
+      spar: SparControls;
       submit: SubmitControls;
     }
   | {
@@ -105,7 +126,7 @@ function saveCamp(n: number, camp: readonly number[]) {
 }
 
 export function useGuardPuzzle(): GuardGame {
-  const { state, markStarted, submit, share } = useDaily(guard);
+  const { state, markStarted, submit, spar, share } = useDaily(guard);
   const [camp, setCamp] = useState<number[]>(emptyCamp);
   const fresh = useRef(false);
 
@@ -156,6 +177,7 @@ export function useGuardPuzzle(): GuardGame {
         buckets: done.buckets,
         puzzleNo: done.puzzleNo,
         domain: shareDomain(guard.id),
+        spars: done.spars,
       }),
     [done],
   );
@@ -190,6 +212,24 @@ export function useGuardPuzzle(): GuardGame {
         remove: (i) =>
           change((prev) => (canRemove(prev, i) ? prev.map((n, j) => (j === i ? n - 1 : n)) : prev)),
         reset: () => change(() => emptyCamp()),
+      },
+      spar: {
+        budget: state.sparBudget,
+        used: state.spars.length,
+        left: state.sparBudget - state.spars.length,
+        history: sparRows(state.spars),
+        run: () => spar({ camp }),
+        ready:
+          spent(camp) === puzzle.sessions &&
+          state.spars.length < state.sparBudget &&
+          !state.sparring &&
+          !state.submitting,
+        running: state.sparring,
+        error: state.sparError,
+        load: (n) => {
+          const found = state.spars.find((s) => s.n === n);
+          if (found) change(() => [...(found.solution as GuardSolution).camp]);
+        },
       },
       submit: {
         submit: async () => {

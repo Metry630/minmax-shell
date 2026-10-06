@@ -154,9 +154,9 @@ on about a quarter of days. Each look informs the next, and the budget makes the
 on a hidden opponent. It also lets grappling knowledge pay (the route is in BJJ terms) and gives a
 first action within seconds (spar a default camp and read the route).
 
-To decide: the budget (2 spars leaves a 10 to 16 point gap; 3 leaves 3 to 6 and makes the best
-reachable on a good day), what a spar shows (chance plus route with low / medium / high; the numbers
-behind the bands too?), and the share ("🥊 23 → 41 → 52, submitted 52% (best 55%)").
+**Decided (Joshua, 2026-10-06): 3 spars, each showing the chance and the route with low / medium /
+high.** Built in step 5b; the gates in `quality.ts` hold it (QUALITY.md: first spar gains 10.2 points,
+a careful player ends 4.3 below the best, the blind first camp 25.4 below).
 
 ## Options to decide together
 

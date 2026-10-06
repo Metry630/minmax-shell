@@ -25,9 +25,10 @@ match. So:
 | start position, exchanges | STAGE (the position scene) and "5 EXCHANGES", the round timer |
 | 6 sessions | training tokens; each stat a 10-pip bar, trained pips lit yellow |
 | your style's two best stats | SIGNATURE |
+| 3 spars before the fight | SPARRING: SPAR a camp, see its chance and the ROUTE your fighter takes (each step LOW / MED / HIGH), 3 a day |
 | one submission a day | FIGHT! behind a confirm: "One fight a day. Lock in this camp?" |
 | the replay | COMBATE! (what IBJJF referees say), then each exchange: the scene, the announcer's call (SWEEP!, PASS!, STUFFED, COUNTER!), the move, then TAP! or TIME! |
-| your chance against the best | "YOUR CAMP 58%" against "PERFECT CAMP 64%", from "START 31%" |
+| your chance against the best | "YOUR CAMP 58%" against "PERFECT CAMP 64%", from "START 31%"; the share is the spar story, `🥊 23 · 41 · 52 → 52% (best 55%)` |
 | the histogram | HIGH SCORES, ten bars, YOU and PERFECT marked; "You beat 73% of fighters today." |
 | the game plans | two MOVE LISTs side by side, yours and the perfect camp's, LOW/MED/HIGH as 1 to 3 pips |
 | what the camp changed | WHAT YOUR CAMP CHANGED: "Passing 30% → 52% on Knee slice against the guard player." |

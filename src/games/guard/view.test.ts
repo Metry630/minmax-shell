@@ -9,7 +9,17 @@ import type { GuardPuzzle } from "./generator";
 import { STATS } from "./model";
 import { guard, publicPuzzle, type GuardSolution } from "./module";
 import { baseOf } from "./quality";
-import { canAdd, canRemove, emptyCamp, pct, replay, results, scouting, spent } from "./view";
+import {
+  canAdd,
+  canRemove,
+  emptyCamp,
+  pct,
+  replay,
+  results,
+  scouting,
+  shareLine,
+  spent,
+} from "./view";
 
 const puzzleNo = (n: number) => rngFor(DEV_SALT, "guard", n).then(guard.generator.generate);
 const optimumOf = (puzzle: GuardPuzzle) => guard.solver.solve(puzzle);
@@ -109,9 +119,9 @@ describe("results", () => {
     expect(view.start).toBe(pct(start));
     expect(view.yours).toBe(pct(score));
     expect(view.best).toBe(pct(optimum.score));
-    expect(view.shareText).toBe(
-      `armbar.day #12 ${pct(start)}% → ${pct(score)}% (best ${pct(optimum.score)}%)`,
-    );
+    // No spars: the plain form. (view.start is still reported for the results screen.)
+    expect(view.start).toBe(pct(start));
+    expect(view.shareText).toBe(`armbar.day #12 ${pct(score)}% (best ${pct(optimum.score)}%)`);
     expect(view.betterThan).toBeNull();
     expect(view.perfect).toBe(score >= optimum.score);
     expect(view.yourCamp.reduce((a, c) => a + c.sessions, 0)).toBe(6);
@@ -171,5 +181,16 @@ describe("results", () => {
     expect(view.bins[9]?.count).toBeGreaterThanOrEqual(1);
     expect(view.bins.filter((b) => b.you)).toHaveLength(1);
     expect(view.bins.findIndex((b) => b.best)).toBe(Math.min(9, Math.floor(optimum.score / 100)));
+  });
+});
+
+describe("shareLine", () => {
+  it("tells the story: each spar, then the fight, then the best", () => {
+    const spars = [{ score: 231 }, { score: 412 }, { score: 518 }];
+    expect(shareLine("armbar.day", 12, spars, 521, 553)).toBe(
+      "armbar.day #12 🥊 23 · 41 · 52 → 52% (best 55%)",
+    );
+    expect(shareLine("armbar.day", 12, [], 521, 553)).toBe("armbar.day #12 52% (best 55%)");
+    expect(shareLine("x", 1, spars, 521, 553)).not.toContain("—");
   });
 });

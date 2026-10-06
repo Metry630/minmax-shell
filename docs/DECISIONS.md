@@ -592,3 +592,16 @@ medium or high, and moving sessions to the weakest step: 10 to 16 below with 2 s
 0 to 2 with 4 (best found on 7 to 13%, 22 to 30%, 37 to 52% of days). The first spar alone is worth
 8 to 11 points. That's the feedback loop the survey asked for, with a budget that makes each look
 count; the budget and what a spar shows are Joshua's call (LOOP.md).
+
+## 2026-10-06: Three spars, chance and route, enforced by the server (step 5b)
+
+Joshua's calls: 3 spars, each showing the camp's exact chance and the route the fighter would take
+with every step low, medium or high, no per-step numbers. Measured on 60 puzzles in `quality.ts`: the
+first spar, read and acted on, gains 10.2 points; a careful player ends 4.3 below the best and finds
+it on 22%; reading only the numbers ends 20.2 below. The opponent's defences stay hidden, so only
+the server can score a camp: `spar` scores it with the same engine and legality checks as a
+submission, stores it in D1 (never on the histogram), and refuses once 3 exist for that player and
+puzzle, in one INSERT ... SELECT ... HAVING statement with a unique key on the spar number, so two tabs
+can't both take the last one (checked on local D1: four tries, three rows). A fresh anon id gets fresh
+spars, the same Wordle-shaped hole as before. The share is now the story of the attempt:
+`armbar.day #12 🥊 23 · 41 · 52 → 52% (best 55%)`.

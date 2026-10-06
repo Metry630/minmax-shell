@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { webcrypto } from "node:crypto";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { results, submit, today, type Deps } from "@/kit/daily.core";
+import { results, spar, submit, today, type Deps } from "@/kit/daily.core";
 import { generatedPuzzles } from "@/kit/puzzles.server";
 import { memoryStore } from "@/kit/scores.server";
 
@@ -28,6 +28,7 @@ vi.mock("@/kit/daily.functions", () => ({
   },
   submitSolution: ({ data }: { data: Parameters<typeof submit>[1] }) => submit(deps, data),
   getResults: ({ data }: { data: Parameters<typeof results>[1] }) => results(deps, data),
+  sparSolution: ({ data }: { data: Parameters<typeof spar>[1] }) => spar(deps, data),
 }));
 
 beforeAll(() => {
@@ -59,6 +60,49 @@ describe("useGuardPuzzle", () => {
     expect(after.camp.sessions.slice(0, 2)).toEqual([2, 1]);
     expect(after.camp.left).toBe(3);
     act(() => after.camp.reset());
+    view.unmount();
+    localStorage.clear();
+  });
+
+  it("spars three times, refuses a fourth, loads a sparred camp back, and shares the story", async () => {
+    localStorage.clear();
+    const view = renderHook(() => useGuardPuzzle());
+    await waitFor(() => expect(view.result.current.phase).toBe("playing"));
+    const playing = () => {
+      const game = view.result.current;
+      if (game.phase !== "playing") throw new Error(game.phase);
+      return game;
+    };
+    expect(playing().spar).toMatchObject({ budget: 3, used: 0, left: 3, ready: false });
+    // Three different camps, each sparred: all six sessions on one stat, a different stat each time.
+    for (const stat of [0, 1, 2]) {
+      act(() => playing().camp.reset());
+      for (let tap = 0; tap < 6; tap++) act(() => playing().camp.add(stat));
+      if (!playing().camp.complete) act(() => playing().camp.add(stat === 0 ? 3 : 0)); // capped stat
+      while (!playing().camp.complete) {
+        const i = playing().scouting.stats.findIndex((_, j) => playing().camp.canAdd(j));
+        act(() => playing().camp.add(i));
+      }
+      expect(playing().spar.ready).toBe(true);
+      await act(() => playing().spar.run());
+      await waitFor(() => expect(playing().spar.running).toBe(false));
+    }
+    const after = playing();
+    expect(after.spar).toMatchObject({ used: 3, left: 0, ready: false, error: null });
+    expect(after.spar.history.map((s) => s.n)).toEqual([1, 2, 3]);
+    expect(
+      after.spar.history[0]?.plan.every((row) => ["LOW", "MED", "HIGH"].includes(row.bandWord)),
+    ).toBe(true);
+    const firstCamp = after.spar.history[0]?.camp;
+    act(() => after.spar.load(1));
+    expect(playing().camp.sessions).toEqual(firstCamp);
+
+    await act(() => playing().submit.submit());
+    await waitFor(() => expect(view.result.current.phase).toBe("done"));
+    const done = view.result.current;
+    if (done.phase !== "done") throw new Error(done.phase);
+    expect(done.results.spars).toHaveLength(3);
+    expect(done.results.shareText).toMatch(/🥊 \d+ · \d+ · \d+ → \d+% \(best \d+%\)$/);
     view.unmount();
     localStorage.clear();
   });
@@ -119,7 +163,7 @@ describe("useGuardPuzzle", () => {
     expect(done.fresh).toBe(true);
     expect(done.results.yourCamp.reduce((a, c) => a + c.sessions, 0)).toBe(6);
     expect(done.results.betterThan).toBeNull(); // the only fighter so far
-    expect(done.results.shareText).toMatch(/#\d+ \d+% → \d+% \(best \d+%\)$/);
+    expect(done.results.shareText).toMatch(/#\d+ \d+% \(best \d+%\)$/);
     first.unmount();
 
     const again = renderHook(() => useGuardPuzzle());
