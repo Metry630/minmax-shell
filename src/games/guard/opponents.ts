@@ -36,7 +36,20 @@ export type Habit = {
   boost?: { stat?: Stat; add: number };
   /** Ways out only this opponent has; their habit takes them. */
   escapes?: readonly EscapeEdge[];
+  /**
+   * Read the opponent (LOOP.md v5): whenever your move is stuffed in one of these positions they do
+   * this, every time, and it leaves you somewhere better if you saw it coming (Joshua: "other habits
+   * should get a new opening").
+   */
+  opening: { from: readonly PositionId[]; to: PositionId; name: string };
 };
+
+const PINS: readonly PositionId[] = [
+  "side-control-top",
+  "knee-on-belly-top",
+  "mount-top",
+  "north-south-top",
+];
 
 export const ARCHETYPES: readonly Archetype[] = [
   {
@@ -46,8 +59,20 @@ export const ARCHETYPES: readonly Archetype[] = [
     hints: ["Wrestled D1. Nobody takes them down.", "Careless with their neck."],
     habit: {
       line: "Stands back up whenever they can.",
-      callout: "Back on their feet. They always stand up.",
+      callout: "Back on their feet, like always, and they turned their back to do it.",
       prefer: ["standing"],
+      opening: {
+        from: [
+          "closed-guard-bottom",
+          "open-guard-bottom",
+          "butterfly-guard-bottom",
+          "half-guard-bottom",
+          "de-la-riva-bottom",
+        ],
+        // Wrestlers turn away to stand up: you come up with them onto their back (back 3, chokes 3).
+        to: "back-control-top",
+        name: "They stand up, and you come up on their back",
+      },
     },
   },
   {
@@ -58,6 +83,7 @@ export const ARCHETYPES: readonly Archetype[] = [
     habit: {
       line: "Turtles when in trouble.",
       callout: "Told you: they turtle. The back is there.",
+      opening: { from: PINS, to: "back-control-top", name: "They turtle, and you take their back" },
       // An exploit, not just a steer: when your attack from a pin fails they turn away, and you're
       // on their back that exchange.
       prefer: ["back-control-top", "turtle-top"],
@@ -95,7 +121,12 @@ export const ARCHETYPES: readonly Archetype[] = [
     hints: ["Lives in single-leg X.", "Easy to take down."],
     habit: {
       line: "Pulls you into single-leg X.",
-      callout: "Single-leg X again. Backstep out or take the ankle.",
+      callout: "Told you: they always go for the legs. That's your pass.",
+      opening: {
+        from: ["open-guard-top", "closed-guard-top", "half-guard-top"],
+        to: "side-control-top",
+        name: "They dive for a leg, and you backstep straight past",
+      },
       prefer: ["single-leg-x-top"],
       escapes: [
         {
@@ -115,7 +146,13 @@ export const ARCHETYPES: readonly Archetype[] = [
     hints: ["Guard retention like a wall.", "Taps to chokes."],
     habit: {
       line: "Always goes back to guard.",
-      callout: "Back to guard, like always. Never a reversal.",
+      callout: "Always playing guard, always reaching for the sweep. Float over to mount.",
+      // Their guard is the wall (passing defence 9); the habit is the way past it.
+      opening: {
+        from: ["closed-guard-top", "half-guard-top", "open-guard-top"],
+        to: "mount-top",
+        name: "They reach for a sweep, and you float over into mount",
+      },
       prefer: ["half-guard-top", "closed-guard-top"],
     },
   },
@@ -126,7 +163,12 @@ export const ARCHETYPES: readonly Archetype[] = [
     hints: ["Escapes everything.", "Leaves their arms out."],
     habit: {
       line: "Escapes everything.",
-      callout: "Out again. They escape everything.",
+      callout: "Out again, and the arm comes with them.",
+      opening: {
+        from: [...PINS, "back-control-top"],
+        to: "closed-guard-bottom",
+        name: "They scramble out, and you pull them into your guard",
+      },
       boost: { add: 0.15 },
     },
   },

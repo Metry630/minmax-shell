@@ -690,3 +690,29 @@ numbers (fight-lab4, 100 days × 100 fights, driving `play.ts` itself):
   move (2.2 points a fight mean for ignoring it); the rest are steers you see in the reaction line.
   The camp ignores all of it: every engine option is opt-in and its tests are unchanged.
 
+## 2026-10-06: From expected value to deduction: read the opponent (`/lab/read`)
+
+Joshua on v4: not satisfying, "too easy, or it doesn't make you think". The diagnosis: the screen
+showed every percentage and hid nothing, so the best move was something you were told, not
+something you found. The reasons were averages of averages, BJJ knowledge gave no edge, and the roll
+outweighed the pick. v5 removes dice and percentages: today's opponent has OPEN/CONTESTED/SHUT areas,
+the same for everyone, and every stuff teaches you one (`read.ts`). Read lab, 100 days:
+
+- Best play taps 100% of passing days in a median 4 exchanges.
+- Ignoring the clues taps 81%, BJJ instinct 46% (40% without the clues), spamming finishes 46%,
+  random 26%.
+
+Choices, with the number behind each:
+
+- **Two keys for a submission** (the position's area and the finish). With one key the clues were
+  worth 5 points; with two, 19.
+- **Counters on every stuff.** They separate the players best: random play taps 26%, against 31%
+  with none.
+- **A perfect read of at least 3.** At 2 or more, spamming finishes tapped 55%; at 3 or more, 46%.
+- **Fights play out instead of ending when the tap is out of reach.** Ending early lost 14% of
+  random players within 2 exchanges.
+- **One habit opening per opponent,** each bypassing their wall. Best play uses them on 25-83% of
+  their days.
+
+v4 (`play.ts`, `/lab/fight`) stays for comparison.
+

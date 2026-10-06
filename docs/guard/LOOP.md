@@ -307,6 +307,88 @@ Gates missed:
   chance comes from the position's stat. They differ in where they go and what they set up, which
   the cards now show, but not in their numbers.
 
+## Why v4 still wasn't satisfying, and v5: read the opponent (2026-10-06)
+
+Joshua on v4: habit lines read right, the WHY table doesn't explain, every habit should get an
+opening, and "it might be that it feels too easy, or that it doesn't particularly make you think".
+
+The diagnosis against the survey above:
+
+- **Nothing was hidden.** Every percentage was on screen and the best move lived in the solver: you
+  were told it, never found it.
+- **The reasons weren't checkable.** "The future is worth 74% not 70%" can't be explained, which is
+  why the WHY table didn't.
+- **BJJ knowledge didn't pay.** It gave no edge: "position first" was the worst policy measured.
+- **Luck dominated what you felt.** A pick moved the odds a few points and the roll moved them 30-50.
+- **Feedback wasn't information,** so there was nothing to think about between turns.
+- **It was too easy:** best play tapped 80%, rules of thumb 61-67%.
+
+Joshua chose **read the opponent**: no dice, no percentages. Today's opponent has hidden holes, the
+same for everyone, and every move lands or is stuffed with the reason (`read.ts`, `/lab/read`;
+v4 stays at `/lab/fight`).
+
+**The profile.** Nine areas (takedowns, your guard, passing, top control, back, escapes, chokes,
+arm-locks, leg-locks), each OPEN or SHUT. Submissions can also be CONTESTED: they land only from mount
+or the back (single-leg X for leg-locks), Wordle's yellow, and it makes position-first pay. Each
+state is their defence against your style's skill there, ±1 for the day.
+
+**Rules:**
+
+- A submission needs two things open: where you attack from, and the finish ("they posture out" vs
+  "they defend the arm").
+- A stuff teaches you the area. Then they react: their habit's opening if it applies there,
+  otherwise their escape that leaves you lowest.
+- The coach gives two true clues.
+- Fights play out to the last exchange.
+
+**Score and gates.** The score is TAP in N against the perfect read: the shortest line with
+everything known, which can use their habit on purpose. A day passes its gate when the perfect read
+is 3 to 6 exchanges and best play (the clues plus what each exchange teaches) taps. 20 of 100 first
+draws don't, and the next variant of the day is used.
+
+**Habits with openings.** Each one bypasses that opponent's wall:
+
+| Opponent | Habit | Opening when your move is stuffed there |
+|---|---|---|
+| Judoka | turtles | from a pin: you take their back |
+| Wrestler | stands up | from your guard: you come up on their back |
+| Guard player | reaches for sweeps | from their guard: you float to mount |
+| Leg-locker | dives for legs | from their guard: you backstep to side control |
+| Scrambler | escapes everything | from a pin or the back: you pull them into your guard |
+
+Read lab (`read-lab.mts` drives `read.ts`; 100 days, 80 pass the gate; deterministic, one fight
+per policy a day):
+
+| Player | Taps | Exchanges when it taps (median) | Stuffs a fight |
+|---|---|---|---|
+| Best play (clues + reading) | 100% | 4 | 1.4 |
+| Same reasoning, never read the clues | 81% | 5 | 1.7 |
+| BJJ instinct (climb, then attack), reads the panel | 46% | 4 | 2.0 |
+| BJJ instinct without the clues | 40% | 4 | 2.5 |
+| Spams finishes | 46% | 3 | 2.6 |
+| Random | 26% | 4 | 2.0 |
+
+More numbers:
+
+- Perfect read: median 3 exchanges.
+- 74 different winning lines in 100 days.
+- Best play uses the habit's opening on 25% (scrambler) to 83% (leg-locker) of that opponent's days.
+
+What each step taught:
+
+- With one key and the finishes open a third of the time, the perfect read was 2 and random play
+  tapped 55%.
+- Counters on every stuff made it shorter-sighted to guess.
+- Two keys made the clues count: ignoring them dropped from 87% to 73-81%.
+- A minimum perfect read of 3 stopped a lucky first guess from ending the day.
+- Ending a fight the moment the tap was out of reach killed 14% of random players within 2
+  exchanges. Letting it play out keeps them reading.
+
+Gates missed:
+
+- Ignoring the clues still taps 81% (target 75%).
+- Best play is stuffed 1.4 times a fight (target 2); typical players are stuffed 2 to 2.6 times.
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their
