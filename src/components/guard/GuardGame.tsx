@@ -251,6 +251,7 @@ function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubm
                 <AlertDialogDescription className="mt-2 text-sm text-[var(--arcade-muted)]">
                   {COPY.confirmBody}
                 </AlertDialogDescription>
+                {rejection && <p className="mt-2 text-xs text-[var(--arcade-p1)]">{rejection}</p>}
               </AlertDialogHeader>
               <AlertDialogFooter className="mt-3 gap-2 sm:space-x-0">
                 <AlertDialogCancel className={`${arcadeButton} mt-0 bg-[var(--arcade-panel)] text-[var(--arcade-ink)]`}>
@@ -259,7 +260,10 @@ function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubm
                 <AlertDialogAction
                   className={arcadeButton}
                   disabled={submitting}
-                  onClick={() => void onSubmit()}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    void onSubmit();
+                  }}
                 >
                   {submitting ? "..." : COPY.confirmYes}
                 </AlertDialogAction>
