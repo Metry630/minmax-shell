@@ -2,6 +2,18 @@
 @source "../src";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("/fonts/press-start-2p.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Departure Mono";
+  src: url("/fonts/departure-mono.woff2") format("woff2");
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -140,6 +152,280 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+.arcade {
+  --arcade-bg: oklch(0.96 0.025 90);
+  --arcade-panel: oklch(0.99 0.012 90);
+  --arcade-ink: oklch(0.2 0.035 285);
+  --arcade-muted: oklch(0.46 0.035 285);
+  --arcade-p1: oklch(0.53 0.2 25);
+  --arcade-p2: oklch(0.5 0.16 255);
+  --arcade-hi: oklch(0.86 0.17 92);
+  --arcade-line: oklch(0.2 0.035 285);
+  --font-arcade-display: "Press Start 2P", monospace;
+  --font-arcade-hud: "Departure Mono", monospace;
+  background: var(--arcade-bg);
+  color: var(--arcade-ink);
+}
+
+.dark .arcade {
+  --arcade-bg: oklch(0.17 0.035 285);
+  --arcade-panel: oklch(0.23 0.045 285);
+  --arcade-ink: oklch(0.95 0.015 95);
+  --arcade-muted: oklch(0.74 0.035 285);
+  --arcade-p1: oklch(0.66 0.2 25);
+  --arcade-p2: oklch(0.68 0.15 250);
+  --arcade-hi: oklch(0.88 0.17 92);
+  --arcade-line: oklch(0.38 0.05 285);
+}
+
+.arcade-frame {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--arcade-bg);
+}
+
+.arcade-frame::before,
+.arcade-frame::after {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.arcade-frame::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    color-mix(in oklab, var(--arcade-ink) 5%, transparent) 3px,
+    color-mix(in oklab, var(--arcade-ink) 5%, transparent) 4px
+  );
+}
+
+.arcade-frame::after {
+  box-shadow: inset 0 0 64px color-mix(in oklab, var(--arcade-line) 18%, transparent);
+}
+
+.arcade-display,
+.arcade-section-title,
+.arcade-logo,
+.arcade-vs {
+  font-family: var(--font-arcade-display);
+  letter-spacing: 0;
+}
+
+.arcade-hud,
+.arcade-chip,
+.arcade-wall-tile,
+.arcade-unknown {
+  font-family: var(--font-arcade-hud);
+  letter-spacing: 0;
+}
+
+.arcade-logo {
+  position: relative;
+  display: inline-block;
+  z-index: 0;
+  font-size: 1.55rem;
+  line-height: 1.35;
+  color: var(--arcade-ink);
+}
+
+.arcade-logo::before {
+  position: absolute;
+  inset: 3px auto auto 3px;
+  z-index: -1;
+  color: var(--arcade-p1);
+  content: attr(data-title);
+}
+
+.arcade-panel {
+  border: 2px solid var(--arcade-line);
+  background: var(--arcade-panel);
+  box-shadow: 3px 3px 0 var(--arcade-line);
+}
+
+.arcade-section-title {
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.arcade-vs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.9rem;
+  min-height: 2.6rem;
+  padding: 0.4rem;
+  background: var(--arcade-hi);
+  color: oklch(0.2 0.035 285);
+  font-size: 0.75rem;
+  box-shadow: 3px 3px 0 var(--arcade-line);
+}
+
+.arcade-chip {
+  align-items: center;
+  min-height: 1.25rem;
+  border: 1px solid var(--arcade-line);
+  padding: 0.15rem 0.35rem;
+  color: var(--arcade-ink);
+  font-size: 0.62rem;
+  line-height: 1.2;
+}
+
+.arcade-chip-p1 {
+  border-color: var(--arcade-p1);
+  background: var(--arcade-p1);
+  color: var(--arcade-panel);
+}
+
+.arcade-chip-p2 {
+  border-color: var(--arcade-p2);
+  background: var(--arcade-p2);
+  color: var(--arcade-panel);
+}
+
+.arcade-wall-tile {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 5rem;
+  border: 2px solid var(--arcade-p2);
+  padding: 0.35rem;
+  color: var(--arcade-p2);
+  text-align: center;
+  font-size: 0.62rem;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.arcade-unknown {
+  display: grid;
+  min-height: 2.2rem;
+  place-items: center;
+  border: 2px solid color-mix(in oklab, var(--arcade-line) 45%, transparent);
+  color: var(--arcade-muted);
+  font-size: 0.58rem;
+}
+
+.arcade-coach {
+  position: relative;
+  display: grid;
+  gap: 0.45rem;
+  border: 2px solid var(--arcade-line);
+  padding: 0.85rem;
+  background: var(--arcade-bg);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.arcade-coach::after {
+  position: absolute;
+  bottom: -8px;
+  left: 1.25rem;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid var(--arcade-line);
+  border-bottom: 2px solid var(--arcade-line);
+  background: var(--arcade-bg);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.arcade-button,
+.arcade-stepper {
+  border-color: var(--arcade-line);
+  background: var(--arcade-hi);
+  color: oklch(0.2 0.035 285);
+  box-shadow: 3px 3px 0 var(--arcade-line);
+}
+
+.arcade-button:hover:not(:disabled),
+.arcade-stepper:hover:not(:disabled) {
+  background: var(--arcade-hi);
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--arcade-line);
+}
+
+.arcade-button:focus-visible,
+.arcade-stepper:focus-visible,
+.arcade-stat-name:focus-visible {
+  outline: 2px solid var(--arcade-p2);
+  outline-offset: 2px;
+}
+
+.arcade-stepper:disabled,
+.arcade-button:disabled {
+  opacity: 0.38;
+}
+
+.arcade-stat-name {
+  min-height: 44px;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-arcade-hud);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.arcade-pip {
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 2px solid var(--arcade-line);
+}
+
+.arcade-pip-base {
+  background: var(--arcade-ink);
+}
+
+.arcade-pip-trained,
+.arcade-token-used {
+  background: var(--arcade-hi);
+}
+
+.arcade-sticky {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  border-top: 2px solid var(--arcade-line);
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: var(--arcade-panel);
+  box-shadow: 0 -3px 0 var(--arcade-line);
+}
+
+.arcade-token {
+  display: block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 2px solid var(--arcade-line);
+}
+
+.arcade-dialog {
+  border-color: var(--arcade-line);
+  background: var(--arcade-panel);
+  color: var(--arcade-ink);
+  box-shadow: 3px 3px 0 var(--arcade-line);
+}
+
+.arcade-idle {
+  animation: arcade-idle 0.8s steps(2, jump-none) infinite;
+}
+
+.arcade-idle-delay {
+  animation-delay: -0.4s;
+}
+
+@keyframes arcade-idle {
+  50% { transform: translateY(-1px); }
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -179,5 +465,26 @@
     --ring: oklch(0.68 0.1 157);
     --chart-bar: oklch(0.48 0.014 85);
     --chart-highlight: oklch(0.7 0.12 157);
+  }
+
+  :root:not(.light) .arcade {
+    --arcade-bg: oklch(0.17 0.035 285);
+    --arcade-panel: oklch(0.23 0.045 285);
+    --arcade-ink: oklch(0.95 0.015 95);
+    --arcade-muted: oklch(0.74 0.035 285);
+    --arcade-p1: oklch(0.66 0.2 25);
+    --arcade-p2: oklch(0.68 0.15 250);
+    --arcade-hi: oklch(0.88 0.17 92);
+    --arcade-line: oklch(0.38 0.05 285);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-idle {
+    animation: none;
+  }
+
+  .arcade * {
+    scroll-behavior: auto;
   }
 }

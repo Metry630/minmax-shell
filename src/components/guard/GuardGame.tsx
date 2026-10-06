@@ -1,0 +1,302 @@
+import { useRef, useState } from "react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { PositionScene, Portrait, StatIcon } from "@/games/guard/art/Art";
+import { COPY, TAGLINE, TITLE, fill } from "@/games/guard/copy";
+import { useGuardPuzzle, type CampControls } from "@/games/guard/ui-contract";
+import type { Scouting } from "@/games/guard/view";
+
+const arcadeButton =
+  "arcade-button min-h-11 rounded-none border-2 px-4 font-[family-name:var(--font-arcade-display)] text-[10px] tracking-normal shadow-none";
+
+export function GuardGame() {
+  const game = useGuardPuzzle();
+
+  if (game.phase === "loading") return <StatusFrame>{COPY.loading}</StatusFrame>;
+  if (game.phase === "unavailable") return <StatusFrame>{COPY.unavailable}</StatusFrame>;
+  if (game.phase === "error") {
+    return <StatusFrame>{fill(COPY.error, { message: game.message })}</StatusFrame>;
+  }
+  if (game.phase === "done") {
+    return (
+      <StatusFrame>
+        <div className="arcade-panel w-full p-5 text-center">
+          <p className="arcade-display text-base">FIGHT OVER</p>
+          <p className="mt-5 text-sm">{fill(COPY.startedAt, { pct: game.results.start })}</p>
+          <div className="mt-4 grid grid-cols-2 gap-3 arcade-hud text-xs">
+            <p>{COPY.yourCamp} {game.results.yours}%</p>
+            <p>{COPY.perfectCamp} {game.results.best}%</p>
+          </div>
+        </div>
+      </StatusFrame>
+    );
+  }
+
+  return (
+    <PlayingScreen
+      puzzleNo={game.puzzleNo}
+      scouting={game.scouting}
+      camp={game.camp}
+      submitting={game.submit.submitting}
+      rejection={game.submit.rejection}
+      onSubmit={game.submit.submit}
+    />
+  );
+}
+
+function StatusFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="arcade arcade-frame grid min-h-screen place-items-center px-5 py-12">
+      <div className="arcade-hud relative z-10 mx-auto w-full max-w-md text-center text-sm">{children}</div>
+    </main>
+  );
+}
+
+type PlayingScreenProps = {
+  puzzleNo: number;
+  scouting: Scouting;
+  camp: CampControls;
+  submitting: boolean;
+  rejection: string | null;
+  onSubmit(): Promise<void>;
+};
+
+function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubmit }: PlayingScreenProps) {
+  const campRef = useRef<HTMLElement>(null);
+  const [openHelp, setOpenHelp] = useState<string | null>(null);
+
+  return (
+    <main className="arcade arcade-frame min-h-screen px-4 pb-36 pt-5">
+      <div className="relative z-10 mx-auto w-full max-w-md">
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="arcade-logo" data-title={TITLE}>{TITLE}</h1>
+            <span className="arcade-chip mt-3 inline-flex">
+              {fill(COPY.division, { belt: scouting.belt.toUpperCase() })}
+            </span>
+          </div>
+          <p className="arcade-hud pt-1 text-right text-xs">
+            {fill(COPY.fightNo, { n: puzzleNo })}
+          </p>
+        </header>
+
+        <section className="mt-8" aria-label={COPY.vs}>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+            <Fighter
+              portrait={<Portrait id="hero" belt={scouting.belt} className="arcade-idle mx-auto w-24" />}
+              label={COPY.you}
+              title={scouting.fighter.title}
+              tag={COPY.underdog}
+              side="p1"
+            />
+            <span className="arcade-vs mb-20">{COPY.vs}</span>
+            <Fighter
+              portrait={
+                <Portrait
+                  id={scouting.opponent.archetype}
+                  belt={scouting.belt}
+                  flip
+                  className="arcade-idle arcade-idle-delay mx-auto w-24"
+                />
+              }
+              label={scouting.opponent.title}
+              side="p2"
+            />
+          </div>
+          <p className="mt-6 text-center text-sm font-semibold">{TAGLINE}</p>
+        </section>
+
+        <section className="arcade-panel mt-8 p-4" aria-labelledby="scouting-title">
+          <h2 id="scouting-title" className="arcade-section-title">{COPY.scouting}</h2>
+
+          <div className="mt-5">
+            <p className="arcade-hud text-xs">{COPY.wall}</p>
+            <p className="mt-1 text-xs text-[var(--arcade-muted)]">{COPY.wallHelp}</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {scouting.opponent.wall.map((item) => (
+                <div key={item.stat} className="arcade-wall-tile">
+                  <StatIcon stat={item.stat} className="w-7" />
+                  <span>{item.name}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 grid grid-cols-5 gap-2">
+              {Array.from({ length: 5 }, (_, index) => (
+                <div key={index} className="arcade-unknown">{COPY.unknown}</div>
+              ))}
+            </div>
+          </div>
+
+          <div className="arcade-coach mt-5">
+            <p className="arcade-hud text-xs">{COPY.coach}</p>
+            {scouting.opponent.hints.map((hint) => <p key={hint}>{hint}</p>)}
+          </div>
+
+          <div className="mt-6 text-center">
+            <p className="arcade-hud text-xs">{COPY.stage}</p>
+            <PositionScene
+              kind={scouting.stage.kind}
+              perspective={scouting.stage.perspective}
+              className="mx-auto mt-3 w-48 max-w-full"
+            />
+            <p className="arcade-hud mt-2 text-xs">{scouting.stage.name}</p>
+            <p className="arcade-chip mt-2 inline-flex">
+              {fill(COPY.exchanges, { n: scouting.stage.exchanges })}
+            </p>
+          </div>
+        </section>
+
+        <Button
+          type="button"
+          className={`${arcadeButton} mt-7 w-full`}
+          onClick={() => campRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        >
+          {COPY.startCamp}
+        </Button>
+
+        <section ref={campRef} className="arcade-panel mt-8 scroll-mt-4 p-4" aria-labelledby="camp-title">
+          <h2 id="camp-title" className="arcade-section-title">{COPY.camp}</h2>
+          <p className="mt-3 text-sm text-[var(--arcade-muted)]">
+            {fill(COPY.campHint, { n: scouting.sessions })}
+          </p>
+          <div className="mt-5 divide-y-2 divide-[var(--arcade-line)] border-y-2 border-[var(--arcade-line)]">
+            {scouting.stats.map((row, index) => {
+              const expanded = openHelp === row.stat;
+              return (
+                <div key={row.stat} className="py-3">
+                  <div className="grid grid-cols-[2rem_1fr_2.75rem_2.75rem] items-center gap-2">
+                    <StatIcon stat={row.stat} className="w-8" />
+                    <div className="min-w-0">
+                      <button
+                        type="button"
+                        className="arcade-stat-name"
+                        aria-expanded={expanded}
+                        onClick={() => setOpenHelp(expanded ? null : row.stat)}
+                      >
+                        {row.name}
+                      </button>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {row.signature && <span className="arcade-chip">{COPY.signature}</span>}
+                        {row.wall && <span className="arcade-chip arcade-chip-p2">{COPY.theirWall}</span>}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="arcade-stepper h-11 w-11 rounded-none p-0 text-xl shadow-none"
+                      disabled={!camp.canRemove(index)}
+                      aria-label={`${row.name} −`}
+                      onClick={() => camp.remove(index)}
+                    >
+                      −
+                    </Button>
+                    <Button
+                      type="button"
+                      className="arcade-stepper h-11 w-11 rounded-none p-0 text-xl shadow-none"
+                      disabled={!camp.canAdd(index)}
+                      aria-label={`${row.name} +`}
+                      onClick={() => camp.add(index)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                  <div className="ml-10 mt-3 grid grid-cols-10 gap-1" aria-label={`${row.name} ${camp.skills[index] ?? row.skill}`}>
+                    {Array.from({ length: 10 }, (_, pip) => {
+                      const trained = pip >= row.skill && pip < row.skill + (camp.sessions[index] ?? 0);
+                      const base = pip < row.skill;
+                      return <span key={pip} className={`arcade-pip ${base ? "arcade-pip-base" : trained ? "arcade-pip-trained" : ""}`} />;
+                    })}
+                  </div>
+                  {expanded && <p className="ml-10 mt-3 text-sm leading-relaxed">{row.help}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+
+      <div className="arcade-sticky">
+        <div className="mx-auto flex w-full max-w-md items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex gap-1.5">
+              {Array.from({ length: camp.total }, (_, index) => (
+                <span key={index} className={`arcade-token ${index < camp.total - camp.left ? "arcade-token-used" : ""}`} />
+              ))}
+            </div>
+            <p className="arcade-hud mt-2 text-[10px]">
+              {camp.complete ? COPY.sessionsDone : fill(COPY.sessionsLeft, { n: camp.left })}
+            </p>
+            {rejection && <p className="mt-1 text-xs text-[var(--arcade-p1)]">{rejection}</p>}
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" className={`${arcadeButton} min-w-32`} disabled={!camp.complete || submitting}>
+                {COPY.fight}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="arcade arcade-dialog max-w-[calc(100%-2rem)] rounded-none border-2 p-5 shadow-none">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="arcade-display text-sm">{COPY.confirmTitle}</AlertDialogTitle>
+                <AlertDialogDescription className="mt-2 text-sm text-[var(--arcade-muted)]">
+                  {COPY.confirmBody}
+                </AlertDialogDescription>
+                {rejection && <p className="mt-2 text-xs text-[var(--arcade-p1)]">{rejection}</p>}
+              </AlertDialogHeader>
+              <AlertDialogFooter className="mt-3 gap-2 sm:space-x-0">
+                <AlertDialogCancel className={`${arcadeButton} mt-0 bg-[var(--arcade-panel)] text-[var(--arcade-ink)]`}>
+                  {COPY.confirmNo}
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className={arcadeButton}
+                  disabled={submitting}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    void onSubmit();
+                  }}
+                >
+                  {submitting ? "..." : COPY.confirmYes}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function Fighter({
+  portrait,
+  label,
+  title,
+  tag,
+  side,
+}: {
+  portrait: React.ReactNode;
+  label: string;
+  title?: string;
+  tag?: string;
+  side: "p1" | "p2";
+}) {
+  return (
+    <div className="min-w-0 text-center">
+      {portrait}
+      <p className={`arcade-hud mt-2 text-[10px] ${side === "p1" ? "text-[var(--arcade-p1)]" : "text-[var(--arcade-p2)]"}`}>
+        {label}
+      </p>
+      {title && <p className="mt-1 min-h-10 text-xs leading-tight">{title}</p>}
+      {tag && <span className="arcade-chip arcade-chip-p1 mt-1 inline-flex">{tag}</span>}
+    </div>
+  );
+}
