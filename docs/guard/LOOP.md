@@ -66,6 +66,33 @@ generous variant), the most common 10 times ("double leg, landing past the legs,
 because 5 start positions mostly decide the answer. It passes the feedback and knowledge patterns but
 would not leave anyone thinking, and a week of play would teach the meta.
 
+## Options 1 and 2, measured (Joshua: "yes and yes")
+
+Same lab, steeper finishing chances (back 50%, mount 42%, pins 28%, guard 16%), a counter ends the
+plan. "Shut" closes the first move of the current best plan, re-solved, K times (the opponent
+closing yesterday's shortcut). "Combo" ends the plan with up to 3 attacks in order, cycled, each
+failed real threat setting up the next (+1, then +2), as the engine's chain rule.
+
+| Variant | Median best | Moves before the finish | Distinct answers in 60 days | Shortest route | Grappler's instinct | Combo adds |
+|---|---|---|---|---|---|---|
+| Route | 21.2% | 1 | 17 | 1.8 below (best on 43%) | 3.1 (38%) | n/a |
+| + combo | 21.8% | 1 | 25 | 3.1 (22%) | 4.1 (22%) | 0.3 pts |
+| + 2 shut | 12.5% | 1 | 26 | 5.8 (12%) | 4.2 (13%) | n/a |
+| + combo + 2 shut | 12.8% | 1 | 31 | 5.8 (7%) | 4.2 (8%) | 0.0 |
+| + combo + 3 shut | 10.1% | 1 | 34 | 2.8 (10%) | 2.5 (10%) | 0.0 |
+
+**Verdict: more variety, no depth.** Distinct answers double (17 to 34), but the best plan is still
+one move then the finish: shutting the double leg makes seoi nage the shortcut instead, and combos
+add 0 to 0.3 points. The cause is the objective, not the board. "Finish within N exchanges, retrying
+failed steps" always rewards the shortest route to a decent finish, so the journey never matters.
+
+**What would make the journey matter: score it.** IBJJF points for every takedown, sweep, pass,
+mount and back take along the route (`rules.ts` already scores a sequence, re-scoring rules
+included), with the finish as the climax. A longer route earns more but risks the counter and the
+clock. That's close to the original "chain moves for points" design, now with exact chances and live
+feedback. Open question before measuring it: why did the points version give way to the camp on
+2026-10-05? DECISIONS doesn't say.
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their
