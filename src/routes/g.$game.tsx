@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { GuardGame } from "@/components/guard";
-import { TAGLINE, TITLE } from "@/games/guard/copy";
+import { COPY, TAGLINE, TITLE } from "@/games/guard/copy";
 
 const games: Record<string, { name: string }> = {
   guard: { name: "Guard to Sub" },
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/g/$game")({
     const game = games[params.game];
     const title = params.game === "guard" ? `${TITLE} · a daily jiu-jitsu puzzle` : "Game not found · minmax";
     const description = game
-      ? `${TAGLINE} ${COPY_CONFIRMATION}`
+      ? `${TAGLINE} ${COPY.confirmTitle}`
       : "This minmax game could not be found.";
 
     return {
@@ -46,5 +46,3 @@ function GamePage() {
 
   return <GuardGame />;
 }
-
-const COPY_CONFIRMATION = "One fight a day.";
