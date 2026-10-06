@@ -571,3 +571,14 @@ numbers alone aren't the issue, structure is. Steeper finishing chances (back 50
 softer counter lift the scores (median best 12% to 52%) but not the depth. Not built; options for
 the next session are in LOOP.md (a daily board where the opponent closes moves, a finishing combo,
 all 29 start positions, fewer shortcuts).
+
+## 2026-10-06: Win the match doesn't add depth either; the board is too small for a search puzzle
+
+Joshua's point: the tap ends a match, so points along the route can't be the goal. Measured instead:
+win with a tap or a points lead at the buzzer, their counters scoring for them, counter risk by
+position, 4 to 6 or 10 exchanges, starting 0 to 6 points down, with and without moves that skip a
+rung. "Score once and hold" wins unless you start 6 down; then the tap takes over but the route is
+one move; one rung per move gives 2-move routes but holding and a grappler's instinct still find the
+best on most days. About 15 variants agree: on 29 positions the best route is 1 to 2 obvious moves.
+The proposal now is depth from limited feedback (Mastermind on a hidden opponent: the camp plus a few
+spars), to be measured before any choice. Numbers in LOOP.md.

@@ -93,6 +93,43 @@ clock. That's close to the original "chain moves for points" design, now with ex
 feedback. Open question before measuring it: why did the points version give way to the camp on
 2026-10-05? DECISIONS doesn't say.
 
+## Win the match, measured (Joshua: "if you get the tap anyway the points don't really matter")
+
+Win with a tap, or with more points at the buzzer (a tie loses: the underdog needs to win). Their
+counters score their IBJJF points (mirrored through `expectedEvents`), holding gives them a counter
+chance every exchange, and a failed attack's counter risk depends on where you are (20% from your
+guard, 15% passing or standing, 10% on pins, 8% in mount, 5% on the back, plus 5 per point of their
+edge). Plans may finish with one or two attacks or bank the points and hold.
+
+| Variant | Median win | Best plan ends with | Tap's share of wins | Moves before the finish | Distinct answers | Instinct gap (best on) |
+|---|---|---|---|---|---|---|
+| 4 to 6 exchanges, level | 50% | hold, 58 of 60 | 0% | 1 | 10 | 0.0 (73%) |
+| down 4 | 36% | hold, 56 | 0% | 1 | 12 | 1.9 (43%) |
+| down 6 | 27% | attacks 38, hold 22 | 100% | 1 | 21 | 6.4 (8%) |
+| 10 exchanges, down 6 | 39% | attacks 37, hold 23 | 100% | 1 | 23 | 3.7 (7%) |
+| one rung per move, 10 exchanges, down 4 | 17% | hold, 43 | 0% | 2 | 18 | 0.0 (60%) |
+| one rung per move, 10 exchanges, down 6 | 16% | hold, 38 | 0% | 2 | 21 | 3.0 (28%) |
+
+**Verdict.** A lead you can't lose wins: once you're ahead, their escapes score nothing, so "score
+once and hold" beats attacking unless you start 6 down, and then the tap takes over but the route is
+still one move (shortcuts like "free the leg straight to mount" are 7 points in one exchange).
+Allowing one rung per move gives 2-move routes, but holding and instinct still find the best on most
+days. About 15 variants across three objectives now agree: **the best route is 1 to 2 likely-looking
+moves that a grappler finds by instinct.** The cause is the board, not the rules: 29 positions on a
+short ladder with about 3 options each is too small a space for a daily search puzzle. Enclose.horse
+has hundreds of cells and geometry; we have a ladder.
+
+## Reframe: depth from limited feedback, not from search
+
+Wordle and Krillion aren't deep searches either. Wordle's depth is choosing informative guesses with a
+budget of six against a hidden word. Our game already has the hidden thing (today's opponent) and an
+exact score. That's shape C, which was dismissed too quickly: the camp plus a few spars, each showing
+the exact chance, is Mastermind on a hidden opponent. The camp's smoothness, which made it trivial
+when the number was always visible, stops mattering when you only get 3 looks. Its weaknesses
+(reading 8 abstract stats first; knowledge connecting weakly) are UI and framing problems, not
+structural ones, and they can be measured: how close sensible 2-, 3- and 4-spar strategies get to the
+best camp.
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their
