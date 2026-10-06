@@ -1,23 +1,23 @@
 import type { Sprite } from "../sprite";
 
-// Stat icon, Guard: a fighter on their back, legs up, bare feet to the sky. 16x16, outlined in k.
+// Stat icon, Guard: a shield with a chevron, your guard as your defence and your base. 16x16, outlined in k.
 export const iconGuard: Sprite = {
   rows: [
     "................",
-    ".......kkkkkkkk.",
-    ".......ksskkssk.",
-    ".......kggkkwwk.",
-    ".......kggkkwwk.",
-    ".......kggkkwwk.",
-    ".......kggkkwwk.",
-    "........kggkwwk.",
-    "..kkk....kgwwwk.",
-    ".khhhkkkkkwwwwk.",
-    ".kskskwwwwwwwwk.",
-    ".kssskwwwwwwggk.",
-    "..kkkkkkkkkkkkk.",
-    "................",
-    "................",
+    "..kkkkkkkkkkkk..",
+    "..kwwgggggggGk..",
+    "..kwggggggggGk..",
+    "..kggggYYgggGk..",
+    "..kgggYYYYggGk..",
+    "..kggYYggYYgGk..",
+    "..kgYYggggYYGk..",
+    "..kYYggggggYYk..",
+    "...kggggggGGk...",
+    "...kgggggggGk...",
+    "....kgggggGk....",
+    ".....kgggGk.....",
+    "......kGGk......",
+    ".......kk.......",
     "................",
   ],
 };

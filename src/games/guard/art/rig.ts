@@ -26,7 +26,42 @@ export type Pose = {
   kneeF: Point;
   footF: Point;
 };
-export type Scene = { top: Pose; bottom: Pose };
+type Role = "top" | "bottom";
+/** A fighter's parts, painted separately so the other body can come between them. */
+type Part = "far" | "body" | "legN";
+/**
+ * The order parts are painted in, back to front. The default paints the fighter underneath first;
+ * OVER tucks the top fighter's far arm and leg behind the one underneath (side control, mount,
+ * back mount: they're on the other side of the body); WRAP puts the bottom fighter's near leg in front
+ * of the top fighter, so closed guard's legs go round the waist rather than beside it.
+ */
+type Layers = readonly (readonly [Role, Part])[];
+const BASE_LAYERS: Layers = [
+  ["bottom", "far"],
+  ["bottom", "body"],
+  ["bottom", "legN"],
+  ["top", "far"],
+  ["top", "body"],
+  ["top", "legN"],
+];
+const OVER: Layers = [
+  ["top", "far"],
+  ["bottom", "far"],
+  ["bottom", "body"],
+  ["bottom", "legN"],
+  ["top", "body"],
+  ["top", "legN"],
+];
+const WRAP: Layers = [
+  ["bottom", "far"],
+  ["top", "far"],
+  ["top", "body"],
+  ["top", "legN"],
+  ["bottom", "body"],
+  ["bottom", "legN"],
+];
+
+export type Scene = { top: Pose; bottom: Pose; layers?: Layers };
 
 const pose = (p: Pose) => p;
 
@@ -75,19 +110,22 @@ const guard: Scene = {
     kneeF: [26, 27],
     footF: [35, 28],
   }),
+  // Legs round the waist: the near thigh up the side of their hips, the shin across the small of
+  // their back, ankles crossed behind them (only the far foot shows, past their back).
   bottom: pose({
     head: [6, 26],
     neck: [10, 26],
     hip: [19, 25],
     elbowN: [14, 22],
-    handN: [20, 13],
+    handN: [21, 15],
     elbowF: [13, 21],
-    handF: [21, 11],
+    handF: [22, 13],
     kneeN: [24, 18],
-    footN: [31, 19],
-    kneeF: [23, 17],
-    footF: [30, 17],
+    footN: [31, 17],
+    kneeF: [25, 17],
+    footF: [31, 15],
   }),
+  layers: WRAP,
 };
 
 // Side control: them flat on their back; you across their chest, knees on the mat by their hip.
@@ -118,6 +156,8 @@ const sideControl: Scene = {
     kneeF: [31, 24],
     footF: [39, 28],
   }),
+  // The far arm is on the other side of their body (OVER).
+  layers: OVER,
 };
 
 // North-south: them on their back, head to the right; you on their chest, head toward their hips.
@@ -182,6 +222,7 @@ const kneeOnBelly: Scene = {
 
 // Mount: them flat; you sitting upright on their belly, knees on the mat either side.
 const mount: Scene = {
+  // The far knee and foot sit on the other side of their body, hidden behind it (OVER).
   top: pose({
     head: [21, 7],
     neck: [21, 11],
@@ -190,10 +231,10 @@ const mount: Scene = {
     handN: [14, 22],
     elbowF: [18, 15],
     handF: [15, 20],
-    kneeN: [17, 27],
-    footN: [26, 29],
+    kneeN: [16, 28],
+    footN: [25, 29],
     kneeF: [19, 26],
-    footF: [28, 28],
+    footF: [26, 26],
   }),
   bottom: pose({
     head: [6, 27],
@@ -208,22 +249,25 @@ const mount: Scene = {
     kneeF: [32, 24],
     footF: [40, 28],
   }),
+  layers: OVER,
 };
 
 // Back mount: them flattened face down; you lying on their back, an arm round the neck.
 const backMount: Scene = {
+  // Chest on their back, an arm under the chin, hooks in: knees down by their hips, feet tucked
+  // in at the hips rather than trailing behind.
   top: pose({
-    head: [11, 21],
-    neck: [14, 22],
-    hip: [26, 22],
-    elbowN: [11, 25],
-    handN: [7, 25],
-    elbowF: [12, 24],
-    handF: [8, 23],
-    kneeN: [32, 25],
-    footN: [37, 27],
-    kneeF: [31, 24],
-    footF: [36, 26],
+    head: [9, 21],
+    neck: [12, 22],
+    hip: [23, 22],
+    elbowN: [10, 25],
+    handN: [6, 25],
+    elbowF: [11, 24],
+    handF: [7, 23],
+    kneeN: [28, 25],
+    footN: [25, 28],
+    kneeF: [27, 24],
+    footF: [24, 27],
   }),
   bottom: pose({
     head: [6, 26],
@@ -238,6 +282,7 @@ const backMount: Scene = {
     kneeF: [32, 28],
     footF: [39, 29],
   }),
+  layers: OVER,
 };
 
 // Back control: both seated facing right; you behind, hooks in, arms round the neck (seat belt).
@@ -312,12 +357,27 @@ export const SCENES: Record<Kind, Scene> = {
   turtle,
 };
 
-/** Who is who: on "top" you're the top pose, on "bottom" the bottom one; standing, the left one. */
-export function cast(kind: Kind, perspective: Perspective): { you: Pose; them: Pose } {
+/** A paint order in you/them terms, for drawScene. */
+export type CastLayers = readonly (readonly ["you" | "them", Part])[];
+
+/**
+ * Who is who: on "top" you're the top pose, on "bottom" the bottom one; standing, the left one.
+ * `layers` is the scene's paint order with roles turned into you and them.
+ */
+export function cast(
+  kind: Kind,
+  perspective: Perspective,
+): { you: Pose; them: Pose; layers: CastLayers } {
   const scene = SCENES[kind];
-  return perspective === "bottom"
-    ? { you: scene.bottom, them: scene.top }
-    : { you: scene.top, them: scene.bottom };
+  const youRole: Role = perspective === "bottom" ? "bottom" : "top";
+  const layers = (scene.layers ?? BASE_LAYERS).map(
+    ([role, part]) => [role === youRole ? "you" : "them", part] as const,
+  );
+  return {
+    you: scene[youRole],
+    them: scene[youRole === "top" ? "bottom" : "top"],
+    layers,
+  };
 }
 
 /** Every joint moved t of the way from a to b (0 to 1): the replay's tween between positions. */
@@ -357,7 +417,7 @@ function dist2(px: number, py: number, a: Point, b: Point): number {
 
 type Stroke = { a: Point; b: Point; r: number; key: PaletteKey };
 
-function strokes(p: Pose, look: Look): { far: Stroke[]; near: Stroke[] } {
+function strokes(p: Pose, look: Look): Record<Part, Stroke[]> {
   const limb = (a: Point, b: Point, r: number, key: PaletteKey): Stroke => ({ a, b, r, key });
   return {
     far: [
@@ -366,25 +426,26 @@ function strokes(p: Pose, look: Look): { far: Stroke[]; near: Stroke[] } {
       limb(p.hip, p.kneeF, WIDTH.leg / 2, look.shade),
       limb(p.kneeF, p.footF, WIDTH.leg / 2, look.shade),
     ],
-    near: [
+    body: [
       limb(p.neck, p.hip, WIDTH.torso / 2, look.body),
-      limb(p.hip, p.kneeN, WIDTH.leg / 2, look.body),
-      limb(p.kneeN, p.footN, WIDTH.leg / 2, look.body),
       limb(p.neck, p.elbowN, WIDTH.arm / 2, look.body),
       limb(p.elbowN, p.handN, WIDTH.arm / 2, look.body),
       limb(p.head, p.head, WIDTH.head, look.skin),
     ],
+    legN: [
+      limb(p.hip, p.kneeN, WIDTH.leg / 2, look.body),
+      limb(p.kneeN, p.footN, WIDTH.leg / 2, look.body),
+    ],
   };
 }
 
-/** Paints one fighter: fill, then a 1-pixel outline around it, over whatever is underneath. */
-function paint(grid: string[][], p: Pose, look: Look) {
+/** Paints one part of a fighter: fill, then a 1-pixel outline around it, over whatever is beneath. */
+function paint(grid: string[][], p: Pose, look: Look, part: Part) {
   const { w, h } = SCENE;
   const mask: (PaletteKey | null)[][] = Array.from({ length: h }, () =>
     Array<PaletteKey | null>(w).fill(null),
   );
-  const { far, near } = strokes(p, look);
-  for (const s of [...far, ...near]) {
+  for (const s of strokes(p, look)[part]) {
     const x0 = Math.max(0, Math.floor(Math.min(s.a[0], s.b[0]) - s.r));
     const x1 = Math.min(w - 1, Math.ceil(Math.max(s.a[0], s.b[0]) + s.r));
     const y0 = Math.max(0, Math.floor(Math.min(s.a[1], s.b[1]) - s.r));
@@ -426,18 +487,35 @@ function paint(grid: string[][], p: Pose, look: Look) {
   }
 }
 
-/**
- * A scene as a sprite. The fighter lower on the screen (the one underneath) is painted first, so
- * the top fighter's outline separates them; standing paints them first, so you're in front.
- */
-export function drawScene(you: Pose, them: Pose): Sprite {
+/** A scene as a sprite, painted part by part in `layers` order (default: the one underneath first). */
+export function drawScene(you: Pose, them: Pose, layers?: CastLayers): Sprite {
   const grid = Array.from({ length: SCENE.h }, () => Array<string>(SCENE.w).fill("."));
-  const order = you.hip[1] > them.hip[1] ? [you, them] : [them, you];
-  for (const p of order) paint(grid, p, p === you ? LOOKS.you : LOOKS.them);
+  const order: CastLayers =
+    layers ??
+    (you.hip[1] > them.hip[1]
+      ? [
+          ["you", "far"],
+          ["you", "body"],
+          ["you", "legN"],
+          ["them", "far"],
+          ["them", "body"],
+          ["them", "legN"],
+        ]
+      : [
+          ["them", "far"],
+          ["them", "body"],
+          ["them", "legN"],
+          ["you", "far"],
+          ["you", "body"],
+          ["you", "legN"],
+        ]);
+  for (const [who, part] of order) {
+    paint(grid, who === "you" ? you : them, who === "you" ? LOOKS.you : LOOKS.them, part);
+  }
   return { rows: grid.map((row) => row.join("")) };
 }
 
 export function sceneSprite(kind: Kind, perspective: Perspective): Sprite {
-  const { you, them } = cast(kind, perspective);
-  return drawScene(you, them);
+  const { you, them, layers } = cast(kind, perspective);
+  return drawScene(you, them, layers);
 }

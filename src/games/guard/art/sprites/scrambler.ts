@@ -1,17 +1,17 @@
 import type { Sprite } from "../sprite";
 
-// Opponent, Scrambler: an orange mohawk over cropped dark sides, a toothy grin, dark skin, a blue gi
+// Opponent, Scrambler: an orange mohawk running front to back over cropped dark sides, a toothy grin, dark skin, a blue gi
 // with the sleeves rolled up, today's belt (L). Faces right. 32x40.
 export const scrambler: Sprite = {
   rows: [
-    "............k.k.k.k.............",
-    "............kokokok.............",
-    "............koYoook.............",
-    "...........kooYooook............",
-    "........kkkkoYoooookkk..........",
-    ".......khhhkoYoooookhk..........",
-    ".......khhhhkoooooookhk.........",
-    ".......khhhhhkkkkkkkhhk.........",
+    "..........kkk...................",
+    ".........kooYk..................",
+    "........koooYkk.................",
+    "........kooooYokk...............",
+    ".......kkoooooooookk............",
+    ".......khkkoooooooookk..........",
+    ".......khhhkkkkkkkkkhhk.........",
+    ".......khhhhhhhhhhhhhhk.........",
     ".......khhhdddddddddddk.........",
     ".......khhdddddddddddddk........",
     ".......khhdddddddhhhddk.........",

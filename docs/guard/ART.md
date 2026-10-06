@@ -8,12 +8,12 @@ change to `src/games/guard/art/`. Belts render in today's colour; the sheet show
 **Row 1, portraits (32x40):** your fighter (the hero: red headband, white gi), then the opponents in
 `ARCHETYPES` order: Ex-D1 wrestler (headgear, blue gi), Judo black belt (side part, heavy collar),
 Leg-lock specialist (bald, ginger beard, black gi), Guard player (top knot, sponsor patches),
-Scrambler (mohawk, rolled sleeves). All face right; the VS screen mirrors the opponent.
+Scrambler (a swept-back mohawk, rolled sleeves). All face right; the VS screen mirrors the opponent.
 
-**Row 2, stat icons (16x16)**, in `STATS` order: Standing (a wrestling boot), Guard (on your back,
-feet up), Passing (an arrow vaulting the knees), Top control (an anvil, for pressure), Back (a
-backpack: "taking the backpack"), Escapes (a shrimp, the hip escape), Chokes (a snake: anaconda and
-python chokes), Joint locks (a bent arm, a pop at the elbow).
+**Row 2, stat icons (16x16)**, in `STATS` order: Standing (a wrestling boot), Guard (a shield),
+Passing (an arrow vaulting the knees), Top control (an anvil, for pressure), Back (a backpack:
+"taking the backpack"), Escapes (a shrimp, the hip escape), Chokes (a snake: anaconda and python
+chokes), Joint locks (a bent arm, a pop at the elbow).
 
 **Rows 3 to 6, position scenes (48x32)**, you in red: standing, guard, side control, north-south,
 knee on belly (row 3), mount, back mount, back control, turtle (row 4), all with you on top; rows 5
@@ -23,10 +23,18 @@ position under it. The replay tweens between scenes, so a sweep shows red rollin
 
 ## Sign-off (Joshua)
 
-- [ ] Each opponent reads as their archetype at phone size.
-- [ ] Each icon reads as its stat, or at least won't mislead once its name is beside it.
-- [ ] Each scene is the right position to a grappler (the weakest: side control, north-south and
-      back mount look alike from the side; each is captioned).
+Reviewed 2026-10-06. Changed after his notes, awaiting a second look:
+
+- [x] Portraits are fine. The scrambler's mohawk was "kinda weird" (it read as a crown): redrawn as
+      one swept-back crest.
+- [x] Icons are fine except Guard ("feet up is way weird"): bent legs didn't read at 16 px either, so
+      it's his other suggestion, a shield, with a chevron rather than a cross.
+- [x] Scenes: north-south, knee on belly, back control and turtle are fine. Redrawn: **guard** (their
+      legs now wrap round your waist, ankles crossed behind you, instead of sitting beside you),
+      **side control** (the far arm is hidden on the other side of their body), **mount** (the far
+      knee and foot are on the other side, hidden), **back mount** (hooks in, feet by their hips).
+      The rig paints parts in a per-scene order to do this (`layers` in `rig.ts`), and the
+      underneath versions share the same poses, so they changed too.
 
 ## How it was drawn (for rebuilding it)
 

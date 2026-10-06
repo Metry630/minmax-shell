@@ -91,8 +91,8 @@ type Place = { kind: Kind; perspective: Perspective };
 /** A position, still: you in red, them in blue. 48x32. */
 export function PositionScene({ kind, perspective, className, title }: Common & Place) {
   const sprite = useMemo(() => {
-    const { you, them } = cast(kind, perspective);
-    return drawScene(you, them);
+    const { you, them, layers } = cast(kind, perspective);
+    return drawScene(you, them, layers);
   }, [kind, perspective]);
   return (
     <PixelSprite
@@ -139,7 +139,9 @@ export function FightScene({
     const a = cast(from.kind, from.perspective);
     const b = cast(to.kind, to.perspective);
     const t = frame / TWEEN.frames;
-    return drawScene(poseBetween(a.you, b.you, t), poseBetween(a.them, b.them, t));
+    // The paint order switches half way, so a sweep ends with the new position's layering.
+    const layers = t < 0.5 ? a.layers : b.layers;
+    return drawScene(poseBetween(a.you, b.you, t), poseBetween(a.them, b.them, t), layers);
   }, [from.kind, from.perspective, to.kind, to.perspective, frame]);
 
   return (
