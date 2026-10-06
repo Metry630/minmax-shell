@@ -39,6 +39,7 @@ export const COPY = {
   route: "ROUTE",
   sparSpent: "No spars left today. Fight with your best camp.",
   sparSubmitted: "You've already fought today.",
+  yourSpars: "YOUR SPARS",
   fight: "FIGHT!",
   confirmTitle: "One fight a day.",
   confirmBody: "Lock in this camp? It can't be changed after.",
