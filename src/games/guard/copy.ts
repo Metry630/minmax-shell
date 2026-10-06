@@ -51,6 +51,7 @@ export const COPY = {
   beat: "You beat {pct}% of fighters today.",
   alone: "First fighter today. The rankings fill in as others fight.",
   highScores: "HIGH SCORES",
+  fighters: "FIGHTERS TODAY: {n}",
   moveList: "MOVE LIST",
   yourPlan: "YOURS",
   bestPlan: "PERFECT",
