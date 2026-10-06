@@ -31,7 +31,20 @@ export type Fight = {
   defence: readonly number[];
   exchanges: number;
   start: PositionId;
+  /**
+   * Momentum (the played fight, LOOP.md): a stuffed real submission sets up the next one, the same
+   * one included, so hammering the right armbar builds pressure instead of rolling fresh dice:
+   * `step` skill points per stuff, up to `links`. Only submissions build and use it: when a stuffed
+   * pass built pressure too, failing a pass was sometimes worth more than landing it (fight lab,
+   * 2026-10-06). Off, the camp's rule: only a different attack gets the set-up, +1 per link up to
+   * CHAIN_MAX (MODEL.md).
+   */
+  momentum?: Momentum;
+  /** The played fight: their chance to counter a failed move never drops below this. */
+  counterFloor?: number;
 };
+
+export type Momentum = { step: number; links: number };
 
 type Move = {
   id: string;
@@ -113,8 +126,14 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
 }
 
 /** A failed real threat sets up the next different attack (armbar to triangle, sweep to armbar). */
-const setUpBonus = (move: Move, m: number, last: number, chain: number) =>
-  move.attack && last !== -1 && last !== m ? chain : 0;
+const setUpBonus = (move: Move, m: number, last: number, chain: number, momentum?: Momentum) =>
+  momentum
+    ? move.submission && last !== -1
+      ? chain * momentum.step
+      : 0
+    : move.attack && last !== -1 && last !== m
+      ? chain
+      : 0;
 
 /** A move's chance of working with this skill edge, `bonus` from a set-up included. */
 function moveWorks(
@@ -134,7 +153,18 @@ function moveWorks(
 }
 
 /** The chain after attempt m fails: grows on a different real threat, starts on the same one. */
-export function chainAfterMiss(move: Move, w: number, m: number, last: number, chain: number) {
+export function chainAfterMiss(
+  move: Move,
+  w: number,
+  m: number,
+  last: number,
+  chain: number,
+  momentum?: Momentum,
+) {
+  if (momentum) {
+    if (!(move.submission && w >= THREAT)) return { last: -1, chain: 0 };
+    return { last: m, chain: Math.min(chain + 1, momentum.links) };
+  }
   if (!(move.attack && w >= THREAT)) return { last: -1, chain: 0 };
   return { last: m, chain: last !== -1 && last !== m ? Math.min(chain + 1, CHAIN_MAX) : 1 };
 }
@@ -148,16 +178,25 @@ export function solveFight(board: Board, fight: Fight) {
   const { skills, defence, exchanges } = fight;
   // Memo over (position, exchanges left, last failed move + 1, chain); NaN means not computed.
   const lastSlots = maxMoves + 1;
-  const chainSlots = CHAIN_MAX + 1;
+  const chainSlots = (fight.momentum?.links ?? CHAIN_MAX) + 1;
   const memo = new Float64Array(board.ids.length * (exchanges + 1) * lastSlots * chainSlots).fill(
     NaN,
   );
   const key = (p: number, n: number, last: number, chain: number) =>
     ((p * (exchanges + 1) + n) * lastSlots + (last + 1)) * chainSlots + chain;
 
+  /** Their chance to counter when your move fails at p (0 where they have no way out). */
+  const counterChance = (p: number) =>
+    (escapes[p]?.length ?? 0) === 0
+      ? 0
+      : Math.max(
+          fight.counterFloor ?? 0,
+          escapeChance(defence[stat[p] ?? 0] ?? 0, skills[stat[p] ?? 0] ?? 0),
+        );
+
   /** A move's chance of working right now, chain bonus included. */
   const works = (move: Move, m: number, last: number, chain: number) =>
-    moveWorks(move, skills, defence, setUpBonus(move, m, last, chain));
+    moveWorks(move, skills, defence, setUpBonus(move, m, last, chain, fight.momentum));
 
   /** Value of attempting move m: it works, or it fails and they may counter. */
   const attempt = (p: number, n: number, last: number, chain: number, m: number): number => {
@@ -167,7 +206,7 @@ export function solveFight(board: Board, fight: Fight) {
     const success = move.submission ? 1 : value(move.to, n - 1, -1, 0);
     // A failed attack that was a real threat grows the chain (a different one) or starts it (the
     // same one again); a fake, or any other failed move, ends it.
-    const next = chainAfterMiss(move, w, m, last, chain);
+    const next = chainAfterMiss(move, w, m, last, chain, fight.momentum);
     const stay = value(p, n - 1, next.last, next.chain);
     // When a move fails, they may counter. They pick the counter that's worst for you, and skip it
     // if staying put is worse for you anyway. Together with holding, this makes more skill never
@@ -175,8 +214,7 @@ export function solveFight(board: Board, fight: Fight) {
     const out = escapes[p] ?? [];
     let countered = stay;
     for (const escape of out) countered = Math.min(countered, value(escape.to, n - 1, -1, 0));
-    const own = stat[p] ?? 0;
-    const getOut = out.length === 0 ? 0 : escapeChance(defence[own] ?? 0, skills[own] ?? 0);
+    const getOut = counterChance(p);
     return w * success + (1 - w) * (getOut * countered + (1 - getOut) * stay);
   };
 
@@ -216,7 +254,7 @@ export function solveFight(board: Board, fight: Fight) {
     return pick;
   };
 
-  return { value, attempt, choose, works, counterTo };
+  return { value, attempt, choose, works, counterTo, counterChance };
 }
 
 export function finishChance(board: Board, fight: Fight): number {
@@ -327,7 +365,7 @@ export function simulateFight(board: Board, fight: Fight, rng: { next(): number 
       submission: move.submission,
       attack: move.attack,
     };
-    const setUp = setUpBonus(move, m, last, chain);
+    const setUp = setUpBonus(move, m, last, chain, fight.momentum);
     if (rng.next() < w) {
       if (move.submission) {
         exchanges.push({
@@ -358,13 +396,9 @@ export function simulateFight(board: Board, fight: Fight, rng: { next(): number 
       continue;
     }
     // It failed: the chain moves on, then they may counter, exactly as `attempt` values it.
-    const next = chainAfterMiss(move, w, m, last, chain);
-    const own = board.stat[p] ?? 0;
-    const out = board.escapes[p] ?? [];
-    const getOut =
-      out.length === 0 ? 0 : escapeChance(fight.defence[own] ?? 0, fight.skills[own] ?? 0);
+    const next = chainAfterMiss(move, w, m, last, chain, fight.momentum);
     const counter =
-      rng.next() < getOut
+      rng.next() < solved.counterChance(p)
         ? solved.counterTo(p, n, solved.value(p, n - 1, next.last, next.chain))
         : null;
     if (counter) {

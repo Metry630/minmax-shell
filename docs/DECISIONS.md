@@ -633,3 +633,23 @@ public seed (`lab:<n>`), same dice for everyone on a number, no scores or D1. Gr
 points thrown away, good under 3, inaccuracy under 8, mistake from 8. A first headless run crashed at
 TIME!: asking the solver about a finished fight recursed past 0 exchanges; `optionsAt` now returns
 nothing for a finished fight, with a test.
+
+## 2026-10-06: Fight prototype v2: land more attempts, pressure on finishes, accuracy as the score
+
+Joshua's playtest: too many choices, unclear numbers, and best moves getting stuffed in a row felt
+bad. The stuffing was structural: with best play tapping about 40%, its attempts landed a median 24%,
+and 51% of best-play fights had 3+ stuffs in a row (fight lab, 60 puzzles × 400 fights). v2 (`play.ts`):
+
+- 4 exchanges, with every skill shifted together (bisection) until best play finishes 80-90%.
+- A daily move list per fighter: 2-3 ways forward and 0-2 finishes per position, ±1 by your stat there.
+- Pressure: each stuffed real submission adds 18 points to the next one, up to 2 (`Fight.momentum`).
+- Their counter chance never below 20% (`Fight.counterFloor`, read through `solved.counterChance`).
+- Accuracy (average share of finish chance each pick kept) as the score.
+
+Result: 8% of best-play fights with 3+ stuffs in a row, attempts landing a median 60%. Instinct still
+pays badly: always throwing the best-% finish throws away 21 points a fight, climbing first 38.
+
+Pressure from any stuffed attack was rejected: a pass graded best because failing it built pressure
+landed and *lowered* the finish chance on fight #2. Finishes-only pressure makes that impossible, 0
+of 21,216. The engine options are opt-in, so the camp and its tests are unchanged.
+

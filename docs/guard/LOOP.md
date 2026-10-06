@@ -184,6 +184,50 @@ to 2 gradeable mistakes. 15 to 17 different best openings in 60 days. At style l
 coin flip under best play, so taps are common and mistakes cost more (median 14.8 points when the
 likeliest move isn't the best); the underdog would end TIME! most days.
 
+## Joshua played the fight prototype (2026-10-06): v2
+
+His notes: fun, but too many choices; unclear what the percentages and points meant; best play also
+got stuffed, so why want it; against the judoka every BEST MOVE got stuffed ("very unsatisfying");
+fewer moves, as a per-fighter daily list with a confidence on each; some days more choices.
+
+The stuffing was structural, not bad luck. With best play tapping about 40%, the attempts it makes
+land a median 24%, so most fights include a run of stuffs. Fight lab, 60 dev-salt puzzles × 400 fights
+per player, hashed dice seeds (the earlier small-integer seeds biased sfc32's first rolls):
+
+| Setting | Best play taps | Best-play fights with 3+ stuffs in a row | Its attempts land (median) | Sub hunter throws away | Climber throws away |
+|---|---|---|---|---|---|
+| v1 (every move, generated exchanges) | 39% | 51% | 24% | 11.5 pts | 14.7 pts |
+| + daily move list, calibrated to 45-75% | 51% | 46% | 28% | 11.9 | 18.5 |
+| + calibrated to 80-90%, 4 exchanges | 81% | 19% | 49% | 4.4 | 24.1 |
+| + pressure from any stuffed attack | 83% | 15% | 46% | 16.2 | 32.2 |
+| **v2: pressure from stuffed finishes only, counters at least 20%, 0-2 finishes per position** | **81%** | **8%** | **60%** | **21.2** | **37.7** |
+
+What each step taught:
+
+- **Momentum alone barely helps** (51% to 50% at +6 points per stuff). Calibration pushes your skills
+  down to compensate, so the first attempt gets worse.
+- **Landing your attempts means best play mostly wins.** At a fixed finish rate the average attempt
+  can't be much likelier. So the target moved to 80-90% (Wordle-like: play well and you usually win),
+  and the score became accuracy, which the dice don't touch.
+- **Pressure from a stuffed pass backfired.** On fight #2, knee slice graded BEST MOVE, landed, and
+  the finish chance dropped 81% to 72%: it was best because failing it built kimura pressure. With
+  only submissions building pressure, 0 of 21,216 landed best-play moves left you worse off.
+- **Calibration erased counters** (0.03 a fight), so failing cost only time and "always throw the
+  best-% finish" was near-perfect (3.4 points). A 20% counter floor plus 0 to 2 finishes per position,
+  so some days you have to route to where your fighter's finishes are, brings back the teeth: 21
+  points a fight on average, though its median is still 0 (the depth sits on some days, not all).
+- **Holding never beat every move** on a best-play path (0 of about 12,000 decisions), so the Hold
+  button only appears where you know no move.
+
+The v2 page (`/lab/fight`):
+
+- The move list, each move's landing chance, and a pressure meter (+18 per stuffed finish, up to 2).
+- A FINISH CHANCE bar: best play's chance from here, chess's eval bar.
+- The grade on the pick, kept apart from the outcome: "Right call, bad roll: it lands 47% of the time."
+- The fight ends when no finish is reachable in the time left.
+- Accuracy is the average share of your finish chance each pick kept.
+- Your own dice each play.
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their
