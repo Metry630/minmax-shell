@@ -389,6 +389,64 @@ Gates missed:
 - Ignoring the clues still taps 81% (target 75%).
 - Best play is stuffed 1.4 times a fight (target 2); typical players are stuffed 2 to 2.6 times.
 
+## v6: the screen stops thinking for you (2026-10-06)
+
+Joshua on v5:
+
+- "It does make you think, but even then it's too easy."
+- "A bit much info at once."
+- OPEN / SHUT / CONTESTED are unclear.
+- "Do you really need to write this?" about "If a move is stuffed here: they turtle…".
+- Best play at 100% and ignoring the clues at 81% means people don't have to think it through.
+
+The cause: the page did the deduction.
+
+- Every card said what a move needed and whether it would land.
+- The reaction line gave the habit away.
+- Every stuff named exactly what was wrong.
+
+**What changed:**
+
+- **The screen shows less.**
+  - A move is its name and where it goes ("Over-under pass → Side control (top) · Kimura").
+  - No needs or verdicts, no reaction line.
+  - The coach's notes show once, before the first exchange, and don't fill anything in for you.
+  - What you've established shows as one line: "KNOWN: Passing gets through · Chokes only get
+    through from mount or the back".
+- **Plain words:** "gets through", "is blocked", "only gets through from mount or the back".
+- **Feedback you interpret.**
+  - A stuffed technique says STUFFED.
+  - A stuffed submission says DEFENDED, without saying whether your position or the finish stopped
+    it.
+  - CLOSE means your position worked and the finish needs mount or the back.
+  - Their reaction (COUNTER! or OPENING!) is its own line.
+  - The solver tracks what you can't rule out as a set of the 1,728 possible profiles, since
+    "my guard is blocked, or their arms are" isn't one state per area.
+- **Tighter:** 5 exchanges, three clues, more finishes blocked or contested.
+
+Read lab, 100 days (77 pass the gate):
+
+| Player | v5 | v6 |
+|---|---|---|
+| Best play | 100% | 100%, stuffed at least once on 71% of days |
+| Same reasoning, never read the clues | 81% | 70% |
+| BJJ instinct (reads what it knows for certain) | 46% | 48% |
+| BJJ instinct without the clues | 40% | 42% |
+| Spams finishes | 46% | 39% |
+| Random | 26% | 22% |
+
+Two cautions on these numbers:
+
+- **The bots can't measure what this round changes most.** They're perfect bookkeepers: they
+  compute, every move, what the old cards printed. A person has to do that in their head now. So
+  the human difficulty should rise by more than these numbers show.
+- **Ambiguity alone moved the bots by about a point.** The difference comes from the tighter
+  budget, the third clue and the harsher finishes.
+
+Gate missed: ignoring the clues taps 70% (target 65%). The harder dial is a 4-exchange minimum
+perfect read: ignoring the clues 59%, BJJ instinct 24%, random 9%, which looks too punishing for a
+daily.
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their

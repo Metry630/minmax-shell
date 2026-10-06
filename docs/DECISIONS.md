@@ -716,3 +716,24 @@ Choices, with the number behind each:
 
 v4 (`play.ts`, `/lab/fight`) stays for comparison.
 
+## 2026-10-06: Read the opponent v6: a leaner screen and feedback you interpret
+
+Joshua on v5: too easy, too much on screen, OPEN/SHUT/CONTESTED unclear, the reaction line gave the
+habit away. The page was doing the deduction (each card said whether it would land), so it was
+removed:
+
+- Move cards show only where a move goes.
+- One KNOWN line holds only what you've established for certain.
+- The words say what a state does: "is blocked", "only gets through from mount or the back".
+- A stuffed submission says DEFENDED without saying which of its two keys stopped it, so the solver
+  tracks beliefs as a set of the 1,728 possible profiles.
+- 5 exchanges, three clues, harsher finishes (shut from an edge of 1, contested from -1).
+
+Read lab, 100 days:
+
+- Best play taps 100% and is stuffed on 71% of days.
+- Ignoring the clues taps 70% (v5: 81%), BJJ instinct 48%, spamming finishes 39% (v5: 46%),
+  random 22%.
+
+The solver's prior is the measured mix: techniques 64% get through; finishes 14 / 32 / 54%.
+

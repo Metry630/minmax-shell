@@ -8,27 +8,23 @@ import { guard } from "@/games/guard/module";
 import {
   AREAS,
   AREA_NAMES,
-  dominantFor,
-  knownState,
+  certainFacts,
   playRead,
   positionOf,
   readDay,
-  reactionHere,
   readOptions,
   shareOf,
-  type Area,
-  type ReadOption,
+  stateWords,
   type ReadOutcome,
   type ReadState,
-  type State,
 } from "@/games/guard/read";
 import { localPuzzleNo } from "@/kit/day";
 import { sfc32, stringSeed } from "@/kit/seed";
 
-// A throwaway playtest of "read the opponent" (LOOP.md v5): no dice, no percentages. Today's
-// opponent has holes, the same for everyone; every move lands or is stuffed with the reason, and the
-// panel fills with what you've learned. Runs in the browser on a public seed: no scores, no D1.
-// Built by Claude Code outside the usual Lovable lane because it's temporary.
+// A throwaway playtest of "read the opponent" (LOOP.md v6): no dice, no percentages, and the screen
+// doesn't reason for you. Moves show where they go; whether they land is yours to work out from the
+// coach's notes and what happens. Runs in the browser on a public seed: no scores, no D1. Built by
+// Claude Code outside the usual Lovable lane because it's temporary.
 
 export const Route = createFileRoute("/lab/read")({
   head: () => ({ meta: [{ title: "Read lab · ARMBAR" }, { name: "robots", content: "noindex" }] }),
@@ -78,15 +74,17 @@ function Read({ n, next }: { n: number; next(): void }) {
   const [pending, setPending] = useState<{ turn: Turn; next: ReadState } | null>(null);
 
   const here = positionOf(setup, state);
-  const options = readOptions(setup, state);
-  const ifStuffed = reactionHere(setup, state);
   const exchanges = setup.config.exchanges;
   const exchange = exchanges - state.left + 1;
-  const known = pending ? pending.next.known : state.known;
+  const facts = certainFacts(pending ? pending.next.seen : state.seen);
+  const over = !pending && state.over;
+  const squares = turns.map((t) => t.outcome.square);
+  const sceneTo = pending ? pending.turn.outcome.at : here;
+  const sceneFrom = pending ? pending.turn.outcome.from : here;
 
-  function pick(o: ReadOption) {
-    const r = playRead(setup, state, o.m);
-    setPending({ turn: { picked: o.label, outcome: r.outcome }, next: r.next });
+  function pick(m: number, label: string) {
+    const r = playRead(setup, state, m);
+    setPending({ turn: { picked: label, outcome: r.outcome }, next: r.next });
   }
   function advance() {
     if (!pending) return;
@@ -99,12 +97,6 @@ function Read({ n, next }: { n: number; next(): void }) {
     setTurns([]);
     setPending(null);
   }
-
-  const over = !pending && state.over;
-  const squares = turns.map((t) => t.outcome.square);
-  const share = shareOf(n, squares, state, setup.perfect.length);
-  const sceneTo = pending ? pending.turn.outcome.at : here;
-  const sceneFrom = pending ? pending.turn.outcome.from : here;
 
   return (
     <main className="arcade arcade-frame min-h-screen px-4 pb-16 pt-5">
@@ -121,7 +113,6 @@ function Read({ n, next }: { n: number; next(): void }) {
             <div>
               <Portrait id="hero" belt={setup.puzzle.belt} className="mx-auto w-12" />
               <p className="arcade-hud mt-1 text-[10px] text-[var(--arcade-p1)]">{COPY.you}</p>
-              <p className="text-[10px] text-[var(--arcade-muted)]">{setup.puzzle.fighter.title}</p>
             </div>
             <p className="arcade-chip mt-3 whitespace-nowrap">
               {fill(COPY.exchange, { n: Math.min(exchange, exchanges), of: exchanges })}
@@ -140,27 +131,28 @@ function Read({ n, next }: { n: number; next(): void }) {
           </div>
 
           {turns.length === 0 && !pending && (
-            <div className="arcade-coach mt-4">
-              <p className="arcade-hud text-xs">{COPY.coach}</p>
-              {setup.clues.map((clue) => (
-                <p key={clue.area}>{clue.line}</p>
-              ))}
-              {setup.habit && (
-                <p>
-                  <strong>HABIT: {setup.habit.line}</strong>
-                </p>
-              )}
-            </div>
+            <>
+              <div className="arcade-coach mt-4">
+                <p className="arcade-hud text-xs">{COPY.coach}</p>
+                {setup.clues.map((clue) => (
+                  <p key={clue.area}>{clue.line}</p>
+                ))}
+                {setup.habit && <p>{setup.habit.line}</p>}
+              </div>
+              <p className="mt-4 text-sm text-[var(--arcade-muted)]">
+                Tap them within {exchanges} exchanges.
+              </p>
+            </>
           )}
 
-          <p className="mt-5 text-sm text-[var(--arcade-muted)]">
-            Tap them within {exchanges} exchanges. Every move lands, or gets stuffed and tells you
-            why.
-          </p>
+          {facts.length > 0 && (
+            <p className="mt-4 text-xs">
+              <span className="arcade-hud">KNOWN:</span>{" "}
+              {facts.map((f) => `${AREA_NAMES[f.area]} ${stateWords(f.area, f.state)}`).join(" · ")}
+            </p>
+          )}
 
-          <Panel known={known} reveal={over ? setup.profile : null} />
-
-          <div className="arcade-arena mt-4">
+          <div className="arcade-arena mt-3">
             <FightScene
               from={spotOf(sceneFrom)}
               to={spotOf(sceneTo)}
@@ -172,12 +164,22 @@ function Read({ n, next }: { n: number; next(): void }) {
           {pending && (
             <div className="mt-4 space-y-3 text-center">
               <p
-                className={`arcade-call ${pending.turn.outcome.call === CALL.counter ? "arcade-call-counter" : pending.turn.outcome.square === "🟩" || pending.turn.outcome.call === CALL.opening ? "arcade-call-worked" : "arcade-call-muted"}`}
+                className={`arcade-call ${pending.turn.outcome.square === "🟩" ? "arcade-call-worked" : "arcade-call-muted"}`}
               >
                 {pending.turn.outcome.call}
               </p>
               <p className="arcade-hud text-sm">{pending.turn.outcome.line}</p>
-              <p className="text-sm">{pending.turn.outcome.why}</p>
+              {pending.turn.outcome.why && <p className="text-sm">{pending.turn.outcome.why}</p>}
+              {pending.turn.outcome.reaction && (
+                <p className="text-sm">
+                  <span
+                    className={`arcade-hud ${pending.turn.outcome.reaction.call === CALL.counter ? "text-[var(--arcade-p2)]" : ""}`}
+                  >
+                    {pending.turn.outcome.reaction.call}
+                  </span>{" "}
+                  {pending.turn.outcome.reaction.name}.
+                </p>
+              )}
               {pending.turn.outcome.habit && (
                 <div className="arcade-coach text-left">
                   <p className="arcade-hud text-xs">{COPY.coach}</p>
@@ -195,19 +197,22 @@ function Read({ n, next }: { n: number; next(): void }) {
           )}
 
           {!pending && !over && (
-            <div className="mt-4">
-              <p className="arcade-hud text-xs">YOUR MOVES</p>
-              <p className="mt-1 text-[11px] text-[var(--arcade-muted)]">
-                If a move is stuffed here:{" "}
-                {ifStuffed
-                  ? `${ifStuffed.name.toLowerCase()}${ifStuffed.habit ? " (their habit)" : ""}.`
-                  : "you stay put."}
-              </p>
-              <div className="mt-3 grid gap-2">
-                {options.map((o) => (
-                  <MoveCard key={o.m} o={o} known={state.known} onPick={() => pick(o)} />
-                ))}
-              </div>
+            <div className="mt-4 grid gap-2">
+              {readOptions(setup, state).map((o) => (
+                <button
+                  key={o.m}
+                  type="button"
+                  onClick={() => pick(o.m, o.label)}
+                  className="arcade-button min-h-11 border-2 px-3 py-2 text-left"
+                >
+                  <span className="arcade-hud text-xs">{o.label}</span>
+                  <span className="block text-[11px]">
+                    {o.submission
+                      ? "submission"
+                      : `→ ${o.to ? posName(o.to) : ""}${o.knownThere.length ? ` · ${o.knownThere.join(", ")}` : ""}`}
+                  </span>
+                </button>
+              ))}
             </div>
           )}
 
@@ -216,23 +221,32 @@ function Read({ n, next }: { n: number; next(): void }) {
               <p className="arcade-splash arcade-splash-static">
                 {state.over === "tap" ? COPY.tap : COPY.time}
               </p>
-              {state.over === "time" && state.left > 0 && (
-                <p className="arcade-hud text-xs">No moves left from here.</p>
-              )}
               <p className="arcade-display text-2xl">{squares.join("")}</p>
               <p className="arcade-display text-sm">
                 {state.over === "tap" ? `TAP IN ${squares.length}` : "NO TAP"} · PERFECT READ{" "}
                 {setup.perfect.length}
               </p>
-              <div className="text-left text-sm">
-                <p className="arcade-hud text-xs">THE PERFECT READ</p>
+              <details className="text-left text-sm">
+                <summary className="arcade-hud cursor-pointer text-xs">THE PERFECT READ</summary>
                 <ol className="mt-1 list-decimal pl-5">
                   {setup.perfect.line.map((step, i) => (
                     <li key={i}>{step}</li>
                   ))}
                 </ol>
-              </div>
-              <p className="arcade-share-preview">{share}</p>
+              </details>
+              <details className="text-left text-sm">
+                <summary className="arcade-hud cursor-pointer text-xs">THEIR GAME</summary>
+                <ul className="mt-1 space-y-0.5">
+                  {AREAS.map((area) => (
+                    <li key={area}>
+                      {AREA_NAMES[area]} {stateWords(area, setup.profile[area])}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+              <p className="arcade-share-preview">
+                {shareOf(n, squares, state, setup.perfect.length)}
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -255,11 +269,11 @@ function Read({ n, next }: { n: number; next(): void }) {
 
         {turns.length > 0 && (
           <section className="arcade-panel mt-6 p-4">
-            <h2 className="arcade-section-title">FIGHT LOG</h2>
-            <div className="mt-3 space-y-2">
+            <div className="space-y-1">
               {turns.map((t, i) => (
                 <p key={i} className="arcade-hud text-xs">
-                  {i + 1}. {t.outcome.square} {t.picked}: {t.outcome.call} {t.outcome.why}
+                  {t.outcome.square} {t.picked}: {t.outcome.call}
+                  {t.outcome.reaction ? ` · ${t.outcome.reaction.call}` : ""}
                 </p>
               ))}
             </div>
@@ -271,17 +285,16 @@ function Read({ n, next }: { n: number; next(): void }) {
             <summary className="arcade-section-title cursor-pointer">HOW IT WORKS</summary>
             <div className="mt-2 space-y-2 text-sm text-[var(--arcade-muted)]">
               <p>
-                Every move belongs to an area of their game. Each area is OPEN (it lands), SHUT (it
-                never does) or, for submissions, CONTESTED: it only lands from mount or the back
-                (single-leg X for leg-locks).
+                Each part of their game either gets through, is blocked, or (for submissions) only
+                gets through from mount or the back.
               </p>
               <p>
-                A submission needs two things open: where you attack from (your guard, passing, top
-                control, the back) and the finish itself.
+                A submission needs both where you attack from and the finish itself to get through.
+                DEFENDED doesn't say which one stopped it; CLOSE means your position worked and the
+                finish needs mount or the back.
               </p>
               <p>
-                A stuffed move teaches you that area, and they react: their habit if it applies,
-                otherwise their best escape. The coach's notes are true. The same picks give
+                When a move fails they react. The coach's notes are true, and the same picks give
                 everyone the same fight.
               </p>
             </div>
@@ -289,77 +302,5 @@ function Read({ n, next }: { n: number; next(): void }) {
         </section>
       </div>
     </main>
-  );
-}
-
-const STATE_LABEL: Record<State, string> = { open: "OPEN", contested: "CONTESTED", shut: "SHUT" };
-
-/** What you know of their game: nine tiles, filled by the clues and every exchange. */
-function Panel({ known, reveal }: { known: number; reveal: Record<Area, State> | null }) {
-  return (
-    <div className="mt-3">
-      <p className="arcade-hud text-[10px]">
-        {reveal ? "THEIR GAME (REVEALED)" : "WHAT YOU KNOW ABOUT THEM"}
-      </p>
-      <div className="mt-1 grid grid-cols-3 gap-1">
-        {AREAS.map((area) => {
-          const state = reveal ? reveal[area] : knownState(known, area);
-          const learned = knownState(known, area) !== null;
-          const style =
-            state === "open"
-              ? "bg-[var(--arcade-hi)] text-[#141425] border-[var(--arcade-line)]"
-              : state === "contested"
-                ? "border-dashed border-[var(--arcade-hi)]"
-                : state === "shut"
-                  ? "bg-[var(--arcade-line)] text-[var(--arcade-muted)] border-[var(--arcade-line)]"
-                  : "border-[var(--arcade-line)] text-[var(--arcade-muted)]";
-          return (
-            <div
-              key={area}
-              className={`border-2 px-1 py-1 text-center ${style} ${reveal && !learned ? "opacity-70" : ""}`}
-            >
-              <p className="text-[10px] leading-tight">{AREA_NAMES[area]}</p>
-              <p className="arcade-hud text-[10px]">{state ? STATE_LABEL[state] : "?"}</p>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/** A move: its name, the areas it needs, where it goes, and what you know about whether it lands. */
-function MoveCard({ o, known, onPick }: { o: ReadOption; known: number; onPick(): void }) {
-  const verdict =
-    o.willLand === true ? "lands (you know)" : o.willLand === false ? "won't land from here" : "?";
-  return (
-    <button
-      type="button"
-      onClick={onPick}
-      className={`arcade-button grid min-h-11 gap-1 border-2 px-3 py-2 text-left ${o.willLand === false ? "opacity-60" : ""}`}
-    >
-      <span className="flex items-baseline justify-between gap-2">
-        <span className="arcade-hud text-xs">{o.label}</span>
-        <span className="text-[10px]">{verdict}</span>
-      </span>
-      <span className="text-[11px] leading-snug">
-        needs{" "}
-        {o.keys
-          .map((key) => {
-            const st = knownState(known, key);
-            return `${AREA_NAMES[key].toLowerCase()}${st ? ` (${STATE_LABEL[st].toLowerCase()})` : ""}`;
-          })
-          .join(" + ")}
-        {o.keys.some((key) => knownState(known, key) === "contested") &&
-          ` · contested lands from ${dominantFor(o.area)
-            .map((id) => posName(id).toLowerCase())
-            .slice(0, 2)
-            .join(" or ")}`}
-        <br />
-        {o.submission
-          ? "→ TAP!"
-          : `→ ${o.to ? posName(o.to) : ""}${o.knownThere.length ? ` (you know ${o.knownThere.join(", ")})` : ""}`}
-      </span>
-    </button>
   );
 }
