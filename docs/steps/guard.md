@@ -285,19 +285,25 @@ once, watch the replay, see the histogram and the best camp; a second submit is 
 **Status:** todo
 
 **Do:**
-1. 🧑 Buy the domain: `armbar.day` (Joshua's pick; $12.98/yr at Namecheap on 2026-10-04, same at
-   renewal). Domain only, 1 year, auto-renew on, free "Withheld for Privacy" on; skip every add-on
-   (Cloudflare covers SSL and DNS). Re-check availability first; fallbacks in `docs/GAMES.md`. Then add
-   the site to Cloudflare (free plan) and set Namecheap → Domain List → Manage → Nameservers → Custom DNS
-   to the two Cloudflare nameservers.
+1. 🧑 Buy the domain: `armbar.day` (Joshua's pick). Checked 2026-10-06: still unregistered (the .day
+   registry's RDAP answers "armbar.day not found"). Buy it at **Cloudflare Registrar**, which sells
+   .day at cost, $10.20/yr with the same renewal and free privacy, in the same account as the Worker,
+   so there are no nameservers to change. (Namecheap's $12.98 renews at $16.98, not the same as the
+   2026-10-04 note said; Porkbun is $10.81 both years.) Dashboard → Domain Registration → Register
+   Domains; 1 year, auto-renew on. Fallbacks in `docs/GAMES.md`.
 2. Attach the domain to the Worker (Cloudflare custom domain) and add it to `src/kit/hosts.ts`.
    This must happen before any public link exists, because streaks live in localStorage per origin.
 3. Smoke checklist on the real domain, with output: play, submit, second submit refused, tampered score
    re-scored by the server, streak survives reload, share text, `/ads.txt` → 200, PostHog shows
    `puzzle_started` and `puzzle_submitted`, and scores responses report `store: "d1"` (the memory
    fallback is silent by design, see DECISIONS).
-4. Submit to dles.aukspot.com (https://tally.so/r/mOKOea). Claude Code drafts the r/bjj post in his
-   register (short, no em dashes, the number that makes the puzzle interesting); 🧑 Joshua posts it.
+4. Submit to dles.aukspot.com (https://tally.so/r/mOKOea; open on 2026-10-06, asks for the URL and a
+   description). Its form says "Games with content produced by Generative AI will not be added": the
+   puzzles are procedural (deterministic code), but the code, copy and pixel art were written with
+   Claude, so 🧑 Joshua decides whether and how to submit. Claude Code drafts the r/bjj post in his
+   register (short, no em dashes, the number that makes the puzzle interesting); 🧑 Joshua reads the
+   sidebar's self-promotion rule first (Reddit refuses automated reads, so it isn't checked here) and
+   posts it.
    No Pints heads-up is planned (START-HERE, Gates).
 
 **Done when:** the live checklist passes on the game's own domain.
