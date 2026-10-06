@@ -497,3 +497,56 @@ was the naive opponent: with smart counters and holding, chaining every attack i
 checks with or without the threshold, so the threshold is realism, not a patch. 60 puzzles: all gates
 pass (closest human strategy 25 points below the best, lift 36, the most-used stat 43%), and chokes
 now appear in 22% of best camps.
+
+## 2026-10-06: The puzzle is served without the opponent's defences
+
+`today` used to return the whole puzzle, all 8 of the opponent's defences included, and the solver
+is public, so devtools plus `npx tsx` gave the best camp in 0.02 s. A game can now declare
+`publicPuzzle`; guard's drops `opponent.defence`, and the full puzzle comes back with the reveal.
+The client can't pre-score a redacted game, so `claimedScore` became optional (the server scores
+every camp anyway and still refuses an illegal one with the engine's reason). What's left is the
+Wordle-shaped hole: a throwaway submission from a private window reveals the optimum. Accepted.
+
+## 2026-10-06: The reveal carries the puzzle and your camp
+
+On a reload of a played day, `useDaily` went straight to results without the puzzle, and the reveal
+had neither the puzzle nor your solution, so no replay or game plan could be rebuilt. `submit` and
+`results` now return both (`ScoreStore.find` returns the stored solution), and a duplicate submission
+gets the first camp back, the one on the histogram.
+
+## 2026-10-06: The replay rolls the exact policy the score is computed from
+
+`simulateFight` plays `choose` with the same chain state and the same worst-for-you counters at
+`escapeChance` that `finishChance` values, then rolls the dice. Over 20,000 fights on each of 10
+puzzles its finish rate is within 0.77 points of the exact chance (a test checks 2.5 on 3 puzzles),
+at about 0.1 ms a fight. It's seeded by your anon id and the puzzle number, so a reload replays the
+same fight. The score stays the chance, never the roll; the replay says so.
+
+## 2026-10-06: Step 7's scheduler, pulled forward in minimal form
+
+Step 6 has to be played on the deployed Worker, and guard had no D1 rows. `scripts/schedule.ts`
+writes yesterday through 3 days ahead (UTC numbering) with the real salt from `.dev.vars`, never
+printed, refusing a puzzle that fails quality. Run on 2026-10-06: guard #1 to #5 in remote D1 under
+epoch 2026-10-05. Step 7 still sets the launch epoch, adds drawing again and 90 days, and must first
+delete these rows and every step 6 test score, or launch-day histograms start polluted.
+
+## 2026-10-06: The art is drawn by hand as data; Haiku was measured out
+
+Joshua asked for Haiku through a skill rather than hand-drawing. `pixel-draw` (offload plugin, local
+only) has Haiku draft a sprite, renders it to PNG and lets Haiku critique the render, up to 3 rounds.
+Measured: the wrestler portrait took 6 minutes and 42k output tokens and came back a recolour of the
+hero; the chokes icon came back a blob twice (10 s and 0.7k tokens with thinking off, 8.8 minutes and
+59k with it on). A hand-drawn portrait cost about 1.5k tokens and two renders. Pictures from the web
+were ruled out as a source (a pixelated copy of someone's photo is a derivative work in a public
+repo). Position scenes are a pose rig instead of paintings, because 11 joints per fighter are easy to
+get right, recolour by perspective, and tween in the replay. The renderers (`art/Art.tsx`) live with
+the art data, an exception to Lovable owning components, so Lovable places sprites and never edits
+pixels.
+
+## 2026-10-06: Fonts, palette and title for the arcade
+
+Press Start 2P (display only) and Departure Mono (HUD), both OFL, self-hosted. The palette is eight
+`--arcade-*` tokens scoped to the game page, every text pair measured at 4.5:1 or better in both
+themes (lowest: player 1 red on a dark panel, 4.98); yellow on the light ground is 1.37:1, so it's
+only ever a fill behind ink. The title says ARMBAR, the domain's name (GAMES.md), held in one constant
+(`TITLE`) because Joshua may still rename it.

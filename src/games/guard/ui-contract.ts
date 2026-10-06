@@ -123,15 +123,19 @@ export function useGuardPuzzle(): GuardGame {
     return null;
   }, [state]);
 
-  const update = useCallback(
-    (next: number[]) => {
+  // Functional updates: two taps before a re-render must both count (a stale `camp` here made six
+  // quick taps add one session, caught in step 6's browser check). The camp is saved in an effect.
+  const change = useCallback(
+    (next: (prev: number[]) => number[]) => {
       if (puzzleNo === undefined) return;
       markStarted();
       setCamp(next);
-      saveCamp(puzzleNo, next);
     },
     [markStarted, puzzleNo],
   );
+  useEffect(() => {
+    if (puzzleNo !== undefined) saveCamp(puzzleNo, camp);
+  }, [puzzleNo, camp]);
 
   // The replay is seeded by your anon id and the puzzle number, so a reload replays the same fight.
   const done = state.phase === "done" ? state : null;
@@ -185,13 +189,13 @@ export function useGuardPuzzle(): GuardGame {
         complete: spent(camp) === puzzle.sessions,
         canAdd: (i) => canAdd(puzzle, camp, i),
         canRemove: (i) => canRemove(camp, i),
-        add: (i) => {
-          if (canAdd(puzzle, camp, i)) update(camp.map((n, j) => (j === i ? n + 1 : n)));
-        },
-        remove: (i) => {
-          if (canRemove(camp, i)) update(camp.map((n, j) => (j === i ? n - 1 : n)));
-        },
-        reset: () => update(emptyCamp()),
+        add: (i) =>
+          change((prev) =>
+            canAdd(puzzle, prev, i) ? prev.map((n, j) => (j === i ? n + 1 : n)) : prev,
+          ),
+        remove: (i) =>
+          change((prev) => (canRemove(prev, i) ? prev.map((n, j) => (j === i ? n - 1 : n)) : prev)),
+        reset: () => change(() => emptyCamp()),
       },
       submit: {
         submit: async () => {

@@ -236,8 +236,11 @@ once, watch the replay, see the histogram and the best camp; a second submit is 
    puzzles are playable** (yesterday's and older; they don't count toward the streak, and results show
    straight away since the kit releases a past puzzle's optimum and histogram to anyone). Write the first page by hand, then
    `/code-write` the rest from it. Lovable polish pass if the pages need it.
-2. First set guard's `epoch` to the launch date: puzzle numbers count from it, and moving it after
-   scheduling renumbers every row. Reuse `generateChecked()` from `src/kit/puzzles.server.ts`, and
+2. First delete step 6's test data from remote D1 (`delete from puzzles where game = 'guard'` and
+   `delete from scores where game = 'guard'`): #1 to #5 were scheduled under the old epoch, and their
+   test scores would pollute launch histograms. Then set guard's `epoch` to the launch date: puzzle
+   numbers count from it, and moving it after scheduling renumbers every row. `scripts/schedule.ts`
+   exists in minimal form (step 6); extend it rather than starting over. Reuse `generateChecked()` from `src/kit/puzzles.server.ts`, and
    when a draw fails the per-puzzle check (10 of 60 for guard on 2026-10-05), draw again from the same
    seed rather than leaving the day empty.
    `scripts/schedule.ts --game guard --days 90`: run locally with the real salt from `.dev.vars`;

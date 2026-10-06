@@ -37,6 +37,27 @@ beforeAll(() => {
 });
 
 describe("useGuardPuzzle", () => {
+  it("counts every tap, even several before a re-render", async () => {
+    localStorage.clear();
+    const view = renderHook(() => useGuardPuzzle());
+    await waitFor(() => expect(view.result.current.phase).toBe("playing"));
+    const game = view.result.current;
+    if (game.phase !== "playing") throw new Error(game.phase);
+    // The same (stale) controls, three taps in one batch.
+    act(() => {
+      game.camp.add(0);
+      game.camp.add(0);
+      game.camp.add(1);
+    });
+    const after = view.result.current;
+    if (after.phase !== "playing") throw new Error(after.phase);
+    expect(after.camp.sessions.slice(0, 2)).toEqual([2, 1]);
+    expect(after.camp.left).toBe(3);
+    act(() => after.camp.reset());
+    view.unmount();
+    localStorage.clear();
+  });
+
   it("plays a day end to end, and a reload shows the same result and the same fight", async () => {
     const first = renderHook(() => useGuardPuzzle());
     await waitFor(() => expect(first.result.current.phase).toBe("playing"));
