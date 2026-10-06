@@ -6,6 +6,16 @@
   "compatibility_date": "2026-10-04",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
+  // armbar.day: bought 2026-10-06 at Namecheap, nameservers on Cloudflare. Custom domains make their
+  // own DNS records and certificates; workers.dev keeps working for tests. www is served too, and
+  // src/kit/hosts.ts maps both to guard (it strips www).
+  // Explicit, because with routes present wrangler turns workers.dev off unless told otherwise.
+  "workers_dev": true,
+  "preview_urls": true,
+  "routes": [
+    { "pattern": "armbar.day", "custom_domain": true },
+    { "pattern": "www.armbar.day", "custom_domain": true },
+  ],
   "d1_databases": [
     {
       // Created 2026-10-04 with --location enam: the BJJ audience is mostly American.

@@ -5,7 +5,7 @@
 export type GameId = "guard";
 
 export const GAME_HOSTS: Readonly<Record<string, GameId>> = {
-  // Planned, not bought yet (step 0). Harmless until then: no request carries this Host.
+  // Bought 2026-10-06; attached to the Worker as a custom domain (wrangler.jsonc routes).
   "armbar.day": "guard",
 };
 

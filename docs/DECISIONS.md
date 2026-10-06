@@ -776,3 +776,23 @@ other players, built by Claude Code this time. The registry's `guard` is now `pl
   walked into a dead end without it.
 
 `/g/guard` renders `PlanGame.tsx`; the camp components stay in the repo, unused.
+
+## 2026-10-06: armbar.day is live
+
+Joshua bought `armbar.day` at Namecheap ($12.98, renewing at $16.98; Cloudflare Registrar would renew
+at $10.20, so a transfer after the 60-day lock saves $6.78 a year) and pointed its nameservers at
+Cloudflare. The Worker serves it as a custom domain (`wrangler.jsonc` routes, `www` too); the root is
+the game through `src/kit/hosts.ts`. Adding routes made wrangler switch workers.dev off, which took the
+test URL down for one deploy, so `workers_dev` and `preview_urls` are now set explicitly. Namecheap's
+imported A record (its redirect server, 162.255.119.187) blocked the custom domain until deleted.
+
+Step 8's checklist on the real domain, headless:
+- the game at `/`, the share line reading `armbar.day #2 X/6`;
+- scores from D1 (`store: d1`), no profile in any response before the end;
+- a second submission came back `duplicate` with the first score;
+- results and stats survive a reload; `/ads.txt` 200; no errors.
+
+PostHog only receives events from a browser that isn't flagged as automated: with
+`navigator.webdriver` hidden, 5 event requests went out; headless as is, none. The tampered-score case
+is the planModule test (only the answer submitted after two plans scores 2), not re-run live. The
+three test players' rows were deleted by anon id.

@@ -282,7 +282,8 @@ once, watch the replay, see the histogram and the best camp; a second submit is 
 
 ## Step 8. Launch 🧑
 
-**Status:** todo
+**Status:** in progress: domain live at https://armbar.day (2026-10-06), checklist passed; the
+dles submission and the r/bjj post are Joshua's
 
 **Do:**
 1. 🧑 Buy the domain: `armbar.day` (Joshua's pick). Checked 2026-10-06: still unregistered (the .day
