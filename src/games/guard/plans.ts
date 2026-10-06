@@ -1,3 +1,4 @@
+import { SITE, TITLE } from "./copy";
 import { compileBoard, type Board } from "./engine";
 import type { GuardPuzzle } from "./generator";
 import { EDGES, POSITIONS, type Belt, type Edge, type PositionId } from "./graph";
@@ -467,7 +468,10 @@ export const isLegal = (setup: PlansSetup, plan: Plan) =>
     (p) => p.length === plan.length && p.every((s, i) => s.p === plan[i]!.p && s.m === plan[i]!.m),
   );
 
-/** The share: the number of plans used and the colours, a row per plan. */
+/**
+ * The share: the number of plans used, the colours a row per plan, then the link in full. WhatsApp
+ * and most chat apps only make a link tappable (and show the card) when it starts with https://.
+ */
 export function sharePlans(
   n: number,
   rows: Colour[][],
@@ -475,8 +479,9 @@ export function sharePlans(
   guesses: number,
 ): string {
   return [
-    `armbar.day #${n} ${solvedIt ? rows.length : "X"}/${guesses}`,
+    `${TITLE} #${n} ${solvedIt ? rows.length : "X"}/${guesses}`,
     ...rows.map((r) => r.join("")),
+    SITE,
   ].join("\n");
 }
 

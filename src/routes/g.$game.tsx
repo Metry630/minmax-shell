@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { PlanGame } from "@/components/guard/PlanGame";
-import { COPY, TAGLINE, TITLE } from "@/games/guard/copy";
+import { COPY, SITE, TAGLINE, TITLE } from "@/games/guard/copy";
 
 const games: Record<string, { name: string }> = {
   guard: { name: "Guard to Sub" },
@@ -23,7 +23,21 @@ export const Route = createFileRoute("/g/$game")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary" },
+        // The card under a shared link (WhatsApp, X, iMessage): absolute URLs, scripts/icons.ts draws it.
+        ...(params.game === "guard"
+          ? [
+              { property: "og:url", content: `${SITE}/` },
+              { property: "og:site_name", content: TITLE },
+              { property: "og:image", content: `${SITE}/og.png` },
+              { property: "og:image:width", content: "1200" },
+              { property: "og:image:height", content: "630" },
+              {
+                property: "og:image:alt",
+                content: `${TITLE}: your fighter squares up to an opponent`,
+              },
+              { name: "twitter:card", content: "summary_large_image" },
+            ]
+          : [{ name: "twitter:card", content: "summary" }]),
       ],
     };
   },

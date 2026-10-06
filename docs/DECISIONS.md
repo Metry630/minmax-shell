@@ -796,3 +796,23 @@ PostHog only receives events from a browser that isn't flagged as automated: wit
 `navigator.webdriver` hidden, 5 event requests went out; headless as is, none. The tampered-score case
 is the planModule test (only the answer submitted after two plans scores 2), not re-run live. The
 three test players' rows were deleted by anon id.
+
+## 2026-10-06: The share carries the full link; ARMBAR gets its own icon and link card
+
+Joshua: the share should be "always clickable even in whatsapp". Chat apps only make a link tappable,
+and fetch its preview card, when it carries `https://`, so the share now ends in `https://armbar.day`
+on its own line. The header became `ARMBAR #2 3/6` instead of `armbar.day #2 3/6`, so the domain
+isn't in the message twice.
+
+The favicon was still Lovable's. `scripts/icons.ts` draws, from the game's own sprites:
+- `favicon.ico` at 16, 32 and 48 px: the joint-locks stat icon (an arm with a pop at the elbow,
+  native 16x16) on a red tile, edge to edge at 1x, 2x and 3x. With a margin, 32 px drew it at 1x, a
+  smudge.
+- `apple-touch-icon.png`, 180 px and square, because iOS rounds the corners itself and shows
+  transparent ones as black.
+- `og.png`, 1200x630: ARMBAR over the hero and the wrestler, both in brown belts (blue vanished on
+  the wrestler's blue gi). `/g/guard` declares it with `og:url`, `og:image` and
+  `summary_large_image`.
+
+Dependency-free: the PNG encoder moved out of `art-sheet.ts` into `scripts/png.ts` so both use it.
+Live as Worker version d449b4aa.

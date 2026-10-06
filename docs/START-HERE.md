@@ -1,7 +1,8 @@
 # Start here
 
 Briefing for every session. `CLAUDE.md` has the protocol and rules; this file has the state and the
-order of work. Steps for the current game: `docs/steps/guard.md`.
+order of work. Steps for the current game: `docs/steps/guard.md`. Running the live game (deploys,
+when it refreshes, monthly scheduling, monitoring): `docs/GUIDE.md`.
 
 ## Where things stand (2026-10-06)
 

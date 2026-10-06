@@ -93,6 +93,7 @@ npx tsx scripts/graph-doc.ts             # regenerate docs/guard/GRAPH.md from g
 npx tsx scripts/quality.ts [60]          # step 5's gate: generate, solve and measure puzzles (dev salt) -> docs/guard/QUALITY.md
 npx tsx scripts/schedule.ts --game guard --remote   # write yesterday..+3 days of solved puzzles to D1 with the real salt (--local, --from N, --days D; --dev-salt for local only)
 npx tsx scripts/art-sheet.ts             # render every portrait, icon and position scene -> docs/guard/art-sheet.png (the sign-off sheet in ART.md)
+npx tsx scripts/icons.ts [dir]           # favicon.ico, apple-touch-icon.png and og.png (the link card) from the pixel art -> public/
 mkdir -p .sources/ibjjf && curl -sSL -o .sources/ibjjf/2024JUN_IBJJF_Rules_EN.pdf 'https://ibjjf.com/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBbTRaIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c53798f1b94f5ebc202702cb44e9428a7606a19b/2024JUN_IBJJF_Rules_EN.pdf' && pdftotext -layout .sources/ibjjf/2024JUN_IBJJF_Rules_EN.pdf .sources/ibjjf/rules-v6.1.layout.txt
                                          # fetch the rule book (gitignored); shasum -a 256 must match RULEBOOK.sha256 in rules.ts
 ```

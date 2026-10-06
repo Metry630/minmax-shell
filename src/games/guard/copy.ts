@@ -7,6 +7,8 @@ import type { EventId } from "./rules";
 /** The title on screen. Provisional: Joshua may rename it (START-HERE); everything reads it here. */
 export const TITLE = "ARMBAR";
 export const TAGLINE = "Help the underdog win.";
+/** The game's own domain (src/kit/hosts.ts), in full: the share and the link card use it. */
+export const SITE = "https://armbar.day";
 
 export const COPY = {
   fightNo: "FIGHT #{n}",

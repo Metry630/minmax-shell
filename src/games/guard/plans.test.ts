@@ -140,7 +140,7 @@ describe("game-plan Wordle", () => {
     }
   });
 
-  it("shares a Wordle grid: the count, then a row of colours per plan", () => {
+  it("shares a Wordle grid: the count, a row of colours per plan, then the full link", () => {
     expect(
       sharePlans(
         12,
@@ -151,7 +151,9 @@ describe("game-plan Wordle", () => {
         true,
         6,
       ),
-    ).toBe("armbar.day #12 2/6\n⬛🟩🟨\n🟩🟩🟩");
-    expect(sharePlans(12, [["⬛", "⬜"]], false, 6)).toBe("armbar.day #12 X/6\n⬛⬜");
+    ).toBe("ARMBAR #12 2/6\n⬛🟩🟨\n🟩🟩🟩\nhttps://armbar.day");
+    expect(sharePlans(12, [["⬛", "⬜"]], false, 6)).toBe(
+      "ARMBAR #12 X/6\n⬛⬜\nhttps://armbar.day",
+    );
   });
 });
