@@ -1,5 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { GuardGame } from "@/components/guard";
+import { TAGLINE, TITLE } from "@/games/guard/copy";
+
 const games: Record<string, { name: string }> = {
   guard: { name: "Guard to Sub" },
 };
@@ -7,9 +10,9 @@ const games: Record<string, { name: string }> = {
 export const Route = createFileRoute("/g/$game")({
   head: ({ params }) => {
     const game = games[params.game];
-    const title = game ? `${game.name} · minmax` : "Game not found · minmax";
+    const title = params.game === "guard" ? `${TITLE} · a daily jiu-jitsu puzzle` : "Game not found · minmax";
     const description = game
-      ? `Play today's ${game.name} optimisation puzzle.`
+      ? `${TAGLINE} ${COPY_CONFIRMATION}`
       : "This minmax game could not be found.";
 
     return {
@@ -41,17 +44,7 @@ function GamePage() {
     );
   }
 
-  return (
-    <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-5 sm:px-8">
-      <header className="border-b border-border py-5 sm:py-7">
-        <h1 className="truncate text-xl font-semibold tracking-normal">{game.name}</h1>
-      </header>
-      <main className="flex flex-1 items-start py-10 sm:py-14">
-        <p className="text-sm text-muted-foreground">Today's puzzle goes here.</p>
-      </main>
-      <footer className="border-t border-border py-5 text-xs text-muted-foreground">
-        <span>minmax</span>
-      </footer>
-    </div>
-  );
+  return <GuardGame />;
 }
+
+const COPY_CONFIRMATION = "One fight a day.";
