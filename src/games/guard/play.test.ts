@@ -6,7 +6,8 @@ import { DEV_SALT, rngFor, sfc32 } from "@/kit/seed";
 import { guard } from "./module";
 import { counterRisk, gradeOf, optionsAt, play, setUp, type FightState } from "./play";
 
-const setupFor = async (n: number) => setUp(guard.generator.generate(await rngFor(DEV_SALT, "guard", n)));
+const setupFor = async (n: number) =>
+  setUp(guard.generator.generate(await rngFor(DEV_SALT, "guard", n)));
 
 describe("a played fight", () => {
   it("offers every move here plus holding, valued exactly, the best one worth the state's value", async () => {
