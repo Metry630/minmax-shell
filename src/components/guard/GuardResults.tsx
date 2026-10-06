@@ -210,6 +210,14 @@ function Results({ results, statsLine, countdown, shareResult, canNativeShare, o
         {results.perfect && <p className="arcade-perfect mb-4">{COPY.perfect}</p>}
         <p className="arcade-hud text-sm">{fill(COPY.startedAt, { pct: results.start })}</p>
         <p className="arcade-score-arrow">→</p>
+        {results.spars.length > 0 && (
+          <div className="mb-4">
+            <p className="arcade-hud text-[10px]">{COPY.yourSpars}</p>
+            <p className="arcade-display mt-2 text-xs leading-loose">
+              {results.spars.map((spar) => `${spar.chance}%`).join(" · ")} → {results.yours}%
+            </p>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <Score label={COPY.yourCamp} value={results.yours} tone="p1" />
           <Score label={COPY.perfectCamp} value={results.best} tone="hi" />
@@ -314,7 +322,7 @@ function Plan({ title, rows, empty }: { title: string; rows: PlanRow[]; empty?: 
   );
 }
 
-function PlanItem({ row }: { row: PlanRow }) {
+export function PlanItem({ row }: { row: PlanRow }) {
   const pips = row.band === "low" ? 1 : row.band === "medium" ? 2 : 3;
   return (
     <div className="border-l-2 border-[var(--arcade-line)] pl-2">
