@@ -3,7 +3,7 @@
 Briefing for every session. `CLAUDE.md` has the protocol and rules; this file has the state and the
 order of work. Steps for the current game: `docs/steps/guard.md`.
 
-## Where things stand (2026-10-05)
+## Where things stand (2026-10-06)
 
 Steps 1 and 2 are done: Lovable project `41bb2af6-1aab-4d1f-a3e0-5fbb6bc52325`, repo
 `Metry630/minmax-shell`, D1 `minmax` (ENAM), and a Worker named `minmax` live at
@@ -20,9 +20,18 @@ against today's opponent, you spend 6 sessions on 8 stats, and the score is the 
 gives; the game plan shows only after you submit (`docs/guard/MODEL.md`, `QUALITY.md`, all gates pass).
 The rule book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
+Step 6 is done: the game is playable as **ARMBAR** (provisional title, `TITLE` in `copy.ts`) at
+`/g/guard`, in a 16-bit arcade world (`docs/DESIGN.md`): a VS screen with the scouting card, the
+training camp, a replayed fight (COMBATE! to TAP!) and the results (your camp against the perfect
+camp, high scores, both move lists, what the camp changed, share). The UI contract is
+`src/games/guard/ui-contract.ts` and `view.ts`; the art is drawn as data in `src/games/guard/art/`
+and awaits Joshua's sign-off (`docs/guard/ART.md`). The puzzle is served without the opponent's
+defences until you submit. Remote D1 holds test puzzles #1 to #5 (epoch 2026-10-05), which step 7
+deletes along with their scores before scheduling for launch.
+
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **6** |
+| Guard to Sub | `docs/steps/guard.md` | **7** |
 
 ## Gates
 
@@ -53,6 +62,7 @@ will be paid to. The ads ladder is in `DECISIONS.md`.
 | Step 0 | Create Cloudflare and PostHog accounts |
 | Step 1 | Connect GitHub in the Lovable editor (**public** repo `Metry630/minmax-shell`); `wrangler login`; register a workers.dev subdomain |
 | Steps 3–4 | Sign off the scoring rules and the position graph |
+| Step 6 | Sign off the art (`docs/guard/ART.md`) and the in-world copy (`src/games/guard/copy.ts`); play it once on a phone |
 | Step 8 | Buy `armbar.day` and point it at Cloudflare (before any public link); post to r/bjj |
 | When ads are worth it | Optional MOM email (draft below); then AdSense |
 

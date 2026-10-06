@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { webcrypto } from "node:crypto";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { results, submit, today, type Deps } from "@/kit/daily.core";
 import { generatedPuzzles } from "@/kit/puzzles.server";
@@ -36,6 +36,11 @@ beforeAll(() => {
   localStorage.clear();
 });
 
+// Each test is a different day's crowd: a fresh score store, so "first fighter today" holds.
+beforeEach(() => {
+  deps.scores = memoryStore(new Map());
+});
+
 describe("useGuardPuzzle", () => {
   it("counts every tap, even several before a re-render", async () => {
     localStorage.clear();
@@ -55,6 +60,34 @@ describe("useGuardPuzzle", () => {
     expect(after.camp.left).toBe(3);
     act(() => after.camp.reset());
     view.unmount();
+    localStorage.clear();
+  });
+
+  it("plays a day where crypto.randomUUID doesn't exist (a phone on plain HTTP)", async () => {
+    localStorage.clear();
+    // The server half of this test still needs crypto.subtle for puzzle seeds; the client half
+    // (anon id, replay seed) must not need randomUUID or subtle at all.
+    vi.stubGlobal("crypto", {
+      getRandomValues: webcrypto.getRandomValues.bind(webcrypto),
+      subtle: webcrypto.subtle,
+    });
+    const view = renderHook(() => useGuardPuzzle());
+    await waitFor(() => expect(view.result.current.phase).toBe("playing"));
+    for (let tap = 0; tap < 6; tap++) {
+      const game = view.result.current;
+      if (game.phase !== "playing") throw new Error(game.phase);
+      act(() => game.camp.add(game.scouting.stats.findIndex((_, j) => game.camp.canAdd(j))));
+    }
+    const ready = view.result.current;
+    if (ready.phase !== "playing") throw new Error(ready.phase);
+    await act(() => ready.submit.submit());
+    await waitFor(() => {
+      const game = view.result.current;
+      expect(game.phase === "done" && game.replay).toBeTruthy();
+    });
+    expect(localStorage.getItem("minmax:anon")).toMatch(/^[0-9a-f-]{36}$/);
+    view.unmount();
+    vi.stubGlobal("crypto", webcrypto);
     localStorage.clear();
   });
 

@@ -1,7 +1,7 @@
 import type { Sprite } from "../sprite";
 
 // Opponent, Guard player: hair pulled back into a top knot with a blue band, a relaxed grin, a
-// white gi with blue sponsor patches, today's belt (L). Faces right. 32x40.
+// white gi with a blue sponsor patch on each side of the chest, today's belt (L). Faces right. 32x40.
 export const guardPlayer: Sprite = {
   rows: [
     "..........kkk...................",
@@ -29,9 +29,9 @@ export const guardPlayer: Sprite = {
     ".....kkwwwwwwwkSsskwwwwwwkk.....",
     "....kwwwwwwwwwgkSskgwwwwwwwk....",
     "...kwwwwwwwwwwwgkskgwwwwwwwwk...",
-    "...kwBBBBwwwwwwwgkkgwwBBBwgwk...",
-    "..kwwBBBBwwwwwwwwgkwwwBBBwgwwk..",
-    "..kwwBBBBwwwwwwwwwgkwwBBBkgwwk..",
+    "...kwwgwwBBBwwwwgkkgwBBBwwgwk...",
+    "..kwwwgwwBBBwwwwwgkwwBBBwwgwwk..",
+    "..kwwwgkwwwwwwwwwwgkwwwwwkgwwk..",
     "..kwwwgkwwwwwwwwwwwgwwwwwkgwwk..",
     "..kwwwgkwwwwwwwwwwwgwwwwwkgwwk..",
     "..kwwgkkwwwwwwwwwwwgwwwwwkkgwk..",

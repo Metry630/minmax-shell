@@ -2,7 +2,7 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
-import { DEV_SALT, resolveSalt, rngFor, seedFor, sfc32 } from "./seed";
+import { DEV_SALT, resolveSalt, rngFor, seedFor, sfc32, stringSeed } from "./seed";
 
 // rngFor("dev", "demo", 1), five int(0, 999) draws. Checked against an independent reference
 // (node:crypto HMAC + bryc's sfc32, github.com/bryc/code jshash/PRNGs.md) on 2026-10-05. If this
@@ -111,5 +111,17 @@ describe("pinned output", () => {
   it("pins the first draws for the dev salt", async () => {
     const rng = await rngFor("dev", "demo", 1);
     expect(Array.from({ length: 5 }, () => rng.int(0, 999))).toEqual(GOLDEN);
+  });
+});
+
+describe("stringSeed", () => {
+  it("is repeatable, spreads nearby strings apart, and needs no WebCrypto", () => {
+    const a = stringSeed("anon-1:guard-replay:12");
+    expect(stringSeed("anon-1:guard-replay:12")).toEqual(a);
+    expect(stringSeed("anon-1:guard-replay:13")).not.toEqual(a);
+    expect(a.every((w) => Number.isInteger(w) && w >= 0 && w < 2 ** 32)).toBe(true);
+    // Feeds sfc32 like any other seed.
+    const r = sfc32(a);
+    expect(r.next()).toBe(sfc32(stringSeed("anon-1:guard-replay:12")).next());
   });
 });

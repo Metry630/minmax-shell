@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { anonId } from "@/kit/anon";
-import { seedFor, sfc32 } from "@/kit/seed";
+import { sfc32, stringSeed } from "@/kit/seed";
 import type { ShareOutcome, ShareVia } from "@/kit/share";
 import type { Summary } from "@/kit/stats";
 import { shareDomain, useDaily } from "@/kit/useDaily";
@@ -73,7 +73,7 @@ export type GuardGame =
       fresh: boolean;
       /** A second submission came back with the first one's result. */
       duplicate: boolean;
-      /** Null for one frame while the seed is computed, and for a puzzle you never played. */
+      /** Null only for a closed puzzle you never played. */
       replay: Replay | null;
       results: Results;
       scouting: Scouting;
@@ -107,7 +107,6 @@ function saveCamp(n: number, camp: readonly number[]) {
 export function useGuardPuzzle(): GuardGame {
   const { state, markStarted, submit, share } = useDaily(guard);
   const [camp, setCamp] = useState<number[]>(emptyCamp);
-  const [replay, setReplay] = useState<Replay | null>(null);
   const fresh = useRef(false);
 
   const playing = state.phase === "playing" ? state : null;
@@ -138,17 +137,12 @@ export function useGuardPuzzle(): GuardGame {
   }, [puzzleNo, camp]);
 
   // The replay is seeded by your anon id and the puzzle number, so a reload replays the same fight.
+  // A plain string hash, not WebCrypto, so it works outside secure contexts too (kit/seed.ts).
   const done = state.phase === "done" ? state : null;
-  useEffect(() => {
-    if (!done?.solution) return;
-    let live = true;
-    const { puzzle, solution, puzzleNo: n } = done;
-    void seedFor(anonId(), "guard-replay", n).then((seed) => {
-      if (live) setReplay(replayOf(puzzle, solution.camp, sfc32(seed)));
-    });
-    return () => {
-      live = false;
-    };
+  const replay = useMemo<Replay | null>(() => {
+    if (!done?.solution) return null;
+    const seed = stringSeed(`${anonId()}:guard-replay:${done.puzzleNo}`);
+    return replayOf(done.puzzle, done.solution.camp, sfc32(seed));
   }, [done]);
 
   const results = useMemo(
