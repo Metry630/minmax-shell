@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { PositionScene, Portrait, StatIcon } from "@/games/guard/art/Art";
-import { COPY, TAGLINE, TITLE, fill } from "@/games/guard/copy";
+import { COPY, TAGLINE, fill } from "@/games/guard/copy";
 import { useGuardPuzzle, type CampControls } from "@/games/guard/ui-contract";
 import type { Scouting } from "@/games/guard/view";
+import { GuardHeader, GuardResults } from "./GuardResults";
 
 const arcadeButton =
   "arcade-button min-h-11 rounded-none border-2 px-4 font-[family-name:var(--font-arcade-display)] text-[10px] tracking-normal shadow-none";
@@ -29,18 +30,7 @@ export function GuardGame() {
     return <StatusFrame>{fill(COPY.error, { message: game.message })}</StatusFrame>;
   }
   if (game.phase === "done") {
-    return (
-      <StatusFrame>
-        <div className="arcade-panel w-full p-5 text-center">
-          <p className="arcade-display text-base">FIGHT OVER</p>
-          <p className="mt-5 text-sm">{fill(COPY.startedAt, { pct: game.results.start })}</p>
-          <div className="mt-4 grid grid-cols-2 gap-3 arcade-hud text-xs">
-            <p>{COPY.yourCamp} {game.results.yours}%</p>
-            <p>{COPY.perfectCamp} {game.results.best}%</p>
-          </div>
-        </div>
-      </StatusFrame>
-    );
+    return <GuardResults game={game} />;
   }
 
   return (
@@ -79,20 +69,10 @@ function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubm
   return (
     <main className="arcade arcade-frame min-h-screen px-4 pb-36 pt-5">
       <div className="relative z-10 mx-auto w-full max-w-md">
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="arcade-logo" data-title={TITLE}>{TITLE}</h1>
-            <span className="arcade-chip mt-3 inline-flex">
-              {fill(COPY.division, { belt: scouting.belt.toUpperCase() })}
-            </span>
-          </div>
-          <p className="arcade-hud pt-1 text-right text-xs">
-            {fill(COPY.fightNo, { n: puzzleNo })}
-          </p>
-        </header>
+        <GuardHeader puzzleNo={puzzleNo} belt={scouting.belt} />
 
         <section className="mt-8" aria-label={COPY.vs}>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2">
             <Fighter
               portrait={<Portrait id="hero" belt={scouting.belt} className="arcade-idle mx-auto w-24" />}
               label={COPY.you}
@@ -100,7 +80,7 @@ function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubm
               tag={COPY.underdog}
               side="p1"
             />
-            <span className="arcade-vs mb-20">{COPY.vs}</span>
+            <span className="arcade-vs mt-16">{COPY.vs}</span>
             <Fighter
               portrait={
                 <Portrait
@@ -254,7 +234,7 @@ function PlayingScreen({ puzzleNo, scouting, camp, submitting, rejection, onSubm
                 {rejection && <p className="mt-2 text-xs text-[var(--arcade-p1)]">{rejection}</p>}
               </AlertDialogHeader>
               <AlertDialogFooter className="mt-3 gap-2 sm:space-x-0">
-                <AlertDialogCancel className={`${arcadeButton} mt-0 bg-[var(--arcade-panel)] text-[var(--arcade-ink)]`}>
+                <AlertDialogCancel className={`${arcadeButton} arcade-button-secondary mt-0`}>
                   {COPY.confirmNo}
                 </AlertDialogCancel>
                 <AlertDialogAction
