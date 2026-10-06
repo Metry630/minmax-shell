@@ -212,9 +212,12 @@ the contract's `spar` controls, and the gates in `quality.ts`.
 
 ## Step 6. Game UI (Lovable)
 
-**Status:** resumed 2026-10-06 after step 5b. The camp's UI is on main and works end to end; the
-spar loop (SPAR button, spar log with each route, the story-shaped share) is the remaining batch,
-then the deploy and the Done-when checks.
+**Status:** done 2026-10-06. Deployed (version a1965830 and after). Done-when run headless at 400 px
+against https://minmax.joshuajodrian-d0a.workers.dev/g/guard: FIGHT #2 loads from D1 with the real
+salt, no percentages and no defences before the fight, three spars then the spar button disables, the
+best spar's camp fought once, the replay runs to the end, submit accepted with `store: d1`, results
+show the high scores, both move lists and the spars, share `armbar.day #2 🥊 44 · 44 · 69 → 69% (best
+91%)`, and a second fight from the same anon id comes back `duplicate`. No page errors.
 
 **Goal:** playable end to end on a phone.
 
@@ -259,8 +262,8 @@ once, watch the replay, see the histogram and the best camp; a second submit is 
    puzzles are playable** (yesterday's and older; they don't count toward the streak, and results show
    straight away since the kit releases a past puzzle's optimum and histogram to anyone). Write the first page by hand, then
    `/code-write` the rest from it. Lovable polish pass if the pages need it.
-2. First delete step 6's test data from remote D1 (`delete from puzzles where game = 'guard'` and
-   `delete from scores where game = 'guard'`): #1 to #5 were scheduled under the old epoch, and their
+2. First delete step 6's test data from remote D1 (`delete from puzzles where game = 'guard'`,
+   `delete from scores where game = 'guard'` and `delete from spars where game = 'guard'`): #1 to #5 were scheduled under the old epoch, and their
    test scores would pollute launch histograms. Then set guard's `epoch` to the launch date: puzzle
    numbers count from it, and moving it after scheduling renumbers every row. `scripts/schedule.ts`
    exists in minimal form (step 6); extend it rather than starting over. Reuse `generateChecked()` from `src/kit/puzzles.server.ts`, and

@@ -30,7 +30,8 @@ export const COPY = {
   theirWall: "THEIR WALL",
   campHint: "Spend {n} sessions. Each one adds a point to a stat.",
   spar: "SPAR",
-  sparring: "SPARRING…",
+  // Both the spar log's heading and the button while a spar is in flight, so no ellipsis.
+  sparring: "SPARRING",
   sparsLeft: "{n} SPARS LEFT",
   sparsDone: "NO SPARS LEFT",
   sparHint: "Spar a camp to see its chance and the route your fighter takes. {n} a day.",

@@ -20,18 +20,19 @@ against today's opponent, you spend 6 sessions on 8 stats, and the score is the 
 gives; the game plan shows only after you submit (`docs/guard/MODEL.md`, `QUALITY.md`, all gates pass).
 The rule book PDF and its text live in `.sources/ibjjf/` on Joshua's machine only.
 
-Step 6's UI is built and on main but **paused**: the game is playable as **ARMBAR** (provisional
-title, `TITLE` in `copy.ts`) at `/g/guard`, in a 16-bit arcade world (`docs/DESIGN.md`), but on a
-phone it isn't compelling. The camp is one blind decision with no feedback until you submit. The
-daily loop is being redesigned in step 5b (`docs/guard/LOOP.md`: the survey of daily games, the shapes
-compared, and the lab numbers that showed "build the route" is a 2-move puzzle on today's graph).
-The UI contract (`ui-contract.ts`, `view.ts`), the art (`src/games/guard/art/`, sign-off pending in
-`docs/guard/ART.md`) and the screens around the camp carry over. Remote D1 holds test puzzles #1 to
-#5 (epoch 2026-10-05), which step 7 deletes along with their scores before scheduling for launch.
+Steps 5b and 6 are done (2026-10-06). The game plays as **ARMBAR** (provisional title, `TITLE` in
+`copy.ts`) at `https://minmax.joshuajodrian-d0a.workers.dev/g/guard`, in a 16-bit arcade world
+(`docs/DESIGN.md`): a VS screen with the scouting card, the training camp with **3 spars** (each shows
+the camp's chance and the route your fighter takes), one fight, the replay, and results with the
+high scores, both move lists and a share that tells the spar story. Why spars: `docs/guard/LOOP.md`
+(a survey of daily games, and about 15 measured "build the route" variants that stayed 1 to 2 moves
+deep). The art awaits a second look after Joshua's notes (`docs/guard/ART.md`). Remote D1 holds test
+puzzles #1 to #5 (epoch 2026-10-05) and test scores and spars, which step 7 deletes before scheduling
+for launch.
 
 | Game | Steps file | Current step |
 |---|---|---|
-| Guard to Sub | `docs/steps/guard.md` | **5b** (the daily loop), then 6 resumes |
+| Guard to Sub | `docs/steps/guard.md` | **7** |
 
 ## Gates
 

@@ -605,3 +605,11 @@ puzzle, in one INSERT ... SELECT ... HAVING statement with a unique key on the s
 can't both take the last one (checked on local D1: four tries, three rows). A fresh anon id gets fresh
 spars, the same Wordle-shaped hole as before. The share is now the story of the attempt:
 `armbar.day #12 🥊 23 · 41 · 52 → 52% (best 55%)`.
+
+## 2026-10-06: Step 6 deployed and checked headless
+
+The Chrome extension dropped mid-session, so the Done-when ran in a headless Chrome (puppeteer-core in
+a scratch folder, nothing added to the project) at 400 px against the deployed Worker; every check
+passed (steps file, step 6). Migration 0002 is applied to remote D1. The share uses `armbar.day`
+already, because `hostForGame` reads the planned host table; that's right from launch day and harmless
+before it, since nothing is public until step 8 buys the domain.
