@@ -71,11 +71,15 @@ export function GuardResults({ game }: { game: DoneGame }) {
                     className="mx-auto w-72 max-w-full"
                   />
                 )}
-                {latest && <ExchangeCall step={latest} />}
+                {/* Hide the finish step's own call when the big TAP! splash shows it; keep its SET UP chip */}
+                {latest && !(over && game.replay.finish) && <ExchangeCall step={latest} />}
                 {over && (
                   <div className="mt-4 text-center">
                     <Splash staticPosition>{game.replay.finish ? COPY.tap : COPY.time}</Splash>
                     {game.replay.finish && <p className="arcade-hud mt-3 text-sm">{game.replay.finish}</p>}
+                    {game.replay.finish && latest && latest.setUp > 0 && (
+                      <span className="arcade-chip mt-3 inline-flex">{fill(COPY.setUp, { n: latest.setUp })}</span>
+                    )}
                   </div>
                 )}
               </>
@@ -292,7 +296,7 @@ function Histogram({ results }: { results: Results }) {
       <div className="arcade-hud mt-2 grid grid-cols-3 text-[10px]">
         <span>0</span><span className="text-center">50</span><span className="text-right">100</span>
       </div>
-      <p className="arcade-hud mt-3 text-right text-xs">{results.total}</p>
+      <p className="arcade-hud mt-3 text-right text-xs">{fill(COPY.fighters, { n: results.total })}</p>
     </div>
   );
 }
