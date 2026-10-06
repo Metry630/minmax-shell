@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as GGameRouteImport } from './routes/g.$game'
+import { Route as LabFightRouteImport } from './routes/lab.fight'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const GGameRoute = GGameRouteImport.update({
   path: '/g/$game',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabFightRoute = LabFightRouteImport.update({
+  id: '/lab/fight',
+  path: '/lab/fight',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/g/$game': typeof GGameRoute
+  '/lab/fight': typeof LabFightRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/g/$game': typeof GGameRoute
+  '/lab/fight': typeof LabFightRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/g/$game': typeof GGameRoute
+  '/lab/fight': typeof LabFightRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo' | '/g/$game'
+  fullPaths: '/' | '/demo' | '/g/$game' | '/lab/fight'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo' | '/g/$game'
-  id: '__root__' | '/' | '/demo' | '/g/$game'
+  to: '/' | '/demo' | '/g/$game' | '/lab/fight'
+  id: '__root__' | '/' | '/demo' | '/g/$game' | '/lab/fight'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DemoRoute: typeof DemoRoute
   GGameRoute: typeof GGameRoute
+  LabFightRoute: typeof LabFightRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GGameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lab/fight': {
+      id: '/lab/fight'
+      path: '/lab/fight'
+      fullPath: '/lab/fight'
+      preLoaderRoute: typeof LabFightRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DemoRoute: DemoRoute,
   GGameRoute: GGameRoute,
+  LabFightRoute: LabFightRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

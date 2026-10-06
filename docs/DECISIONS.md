@@ -622,3 +622,14 @@ player picks each exchange's move and the solver grades it against the exact bes
 60 puzzles at style-level skill, best play taps 47%, a fight is about 4.4 decisions, sensible
 instincts lose 15 to 18 points a fight on 1.6 to 2 mistakes, and the likeliest move is the best on
 only 4% of decisions. `solveFight` and `chainAfterMiss` are exported from the engine for it.
+
+## 2026-10-06: A playable fight prototype at /lab/fight, for feel before building
+
+Joshua's call: prototype first, no camp, an even match. `play.ts` is the pure logic (options with
+their chances, the solver's grade for each pick, the dice following the engine; a test checks best
+play taps as often as the solver says, within 3 points over 3,000 fights). `/lab/fight` is a plain
+page built by Claude Code outside the Lovable lane because it's throwaway: it runs in the browser on a
+public seed (`lab:<n>`), same dice for everyone on a number, no scores or D1. Grades: best under 0.5
+points thrown away, good under 3, inaccuracy under 8, mistake from 8. A first headless run crashed at
+TIME!: asking the solver about a finished fight recursed past 0 exchanges; `optionsAt` now returns
+nothing for a finished fight, with a test.
