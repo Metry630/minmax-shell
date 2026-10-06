@@ -39,6 +39,39 @@ const stepKey = (s: Step) => `${s.p}:${s.m}`;
 /** For the move picker, the most telling colour a move has shown: green, then yellow, then black. */
 const RANK: Record<Colour, number> = { "🟩": 3, "🟨": 2, "⬛": 1, "⬜": 0 };
 
+/**
+ * Wordle's colours as backgrounds. The arcade palette has no green, so it's #2e7d3a (white text
+ * 5.1:1) and the blocked grey #55556a (white 7:1), readable on both themes; yellow is the palette's.
+ */
+const FILL: Record<Exclude<Colour, "⬜">, { background: string; color: string }> = {
+  "🟩": { background: "#2e7d3a", color: "#ffffff" },
+  "🟨": { background: "var(--arcade-hi)", color: "#141425" },
+  "⬛": { background: "#55556a", color: "#ffffff" },
+};
+
+/** One step of a plan as a Wordle tile: the move's name on its colour. */
+// `| undefined` because exactOptionalPropertyTypes is on and rows pass `colours[j]`, typed T | undefined.
+function Tile({ text, colour }: { text: string; colour?: Colour | "draft" | "empty" | undefined }) {
+  const filled = colour && colour !== "⬜" && colour !== "draft" && colour !== "empty";
+  // Untested steps are dashed; the empty slots of the plan you're building are a plain faint frame.
+  const border =
+    colour === "⬜"
+      ? "border-dashed border-[var(--arcade-line)] text-[var(--arcade-muted)]"
+      : colour === "empty"
+        ? "border-[var(--arcade-line)] opacity-50"
+        : colour === "draft"
+          ? "border-[var(--arcade-ink)]"
+          : "border-transparent";
+  return (
+    <div
+      className={`flex h-14 items-center justify-center border-2 px-1 text-center text-[10px] leading-tight ${border}`}
+      style={filled ? FILL[colour] : undefined}
+    >
+      <span className="line-clamp-3">{text}</span>
+    </div>
+  );
+}
+
 function PlanLab() {
   const [n, setN] = useState<number | null>(null);
   useEffect(() => {
@@ -139,16 +172,11 @@ function Game({ n, next }: { n: number; next(): void }) {
           </div>
 
           {rows.length > 0 && (
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 space-y-1">
               {rows.map((r, i) => (
-                <div key={i} className="flex flex-wrap gap-1">
+                <div key={i} className="grid grid-cols-5 gap-1">
                   {r.plan.map((s, j) => (
-                    <span
-                      key={j}
-                      className="border-2 border-[var(--arcade-line)] px-1.5 py-0.5 text-[11px]"
-                    >
-                      {r.colours[j]} {label(s)}
-                    </span>
+                    <Tile key={j} text={label(s)} colour={r.colours[j]} />
                   ))}
                 </div>
               ))}
@@ -162,20 +190,19 @@ function Game({ n, next }: { n: number; next(): void }) {
                 <p className="arcade-hud mt-2 text-center text-xs">{posName(at)}</p>
               </div>
 
-              <div className="mt-3 flex min-h-9 flex-wrap items-center gap-1">
-                {draft.length === 0 && (
-                  <span className="text-xs text-[var(--arcade-muted)]">
-                    Build plan {rows.length + 1}: pick moves until a submission.
-                  </span>
+              <div className="mt-3 grid grid-cols-5 gap-1">
+                {Array.from({ length: setup.config.maxLength }, (_, j) =>
+                  draft[j] ? (
+                    <Tile key={j} text={label(draft[j]!)} colour="draft" />
+                  ) : (
+                    <Tile key={j} text="" colour="empty" />
+                  ),
                 )}
-                {draft.map((s, j) => (
-                  <span
-                    key={j}
-                    className="border-2 border-dashed border-[var(--arcade-line)] px-1.5 py-0.5 text-[11px]"
-                  >
-                    {label(s)}
-                  </span>
-                ))}
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <span className="text-xs text-[var(--arcade-muted)]">
+                  Plan {rows.length + 1}: pick moves until a submission.
+                </span>
                 {draft.length > 0 && (
                   <button
                     type="button"
@@ -202,18 +229,17 @@ function Game({ n, next }: { n: number; next(): void }) {
                     movesAt(setup, end)
                       .filter((o) => o.submission || draft.length + 2 <= setup.config.maxLength)
                       .map((o) => {
+                        // Like Wordle's keyboard: a move you've tried keeps its colour.
                         const seen = tried.get(`${end}:${o.m}`);
                         return (
                           <button
                             key={o.m}
                             type="button"
                             onClick={() => setDraft([...draft, { p: end, m: o.m }])}
-                            className="arcade-button min-h-11 border-2 px-3 py-2 text-left"
+                            className="arcade-button arcade-button-secondary min-h-11 border-2 px-3 py-2 text-left"
+                            style={seen && seen !== "⬜" ? FILL[seen] : undefined}
                           >
-                            <span className="arcade-hud text-xs">
-                              {seen ? `${seen} ` : ""}
-                              {o.label}
-                            </span>
+                            <span className="arcade-hud text-xs">{o.label}</span>
                             <span className="block text-[11px]">
                               {o.submission ? "submission" : `→ ${o.to ? posName(o.to) : ""}`}
                             </span>
