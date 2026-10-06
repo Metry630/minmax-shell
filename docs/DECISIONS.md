@@ -669,3 +669,24 @@ times) when a day can't calibrate to 80%: 8 of 60 first draws couldn't, and afte
 (median 83.9%). The repeat-press metrics now live in the lab script, so the next change gets measured
 on the thing Joshua felt.
 
+## 2026-10-06: Fight prototype v4: WIN CHANCE explained, counters that happen, habits, shared dice
+
+Joshua on v3: more and more distinct options, clarity on each choice, "best move" unclear, 4
+exchanges too few, never countered, results not comparable between players. Decisions, with the
+numbers (fight-lab4, 100 days × 100 fights, driving `play.ts` itself):
+
+- **WIN CHANCE** is the one fight-level number. Every move shows lands / stuffed / they react, and the
+  WHY table after a pick shows each outcome's chance and the WIN CHANCE after it. The table sums to
+  the move's value, tested, so "best" is explained by arithmetic the player can check.
+- **Counters never skip in the played fight** (`Fight.counters`). The camp's skip rule plus burning
+  had cut them to 0.44 a fight even at a 50% floor; now 0.77 for best play, 0.76-0.89 for heuristics.
+  Floors 50/30/15% by what failed.
+- **Same dice for everyone**, fixed per day and exchange, redrawn until perfect play taps (100/100
+  days): the same picks give the same fight, so shares compare.
+- **6 exchanges**, no finishes at the start (best play never taps on exchange 1; v3 6.6%), and one way
+  forward per destination and one finish per family. Jumps cost 6 points a rung skipped: options
+  with identical numbers fell from 91% to 66% of decisions.
+- **Habits** per opponent (`opponents.ts`, wording for Joshua). Only the judoka's changes the best
+  move (2.2 points a fight mean for ignoring it); the rest are steers you see in the reaction line.
+  The camp ignores all of it: every engine option is opt-in and its tests are unchanged.
+

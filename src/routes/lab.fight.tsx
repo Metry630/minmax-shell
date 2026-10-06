@@ -1,22 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { FightScene, Portrait } from "@/games/guard/art/Art";
-import { COPY, TITLE, fill } from "@/games/guard/copy";
+import { CALL, COPY, TITLE, fill } from "@/games/guard/copy";
 import { POSITIONS, type PositionId } from "@/games/guard/graph";
 import { guard } from "@/games/guard/module";
 import {
-  MOMENTUM,
   PRESSURE_POINTS,
   accuracyOf,
-  counterRisk,
+  breakdownOf,
   evalOf,
   gradeOf,
   optionsAt,
   play,
   positionName,
   positionOf,
+  reasonOf,
   setUp,
+  type Breakdown,
   type FightState,
   type Grade,
   type MoveOption,
@@ -25,10 +26,9 @@ import {
 import { localPuzzleNo } from "@/kit/day";
 import { sfc32, stringSeed } from "@/kit/seed";
 
-// A throwaway playtest of "play the fight, graded like chess" (LOOP.md), v3: a daily move list,
-// stuffed moves burned until you change position,
-// pressure on finishes, a finish-chance bar, the grade kept apart from the dice, accuracy as the score.
-// Everything runs in the browser on a public seed: no scores, no D1. Built by Claude Code outside
+// A throwaway playtest of "play the fight, graded like chess" (LOOP.md), v4: WIN CHANCE named and
+// explained, three outcomes on every move, counters that happen, the opponent's habit, the same dice
+// for everyone. Runs in the browser on a public seed: no scores, no D1. Built by Claude Code outside
 // the usual Lovable lane because it's temporary.
 
 export const Route = createFileRoute("/lab/fight")({
@@ -38,12 +38,15 @@ export const Route = createFileRoute("/lab/fight")({
 
 type Turn = {
   picked: MoveOption;
-  grade: Grade;
   best: MoveOption;
+  grade: Grade;
   outcome: Outcome;
-  /** Finish chance with best play from here, before the pick and after the roll. */
+  /** WIN CHANCE before the pick and after the roll. */
   before: number;
   after: number;
+  /** Why: the pick's and the best move's three outcomes. */
+  mine: Breakdown;
+  theirs: Breakdown;
 };
 
 const spotOf = (id: PositionId) => ({
@@ -52,9 +55,6 @@ const spotOf = (id: PositionId) => ({
 });
 
 const pctOf = (p: number) => Math.round(100 * p);
-
-/** Your own dice each play (the real game would seed them from your anon id and the day). */
-const freshDice = () => sfc32(stringSeed(`lab-dice:${Date.now()}:${Math.random()}`));
 
 function FightLab() {
   const [n, setN] = useState<number | null>(null);
@@ -77,16 +77,16 @@ function FightLab() {
 }
 
 function Fight({ n, next }: { n: number; next(): void }) {
-  // Same puzzle and move list for everyone on this number; a plain string hash, no WebCrypto.
+  // The same puzzle, move list and dice for everyone on this number: the same picks, the same fight.
   const setup = useMemo(
     () =>
       setUp(
         guard.generator.generate(sfc32(stringSeed(`lab:${n}`))),
         sfc32(stringSeed(`lab-moves:${n}`)),
+        `lab-dice:${n}`,
       ),
     [n],
   );
-  const dice = useRef(freshDice());
   const [state, setState] = useState<FightState>(setup.start);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState<{ turn: Turn; next: FightState } | null>(null);
@@ -94,23 +94,27 @@ function Fight({ n, next }: { n: number; next(): void }) {
 
   const here = positionOf(setup, state);
   const { moves, best, burned } = optionsAt(setup, state);
-  const exchange = setup.fight.exchanges - state.left + 1;
-  const finishNow = pending ? pending.turn.after : evalOf(setup, state);
+  const exchanges = setup.fight.exchanges;
+  const exchange = exchanges - state.left + 1;
+  const winNow = pending ? pending.turn.after : evalOf(setup, state);
+  const links = setup.config.momentum.links;
 
   function pick(m: number) {
     const chosen = moves.find((o) => o.m === m);
     if (!chosen) return;
     const top = moves.reduce((a, b) => (b.q > a.q ? b : a));
-    const r = play(setup, state, m, dice.current);
+    const r = play(setup, state, m);
     setFrom(here);
     setPending({
       turn: {
         picked: chosen,
-        grade: gradeOf(best - chosen.q),
         best: top,
+        grade: gradeOf(best - chosen.q),
         outcome: r.outcome,
         before: evalOf(setup, state),
         after: evalOf(setup, r.next),
+        mine: breakdownOf(setup, state, chosen.m),
+        theirs: breakdownOf(setup, state, top.m),
       },
       next: r.next,
     });
@@ -124,7 +128,6 @@ function Fight({ n, next }: { n: number; next(): void }) {
   }
 
   function restart() {
-    dice.current = freshDice();
     setState(setup.start);
     setTurns([]);
     setPending(null);
@@ -139,6 +142,12 @@ function Fight({ n, next }: { n: number; next(): void }) {
   const sceneTo = pending ? pending.turn.outcome.at : here;
   const sceneFrom = pending ? pending.turn.outcome.from : from;
   const pressure = pending ? pending.turn.outcome.pressure : state.chain;
+  const coachLines = [
+    ...setup.puzzle.card.hints,
+    ...(setup.habit && !setup.puzzle.card.hints.includes(setup.habit.line)
+      ? [setup.habit.line]
+      : []),
+  ];
 
   return (
     <main className="arcade arcade-frame min-h-screen px-4 pb-16 pt-5">
@@ -147,7 +156,7 @@ function Fight({ n, next }: { n: number; next(): void }) {
           <h1 className="arcade-logo" data-title={TITLE}>
             {TITLE}
           </h1>
-          <p className="arcade-hud pt-1 text-xs">FIGHT LAB #{n} · v3</p>
+          <p className="arcade-hud pt-1 text-xs">FIGHT LAB #{n} · v4</p>
         </header>
 
         <section className="arcade-panel mt-6 p-4">
@@ -157,10 +166,7 @@ function Fight({ n, next }: { n: number; next(): void }) {
               <p className="arcade-hud mt-1 text-[10px] text-[var(--arcade-p1)]">{COPY.you}</p>
             </div>
             <p className="arcade-chip mt-3 whitespace-nowrap">
-              {fill(COPY.exchange, {
-                n: Math.min(exchange, setup.fight.exchanges),
-                of: setup.fight.exchanges,
-              })}
+              {fill(COPY.exchange, { n: Math.min(exchange, exchanges), of: exchanges })}
             </p>
             <div>
               <Portrait
@@ -175,7 +181,21 @@ function Fight({ n, next }: { n: number; next(): void }) {
             </div>
           </div>
 
-          <FinishBar value={finishNow} />
+          {turns.length === 0 && !pending && (
+            <div className="arcade-coach mt-4">
+              <p className="arcade-hud text-xs">{COPY.coach}</p>
+              {coachLines.map((line) => (
+                <p key={line}>
+                  {line === setup.habit?.line ? <strong>HABIT: {line}</strong> : line}
+                </p>
+              ))}
+            </div>
+          )}
+
+          <p className="mt-5 text-sm text-[var(--arcade-muted)]">
+            Tap them before the {exchanges} exchanges run out.
+          </p>
+          <WinBar value={winNow} />
 
           <div className="arcade-arena mt-4">
             <FightScene
@@ -189,7 +209,7 @@ function Fight({ n, next }: { n: number; next(): void }) {
           {pressure > 0 && !over && (
             <p className="arcade-hud mt-3 text-center text-xs">
               PRESSURE {"●".repeat(pressure)}
-              {"○".repeat(MOMENTUM.links - pressure)} · your next finish +
+              {"○".repeat(Math.max(0, links - pressure))} · your next submission +
               {pressure * PRESSURE_POINTS}%
             </p>
           )}
@@ -198,41 +218,19 @@ function Fight({ n, next }: { n: number; next(): void }) {
 
           {!pending && !over && (
             <div className="mt-4">
-              <p className="arcade-hud text-xs">
-                YOUR MOVES HERE · % = chance it lands now
-                {counterRisk(setup, state) > 0 &&
-                  ` · if it fails, ${counterRisk(setup, state)}% they counter`}
-              </p>
+              <p className="arcade-hud text-xs">YOUR MOVES · what can happen</p>
               <div className="mt-3 grid gap-2">
                 {moves.map((o) => (
-                  <button
-                    key={o.m}
-                    type="button"
-                    onClick={() => pick(o.m)}
-                    className="arcade-button grid min-h-11 grid-cols-[1fr_auto] items-center gap-2 border-2 px-3 py-2 text-left"
-                  >
-                    <span>
-                      <span className="arcade-hud block text-xs">{o.label}</span>
-                      <span className="block text-[11px] opacity-70">
-                        {o.submission ? "finish" : o.to ? `→ ${positionName(o.to)}` : "no attack"}
-                        {o.boost > 0 && ` · pressure +${o.boost}`}
-                      </span>
-                    </span>
-                    <span className="arcade-display text-xs">
-                      {o.m === -1 ? "" : `${o.chance}%`}
-                    </span>
-                  </button>
+                  <MoveCard key={o.m} o={o} onPick={() => pick(o.m)} />
                 ))}
                 {burned.map((label) => (
                   <div
                     key={label}
                     aria-disabled="true"
-                    className="grid min-h-11 grid-cols-[1fr_auto] items-center gap-2 border-2 border-dashed border-[var(--arcade-line)] px-3 py-2 text-left opacity-60"
+                    className="border-2 border-dashed border-[var(--arcade-line)] px-3 py-2 opacity-60"
                   >
-                    <span>
-                      <span className="arcade-hud block text-xs line-through">{label}</span>
-                      <span className="block text-[11px]">stuffed: they've seen it</span>
-                    </span>
+                    <span className="arcade-hud block text-xs line-through">{label}</span>
+                    <span className="block text-[11px]">stuffed: they've seen it</span>
                   </div>
                 ))}
               </div>
@@ -244,17 +242,17 @@ function Fight({ n, next }: { n: number; next(): void }) {
               <p className="arcade-splash arcade-splash-static">
                 {state.over === "tap" ? COPY.tap : COPY.time}
               </p>
-              <p className="arcade-display text-2xl">{squares}</p>
-              <p className="arcade-display text-lg">ACCURACY {accuracy}</p>
               {state.over === "time" && state.left > 0 && (
                 <p className="arcade-hud text-xs">
                   No finish left in{" "}
                   {state.left === 1 ? "the last exchange" : `${state.left} exchanges`}.
                 </p>
               )}
+              <p className="arcade-display text-2xl">{squares}</p>
+              <p className="arcade-display text-lg">ACCURACY {accuracy}</p>
               <p className="text-sm text-[var(--arcade-muted)]">
-                Accuracy is how much of your finish chance each pick kept, on average; the dice
-                don't touch it. Best play finishes {pctOf(setup.bestChance)}% of today's fights.
+                Accuracy is how much of your WIN CHANCE each pick kept, on average. Everyone gets
+                today's dice, and perfect play taps today, so the same picks give the same fight.
               </p>
               <p className="arcade-share-preview">{share}</p>
               <div className="grid grid-cols-2 gap-2">
@@ -263,7 +261,7 @@ function Fight({ n, next }: { n: number; next(): void }) {
                   className="arcade-button arcade-button-secondary min-h-11 border-2 text-[10px]"
                   onClick={restart}
                 >
-                  PLAY AGAIN
+                  TRY OTHER PICKS
                 </button>
                 <button
                   type="button"
@@ -283,8 +281,10 @@ function Fight({ n, next }: { n: number; next(): void }) {
             <div className="mt-3 space-y-2">
               {turns.map((t, i) => (
                 <p key={i} className="arcade-hud text-xs">
-                  {i + 1}. {t.grade.square} {t.picked.label} ({t.picked.chance}%): {t.outcome.call}{" "}
-                  {t.outcome.call === "COUNTER!" ? t.outcome.line : ""}
+                  {i + 1}. {t.grade.square} {t.picked.label}: {t.outcome.call}{" "}
+                  {t.outcome.call === CALL.counter || t.outcome.call === CALL.opening
+                    ? t.outcome.line
+                    : ""}
                   {t.grade.lost >= 0.005 && ` · best: ${t.best.label}, −${pctOf(t.grade.lost)}`}
                 </p>
               ))}
@@ -294,12 +294,25 @@ function Fight({ n, next }: { n: number; next(): void }) {
 
         <section className="arcade-panel mt-6 p-4">
           <details>
+            <summary className="arcade-section-title cursor-pointer">HOW IT WORKS</summary>
+            <div className="mt-2 space-y-2 text-sm text-[var(--arcade-muted)]">
+              <p>
+                Each move can land, get stuffed (you stay, and that move is gone until you change
+                position: they've seen it), or they react (an escape, a counter, or their habit).
+              </p>
+              <p>
+                WIN CHANCE is your chance to tap them before time runs out if you keep picking the
+                best moves. The best move is the one with the highest WIN CHANCE: it weighs all
+                three outcomes, so it isn't always the likeliest move or the fastest.
+              </p>
+              <p>
+                A stuffed submission adds {PRESSURE_POINTS}% to your next submission, up to {links}{" "}
+                times; moving or their reaction resets it.
+              </p>
+            </div>
+          </details>
+          <details className="mt-3">
             <summary className="arcade-section-title cursor-pointer">TODAY'S MOVE LIST</summary>
-            <p className="mt-2 text-sm text-[var(--arcade-muted)]">
-              What your fighter knows today, position by position. A stuffed move is gone until you
-              change position (they've seen it). A stuffed finish adds {PRESSURE_POINTS}% to your
-              next one, up to {MOMENTUM.links} times; moving or getting countered resets both.
-            </p>
             <div className="mt-3 space-y-3">
               {setup.moveList.map((row) => (
                 <div key={row.at}>
@@ -315,13 +328,13 @@ function Fight({ n, next }: { n: number; next(): void }) {
   );
 }
 
-/** The eval bar: your chance to finish from here if you play the best moves from now on. */
-function FinishBar({ value }: { value: number }) {
+/** The eval bar: WIN CHANCE, named and defined where it's shown. */
+function WinBar({ value }: { value: number }) {
   const pct = pctOf(value);
   return (
-    <div className="mt-4">
+    <div className="mt-2">
       <div className="flex items-baseline justify-between">
-        <p className="arcade-hud text-[10px]">FINISH CHANCE (best play from here)</p>
+        <p className="arcade-hud text-[10px]">WIN CHANCE</p>
         <p className="arcade-display text-xs">{pct}%</p>
       </div>
       <div className="mt-1 h-3 border-2 border-[var(--arcade-line)]">
@@ -330,43 +343,138 @@ function FinishBar({ value }: { value: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
+      <p className="mt-1 text-[11px] text-[var(--arcade-muted)]">
+        Your chance to tap them in time if you keep picking the best moves.
+      </p>
     </div>
+  );
+}
+
+/** A move with its three outcomes: lands, stuffed, they react. */
+function MoveCard({ o, onPick }: { o: MoveOption; onPick(): void }) {
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      className="arcade-button grid min-h-11 gap-1 border-2 px-3 py-2 text-left"
+    >
+      <span className="flex items-baseline justify-between gap-2">
+        <span className="arcade-hud text-xs">{o.label}</span>
+        <span className="text-[10px] opacity-70">{o.kind}</span>
+      </span>
+      {o.m !== -1 && (
+        <>
+          <span className="flex h-2 w-full border border-[var(--arcade-line)]" aria-hidden>
+            <span style={{ width: `${o.chance}%` }} className="bg-[var(--arcade-p1)]" />
+            <span style={{ width: `${o.stuffed}%` }} className="bg-[var(--arcade-panel)]" />
+            <span style={{ width: `${o.countered}%` }} className="bg-[var(--arcade-p2)]" />
+          </span>
+          <span className="text-[11px] leading-snug">
+            <b>lands {o.chance}%</b>{" "}
+            {o.submission
+              ? "→ TAP!"
+              : `→ ${o.to ? positionName(o.to) : ""}${o.knownThere.length ? ` (you know ${o.knownThere.join(", ")})` : ""}`}
+            {o.boost > 0 && ` · pressure +${o.boost}`}
+            {o.stuffed > 0 && (
+              <>
+                <br />
+                stuffed {o.stuffed}%: you stay, it's gone
+              </>
+            )}
+            {o.countered > 0 && (
+              <>
+                <br />
+                they react {o.countered}%: {o.counterName}
+              </>
+            )}
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
+
+function BreakdownRow({ label, b }: { label: string; b: Breakdown }) {
+  return (
+    <tr>
+      <td className="pr-2 text-left align-top">{label}</td>
+      <td className="pr-2 align-top">
+        {pctOf(b.lands.chance)}% → {b.lands.at ? `${pctOf(b.lands.win)}%` : "TAP"}
+      </td>
+      <td className="pr-2 align-top">
+        {pctOf(b.stuffed.chance)}% → {pctOf(b.stuffed.win)}%
+      </td>
+      <td className="pr-2 align-top">
+        {b.countered ? `${pctOf(b.countered.chance)}% → ${pctOf(b.countered.win)}%` : "-"}
+      </td>
+      <td className="align-top">
+        <b>{pctOf(b.win)}%</b>
+      </td>
+    </tr>
   );
 }
 
 function Result({ turn, last, onNext }: { turn: Turn; last: boolean; onNext(): void }) {
   const { grade, picked, best, outcome } = turn;
-  const unlucky = grade.lost < 0.005 && !outcome.worked;
+  const wasBest = grade.lost < 0.005;
+  const unlucky = wasBest && !outcome.worked && outcome.call !== CALL.opening;
   return (
     <div className="mt-4 space-y-3 text-center">
       <p className="arcade-hud text-xs">
         {grade.square} {grade.word}
-        {grade.lost >= 0.005 && ` · −${pctOf(grade.lost)} pts`}
+        {!wasBest && ` · −${pctOf(grade.lost)} WIN CHANCE`}
       </p>
-      {grade.lost >= 0.005 && (
-        <p className="text-sm text-[var(--arcade-muted)]">
-          Best was {best.label} ({best.chance}%).
-        </p>
-      )}
       <p
-        className={`arcade-call ${outcome.call === "COUNTER!" ? "arcade-call-counter" : outcome.worked ? "arcade-call-worked" : "arcade-call-muted"}`}
+        className={`arcade-call ${outcome.call === CALL.counter ? "arcade-call-counter" : outcome.worked || outcome.call === CALL.opening ? "arcade-call-worked" : "arcade-call-muted"}`}
       >
         {outcome.call}
       </p>
       <p className="arcade-hud text-sm">{outcome.line}</p>
+      {outcome.habit && (
+        <div className="arcade-coach text-left">
+          <p className="arcade-hud text-xs">{COPY.coach}</p>
+          <p>{outcome.habit}</p>
+        </div>
+      )}
       {unlucky && (
         <p className="text-sm text-[var(--arcade-muted)]">
           Right call, bad roll: it lands {picked.chance}% of the time.
-          {outcome.pressure > 0 && ` Pressure +1: your next finish +${PRESSURE_POINTS}%.`}
         </p>
       )}
-      {!unlucky && outcome.pressure > 0 && (
+      {outcome.pressure > 0 && (
         <p className="text-sm text-[var(--arcade-muted)]">
-          Pressure +1: your next finish +{PRESSURE_POINTS}%.
+          Pressure +1: your next submission +{PRESSURE_POINTS}%.
         </p>
       )}
+
+      <div className="overflow-x-auto text-left">
+        <p className="arcade-hud text-[10px]">
+          WHY: each outcome's chance → your WIN CHANCE after it
+        </p>
+        <table className="mt-1 w-full text-[11px]">
+          <thead className="text-[var(--arcade-muted)]">
+            <tr>
+              <th className="pr-2 text-left font-normal">pick</th>
+              <th className="pr-2 text-left font-normal">lands</th>
+              <th className="pr-2 text-left font-normal">stuffed</th>
+              <th className="pr-2 text-left font-normal">they react</th>
+              <th className="text-left font-normal">WIN</th>
+            </tr>
+          </thead>
+          <tbody>
+            <BreakdownRow label={`You: ${picked.label}`} b={turn.mine} />
+            {!wasBest && <BreakdownRow label={`Best: ${best.label}`} b={turn.theirs} />}
+          </tbody>
+        </table>
+        <p className="mt-2 text-sm text-[var(--arcade-muted)]">
+          {wasBest
+            ? "Nothing here had a higher WIN CHANCE."
+            : `${best.label} was better. ${reasonOf(turn.theirs, turn.mine, best.submission)}`}
+        </p>
+      </div>
+
       <p className="arcade-hud text-xs">
-        FINISH CHANCE {pctOf(turn.before)}% → {pctOf(turn.after)}%
+        WIN CHANCE {pctOf(turn.before)}% → {pctOf(turn.after)}%
       </p>
       <button
         type="button"

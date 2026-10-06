@@ -40,8 +40,13 @@ export type Fight = {
    * CHAIN_MAX (MODEL.md).
    */
   momentum?: Momentum;
-  /** The played fight: their chance to counter a failed move never drops below this. */
-  counterFloor?: number;
+  /**
+   * The played fight's counters (LOOP.md v4): when your move fails they counter at least `floor` of
+   * the time by what failed, plus any `boost`, and never skip it; they take a `prefer`red escape
+   * whenever one is open (their habit), otherwise the one worst for you. Off, the camp's rule:
+   * their escape chance comes from the stats, and they skip a counter that would help you.
+   */
+  counters?: Counters;
   /**
    * The played fight: a stuffed move is burned (they've seen it) until you change position, so no
    * exchange repeats the last one. The state then carries `used`, a bitmask of burned move indices.
@@ -50,6 +55,21 @@ export type Fight = {
 };
 
 export type Momentum = { step: number; links: number };
+
+export type Counters = {
+  /** Their counter chance after a failed submission, scoring move (sweep, pass...) or plain move. */
+  floor: { submission: number; scoring: number; move: number };
+  /** Extra counter chance on your failed moves from one stat's positions, or (no stat) every move. */
+  boost?: readonly { stat?: number; add: number }[];
+  /** Where their escapes go when they have the choice (their habit), most preferred first. */
+  prefer?: readonly PositionId[];
+  /**
+   * Their habit fires on every failed move where its escape is open, not only on a counter: the
+   * judoka turtles whenever an attack from side control fails. Measured in the lab: as a counter
+   * steer only, playing as if they had no habit cost a median 0 points (LOOP.md v4).
+   */
+  always?: boolean;
+};
 
 type Move = {
   id: string;
@@ -78,8 +98,15 @@ export type Board = {
   maxMoves: number;
 };
 
-/** Every opponent move in the graph is live: they happen when your move fails. */
-export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board {
+/**
+ * Every opponent move in the graph is live: they happen when your move fails. `harder` takes chance
+ * off a technique (the played fight makes bigger jumps harder, LOOP.md v4); the camp passes none.
+ */
+export function compileBoard(
+  belt: Belt,
+  edges: readonly Edge[] = EDGES,
+  harder: (edge: Extract<Edge, { kind: "technique" }>) => number = () => 0,
+): Board {
   const ids = Object.keys(POSITIONS) as PositionId[];
   const index = new Map(ids.map((id, i) => [id, i]));
   const at = (id: PositionId) => index.get(id) ?? -1;
@@ -91,7 +118,9 @@ export function compileBoard(belt: Belt, edges: readonly Edge[] = EDGES): Board 
     if (edge.kind === "technique") {
       // Pulling guard: your standing against their defence of the guard you pull into (posture).
       const pull = edge.from === "standing" && POSITIONS[edge.to].perspective === "bottom";
-      const base = pull ? BASE.guardPull : edge.events.length > 0 ? BASE.scoring : BASE.transition;
+      const base =
+        (pull ? BASE.guardPull : edge.events.length > 0 ? BASE.scoring : BASE.transition) -
+        harder(edge);
       const guard = pull ? STAT_INDEX[STAT_OF[edge.to]] : stat;
       moves[from]?.push({
         id: edge.id,
@@ -181,28 +210,41 @@ export function chainAfterMiss(
 export function solveFight(board: Board, fight: Fight) {
   const { moves, escapes, stat, maxMoves } = board;
   const { skills, defence, exchanges } = fight;
-  // Memo over (position, exchanges left, last failed move + 1, chain, burned moves); NaN means not
-  // computed. The burned-moves slot is a bitmask, so it needs 2^maxMoves slots when burning is on
-  // (128 for a 7-move position: 5 MB of doubles on a daily move list).
-  const lastSlots = maxMoves + 1;
+  // Memo over (position, exchanges left, last failed move, chain, burned moves); NaN means not
+  // computed. The burned-moves slot is a bitmask, so it needs 2^maxMoves slots when burning is on.
+  // Under momentum only "is there a last failed move" matters (setUpBonus and chainAfterMiss never
+  // read which one), so that slot shrinks to 2.
+  const lastSlots = fight.momentum ? 2 : maxMoves + 1;
+  const lastKey = (last: number) => (fight.momentum ? (last === -1 ? 0 : 1) : last + 1);
   const chainSlots = (fight.momentum?.links ?? CHAIN_MAX) + 1;
   const usedSlots = fight.burn ? 1 << maxMoves : 1;
   const memo = new Float64Array(
     board.ids.length * (exchanges + 1) * lastSlots * chainSlots * usedSlots,
   ).fill(NaN);
   const key = (p: number, n: number, last: number, chain: number, used: number) =>
-    (((p * (exchanges + 1) + n) * lastSlots + (last + 1)) * chainSlots + chain) * usedSlots + used;
+    (((p * (exchanges + 1) + n) * lastSlots + lastKey(last)) * chainSlots + chain) * usedSlots +
+    used;
   /** Whether move m is burned in this state (`>>` and `&` read bit m of the mask). */
   const burned = (used: number, m: number) => ((used >> m) & 1) === 1;
 
-  /** Their chance to counter when your move fails at p (0 where they have no way out). */
-  const counterChance = (p: number) =>
-    (escapes[p]?.length ?? 0) === 0
-      ? 0
-      : Math.max(
-          fight.counterFloor ?? 0,
-          escapeChance(defence[stat[p] ?? 0] ?? 0, skills[stat[p] ?? 0] ?? 0),
-        );
+  const counters = fight.counters;
+  const prefer = (counters?.prefer ?? []).map((id) => board.ids.indexOf(id));
+
+  /** Their chance to counter when `move` fails at p (0 where they have no way out). */
+  const counterChance = (p: number, move?: Move) => {
+    const out = escapes[p] ?? [];
+    if (out.length === 0) return 0;
+    if (counters?.always && move && out.some((escape) => prefer.includes(escape.to))) return 1;
+    const own = stat[p] ?? 0;
+    const fromStats = escapeChance(defence[own] ?? 0, skills[own] ?? 0);
+    if (!counters || !move) return fromStats;
+    const { floor } = counters;
+    const least = move.submission ? floor.submission : move.attack ? floor.scoring : floor.move;
+    let boost = 0;
+    for (const b of counters.boost ?? [])
+      if (b.stat === undefined || b.stat === own) boost += b.add;
+    return Math.min(0.95, Math.max(least, fromStats) + boost);
+  };
 
   /** A move's chance of working right now, chain bonus included. */
   const works = (move: Move, m: number, last: number, chain: number) =>
@@ -225,13 +267,12 @@ export function solveFight(board: Board, fight: Fight) {
     // same one again); a fake, or any other failed move, ends it.
     const next = chainAfterMiss(move, w, m, last, chain, fight.momentum);
     const stay = value(p, n - 1, next.last, next.chain, fight.burn ? used | (1 << m) : 0);
-    // When a move fails, they may counter. They pick the counter that's worst for you, and skip it
-    // if staying put is worse for you anyway. Together with holding, this makes more skill never
-    // lower the chance (engine.test.ts checks it), which the solver's pruning relies on.
-    const out = escapes[p] ?? [];
-    let countered = stay;
-    for (const escape of out) countered = Math.min(countered, value(escape.to, n - 1, -1, 0));
-    const getOut = counterChance(p);
+    // When a move fails, they may counter. In the camp they pick the counter that's worst for you,
+    // and skip it if staying put is worse for you anyway; together with holding, that makes more
+    // skill never lower the chance (engine.test.ts checks it). The played fight never skips.
+    const escape = counterTo(p, n, stay);
+    const countered = escape ? value(escape.to, n - 1, -1, 0) : stay;
+    const getOut = counterChance(p, move);
     return w * success + (1 - w) * (getOut * countered + (1 - getOut) * stay);
   };
 
@@ -263,16 +304,27 @@ export function solveFight(board: Board, fight: Fight) {
     return pick;
   };
 
-  /** Where a failed move leaves you: the counter worst for you, or null if staying is worse. */
-  const counterTo = (p: number, n: number, stayValue: number) => {
+  /**
+   * Where a failed move leaves you if they counter. The camp: the counter worst for you, or null if
+   * staying is worse. The played fight: their habit's escape if one is open here, otherwise the one
+   * worst for you, never skipped (null only where they have no escape).
+   */
+  function counterTo(p: number, n: number, stayValue: number): Escape | null {
+    const out = escapes[p] ?? [];
+    if (counters) {
+      for (const to of prefer) {
+        const habit = out.find((escape) => escape.to === to);
+        if (habit) return habit;
+      }
+    }
     let pick: Escape | null = null;
-    let worst = stayValue;
-    for (const escape of escapes[p] ?? []) {
+    let worst = counters ? Infinity : stayValue;
+    for (const escape of out) {
       const v = value(escape.to, n - 1, -1, 0);
       if (v < worst) [worst, pick] = [v, escape];
     }
     return pick;
-  };
+  }
 
   return { value, attempt, choose, works, counterTo, counterChance };
 }
@@ -420,7 +472,7 @@ export function simulateFight(board: Board, fight: Fight, rng: { next(): number 
     // It failed: the chain moves on, then they may counter, exactly as `attempt` values it.
     const next = chainAfterMiss(move, w, m, last, chain, fight.momentum);
     const counter =
-      rng.next() < solved.counterChance(p)
+      rng.next() < solved.counterChance(p, move)
         ? solved.counterTo(p, n, solved.value(p, n - 1, next.last, next.chain))
         : null;
     if (counter) {

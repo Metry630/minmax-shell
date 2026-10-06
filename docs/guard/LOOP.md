@@ -250,6 +250,63 @@ list until the day lands in the band; all 60 do, median 83.9%.
 Still open: best play taps on exchange 1 in 6.6% of fights (its first move is a finish on 9 of 60
 days); taps otherwise spread over exchanges 2 to 4 (18%, 21%, 27%).
 
+## v4: clear choices, counters that happen, habits, the same dice for everyone (2026-10-06)
+
+Joshua on v3: more options and more distinct ones, more clarity on each choice, "best move" is unclear
+(fastest? most definitive?), 4 exchanges is too few, "there's never a chance of being countered?",
+and results aren't comparable while everyone has their own dice. He chose exploitable habits for
+opponent hints and the same dice for everyone.
+
+What changed (`play.ts` `CONFIG`):
+
+- **WIN CHANCE**, named and defined where it's shown: your chance to tap them before time runs out
+  if you keep picking the best moves. Best move = highest WIN CHANCE.
+- **Every move shows its three outcomes:** lands (where to, and the finishes you know there),
+  stuffed (you stay, it's burned), they react. After a pick, a WHY table gives your pick and the
+  best move: each outcome's chance and your WIN CHANCE after it, which sum to the move's value
+  (a test checks this).
+- **Counters never skip.** The camp's rule let them skip a counter whenever staying put was worse
+  for you; with burning that was most of the time (0.44 a fight even at a 50% floor). Now 50% after
+  a failed submission, 30% after a scoring move, 15% after a plain move. A reaction that leaves you
+  better off is called OPENING!.
+- **Habits** (`opponents.ts`, wording for Joshua):
+  - Judoka: "Turtles when in trouble". Every failed attack from side control, knee on belly or mount
+    gives you their back; failed shots are countered 25 points more often.
+  - Wrestler: stands back up.
+  - Guard player: always back to guard.
+  - Leg-locker: pulls you into single-leg X, a way out only they have.
+  - Scrambler: +15% counters.
+- **Same dice for everyone.** Rolls are fixed per day and exchange, and the day is redrawn until
+  perfect play taps with them. The same picks give the same fight.
+- **Fight shape:**
+  - 6 exchanges; 3-4 ways forward and 1-2 finishes per position.
+  - At most one way forward per destination and one finish per family.
+  - No finishes at the start position.
+  - A move loses 6 points of chance for each rung it skips (open guard to the back skips two).
+
+Lab (`fight-lab4.mts` drives `play.ts` itself; 100 dev-salt days, 100 fresh fights each):
+
+| | v3 | v4 |
+|---|---|---|
+| Exchanges; decisions a fight | 4; 3.1 | 6; 3.8 |
+| Reactions a fight, best play (openings) | 0.07 | 0.77 (0.33) |
+| Reactions a fight, sub hunter / climber | n/a | 0.76 / 0.89 |
+| Best play taps on exchange 1 / 2 / 3 / 4 / 5 / 6 | 6.6% on exchange 1 | 0 / 31 / 33 / 15 / 7 / 14% |
+| Start WIN CHANCE (median, range) | 78% (45-83) | 80% (75-85); dice gate 100/100 |
+| 3+ stuffs in a row; attempts land (median) | 1.4%; 70% | 7.9%; 58% |
+| Sub hunter / climber thrown away (median) | 10.0 / 15.2 | 6.9 / 10.1 |
+| Two options with the same lands and reaction % | not measured | 66% of decisions (91% before jump pricing) |
+
+Gates missed:
+
+- **Habits are only worth points against the judoka.** Playing as if they had no habit costs a mean
+  2.2 points a fight there (median 0.3), and about 0 for the other four, whose habits steer where
+  you end up without changing the best move. The callouts happen (0.8 a fight against the
+  scrambler, 0.6 the judoka, 0.35 the guard player, about 0.1 the wrestler and leg-locker).
+- **Look-alike numbers.** Two options from the same position often share the same chances, because
+  chance comes from the position's stat. They differ in where they go and what they set up, which
+  the cards now show, but not in their numbers.
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their

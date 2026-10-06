@@ -102,6 +102,8 @@ export const CALL = {
   stuffed: "STUFFED",
   defended: "DEFENDED",
   counter: "COUNTER!",
+  /** Their reaction left you better off (the judoka turtles and gives up the back). */
+  opening: "OPENING!",
   hold: "HOLD",
 } as const;
 
