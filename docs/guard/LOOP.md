@@ -130,6 +130,34 @@ when the number was always visible, stops mattering when you only get 3 looks. I
 structural ones, and they can be measured: how close sensible 2-, 3- and 4-spar strategies get to the
 best camp.
 
+## Camp plus spars, measured (Joshua: "measure them")
+
+The camp model as on main (6 sessions, 8 stats, exact chance, the solver's best), 60 days, budgets
+of 1 (today's blind submission) to 4 spars. Each strategy starts from one of four instincts (spread
+over your best stats, all-in on your best, 3+3 in your top two, avoid their wall) and submits the best
+camp it saw. The **number-reader** only sees each spar's chance and tries the next natural camp; the
+**plan-reader** also sees the route the fighter took, each step low, medium or high, and moves two
+sessions toward the weakest step's stat. Points below the best camp (median; the range is the four
+instincts):
+
+| Budget | Instinct only | Number-reader | Plan-reader | Plan-reader finds the best |
+|---|---|---|---|---|
+| submit blind | 22.5 to 26.5 | | | 0 to 5% |
+| 2 spars | | 18.9 to 20.1 | 10.1 to 16.4 | 7 to 13% |
+| 3 spars | | 17.7 to 18.9 | 3.0 to 6.3 | 22 to 30% |
+| 4 spars | | 17.7 | 0.4 to 2.2 | 37 to 52% |
+
+**Verdict: this is the loop.** The number alone teaches little (0 to 5 points gained over the
+instinct): "41%" doesn't say what to change. The route does: the first spar is worth 8 to 11 points
+and three spars take a reading player from about 23 below the best to 3 to 6 below, finding the best
+on about a quarter of days. Each look informs the next, and the budget makes them count: Mastermind
+on a hidden opponent. It also lets grappling knowledge pay (the route is in BJJ terms) and gives a
+first action within seconds (spar a default camp and read the route).
+
+To decide: the budget (2 spars leaves a 10 to 16 point gap; 3 leaves 3 to 6 and makes the best
+reachable on a good day), what a spar shows (chance plus route with low / medium / high; the numbers
+behind the bands too?), and the share ("🥊 23 → 41 → 52, submitted 52% (best 55%)").
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their

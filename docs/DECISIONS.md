@@ -582,3 +582,13 @@ one move; one rung per move gives 2-move routes but holding and a grappler's ins
 best on most days. About 15 variants agree: on 29 positions the best route is 1 to 2 obvious moves.
 The proposal now is depth from limited feedback (Mastermind on a hidden opponent: the camp plus a few
 spars), to be measured before any choice. Numbers in LOOP.md.
+
+## 2026-10-06: Spars with the route are the loop
+
+The camp model unchanged, plus k spars before the one submission, 60 days. Seeing only each spar's
+chance gains a player 0 to 5 points over their instinct (17.7 to 20.1 below the best with 2 to 4
+spars): the number doesn't say what to change. Seeing the route the fighter took, each step low,
+medium or high, and moving sessions to the weakest step: 10 to 16 below with 2 spars, 3 to 6 with 3,
+0 to 2 with 4 (best found on 7 to 13%, 22 to 30%, 37 to 52% of days). The first spar alone is worth
+8 to 11 points. That's the feedback loop the survey asked for, with a budget that makes each look
+count; the budget and what a spar shows are Joshua's call (LOOP.md).
