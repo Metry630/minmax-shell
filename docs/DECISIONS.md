@@ -613,3 +613,12 @@ a scratch folder, nothing added to the project) at 400 px against the deployed W
 passed (steps file, step 6). Migration 0002 is applied to remote D1. The share uses `armbar.day`
 already, because `hostForGame` reads the planned host table; that's right from launch day and harmless
 before it, since nothing is public until step 8 buys the domain.
+
+## 2026-10-06: The spar version is still flat; a played fight measures well
+
+Joshua played the deployed spar version: the first spar's route gave the answer away (47%, 67%, 91% =
+perfect) and the fight was one exchange; flattest were the fight and the spars. Measured instead: the
+player picks each exchange's move and the solver grades it against the exact best in that state. On
+60 puzzles at style-level skill, best play taps 47%, a fight is about 4.4 decisions, sensible
+instincts lose 15 to 18 points a fight on 1.6 to 2 mistakes, and the likeliest move is the best on
+only 4% of decisions. `solveFight` and `chainAfterMiss` are exported from the engine for it.

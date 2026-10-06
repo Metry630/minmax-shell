@@ -158,6 +158,32 @@ first action within seconds (spar a default camp and read the route).
 high.** Built in step 5b; the gates in `quality.ts` hold it (QUALITY.md: first spar gains 10.2 points,
 a careful player ends 4.3 below the best, the blind first camp 25.4 below).
 
+## Joshua played the spar version (2026-10-06): still flat
+
+His run: spars at 47%, 67%, 91%, which was already the perfect camp; the first spar's route
+(guillotine from closed guard) gave the answer away; the fight was one exchange (TAP! on 1 of 5);
+"You beat 100% of fighters" among three, two of them test runs. Flattest for him: the fight, and the
+spars too. The gates had passed; they measured proxies, not the experience. The deeper problem: the
+player thinks about our model (stat points, chance formulas), not about jiu-jitsu, so the puzzle is
+decoding numbers, and once decoded it's over.
+
+## Play the fight, graded like chess (measured)
+
+Each exchange you pick a move (or hold); the solver's exact value of every option in that state
+grades the pick (best, good, mistake, and how many points it threw away); then the dice roll as the
+model says. Score = points thrown away, not the dice. 60 puzzles × 200 fights per player:
+
+| Fighter | Best play taps | Decisions a fight | Sub hunter throws away | Climber throws away | Highest-% move is the best |
+|---|---|---|---|---|---|
+| underdog (as generated) | 19.7% | 4.8 | 7.8 pts, 1.2 mistakes | 7.3 pts, 1.2 mistakes | 9% of decisions |
+| at style level | 47.4% | 4.4 | 18.2 pts, 2.0 mistakes | 15.0 pts, 1.6 mistakes | 4% |
+
+Not a button-masher: always taking the likeliest move (usually a safe transition) never taps, and
+sensible instincts (hunt the submission, climb to mount and the back) lose 7 to 18 points a fight on 1
+to 2 gradeable mistakes. 15 to 17 different best openings in 60 days. At style level the fight is a
+coin flip under best play, so taps are common and mistakes cost more (median 14.8 points when the
+likeliest move isn't the best); the underdog would end TIME! most days.
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their

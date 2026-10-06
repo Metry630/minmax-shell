@@ -134,13 +134,16 @@ function moveWorks(
 }
 
 /** The chain after attempt m fails: grows on a different real threat, starts on the same one. */
-function chainAfterMiss(move: Move, w: number, m: number, last: number, chain: number) {
+export function chainAfterMiss(move: Move, w: number, m: number, last: number, chain: number) {
   if (!(move.attack && w >= THREAT)) return { last: -1, chain: 0 };
   return { last: m, chain: last !== -1 && last !== m ? Math.min(chain + 1, CHAIN_MAX) : 1 };
 }
 
-/** The fight's exact values, memoised: `value` for the score, `choose` for the game plan. */
-function solveFight(board: Board, fight: Fight) {
+/**
+ * The fight's exact values, memoised: `value` for the score, `choose` for the game plan, `attempt`
+ * for one move's value in a given state (what a played fight grades each choice against).
+ */
+export function solveFight(board: Board, fight: Fight) {
   const { moves, escapes, stat, maxMoves } = board;
   const { skills, defence, exchanges } = fight;
   // Memo over (position, exchanges left, last failed move + 1, chain); NaN means not computed.
@@ -213,7 +216,7 @@ function solveFight(board: Board, fight: Fight) {
     return pick;
   };
 
-  return { value, choose, works, counterTo };
+  return { value, attempt, choose, works, counterTo };
 }
 
 export function finishChance(board: Board, fight: Fight): number {
