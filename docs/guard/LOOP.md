@@ -3,6 +3,7 @@
 Written 2026-10-06, after Joshua played step 6's build on his phone: "Krillion gives you direct
 feedback per query, and the other puzzles leave you thinking. This just doesn't do that." This page
 holds what we learned and where the loop stands. The camp (MODEL.md) is the game on main today.
+Who plays which kind of daily, and which subjects are empty, is in `docs/MARKET.md`.
 
 ## What daily games share
 
@@ -446,6 +447,77 @@ Two cautions on these numbers:
 Gate missed: ignoring the clues taps 70% (target 65%). The harder dial is a 4-exchange minimum
 perfect read: ignoring the clues 59%, BJJ instinct 24%, random 9%, which looks too punishing for a
 daily.
+
+## v7: game-plan Wordle (`/lab/plan`, 2026-10-06)
+
+Joshua on v6: "it does make you think a little more", but he wants "a proper thinking puzzle". What
+it lacked:
+
+- **Thin feedback:** one exchange tested one thing.
+- **No planning:** you only saw the moves where you stood.
+- **Probing cost the fight.**
+- **Literal clues.**
+- **No answer to discover.**
+
+He chose game-plan Wordle: each guess is a whole plan, from today's start to a submission, built a
+move at a time, and the coach marks every step (`plans.ts`).
+
+**Feedback per step:**
+
+- 🟩 gets through.
+- 🟨 right finish, wrong spot (only from mount or the back).
+- ⬛ blocked.
+- A plan stops at its first block; what's after shows ⬜, as in a fight.
+
+**What carries over:** the hidden profile is v6's (nine kinds of move, the same thresholds). Every
+move of a kind shares a fate, so one blocked pass means all passes are blocked; anything onto the
+back is a back take.
+
+**The rest:**
+
+- Six plans; the share is a Wordle grid.
+- Moves you've tried keep their colour in the picker, like Wordle's keyboard.
+- A day passes its gate when it has 1 to 3 kinds of answer (all-🟩 plans grouped by the kinds of
+  move they use) and best play needs at least 3 plans.
+
+Plan lab (`plan-lab.mts` drives `plans.ts`; 100 days, all pass the gate after redraws, median 42 ms
+to set up a day):
+
+| Player | Solves in 6 | Plans used (mean) | Plans 1/2/3/4/5/6 |
+|---|---|---|---|
+| Solver bot (hard-mode Wordle bot) | 100% | 3.34 | 0/0/71/26/1/2 |
+| Greedy: always the plan most likely to be the answer | 100% | 3.22 | 2/6/64/25/2/1 |
+| Random, but only plans that could still be the answer | 100% | 3.83 | 2/10/29/29/22/8 |
+| Climb to mount or the back, then finish (keyboard only) | 32% | 4.84 | |
+| Random legal plan (keyboard only) | 28% | 4.18 | |
+
+What each step taught:
+
+- **Stopping a plan at its first block made it a puzzle.** Without that rule, a player who stays
+  consistent with the colours solved in a median 3, because every step names its kind's state.
+  With it, the median is 4, and random play fails 72% instead of 40%.
+- **The bot first scored plans by information about the whole profile.** That paid for news about
+  kinds no answer uses, and it played worse than a random consistent guesser (4.54 against 4.00).
+  Scoring by information about which plans are answers fixed it.
+- **Without a minimum of 3 plans for best play, the likeliest plan was the answer on 39% of days.**
+  A player could learn the default route and skip the thinking.
+- **Counting single answer plans, days had 0 or dozens:** when a route's kinds are open, every pass
+  and every choke on it works. So the gate counts kinds of answer instead.
+
+**The depth test** (Joshua: as GAMES.md asks of Offcut, "if the greedy cutter comes close every
+time, the puzzle has no depth"):
+
+- Greedy, always playing the likeliest answer, matches the bot (3.22 against 3.34). So choosing
+  among plans that fit adds little.
+- The depth is in staying consistent. Working out which plans could still be the answer means
+  reasoning over every colour so far. Players who skip it (keyboard only) fail about 70%; players
+  who do it and then pick at random need 3.83 plans.
+- That is Wordle's profile too.
+
+Gates missed:
+
+- A consistent guesser never fails (target 15%).
+- The clues are worth 0.2 of a plan (target 0.5).
 
 ## Options to decide together
 

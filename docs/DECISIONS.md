@@ -737,3 +737,23 @@ Read lab, 100 days:
 
 The solver's prior is the measured mix: techniques 64% get through; finishes 14 / 32 / 54%.
 
+## 2026-10-06: Game-plan Wordle (`/lab/plan`)
+
+Joshua wanted "a proper thinking puzzle". v6's fight tested one thing per exchange, hid the route,
+and made every probe cost the fight. Each guess is now a whole game plan, graded per step (🟩 / 🟨
+right finish wrong spot / ⬛ / ⬜ untested), six plans, a Wordle-grid share (`plans.ts`).
+
+The choices, with the plan lab's numbers (100 days):
+
+- **A plan stops at its first block.** Without it, a consistent guesser solved in a median 3 and
+  random play failed 40%; with it, median 4 and 72%.
+- **Best play must need at least 3 plans.** Otherwise the likeliest plan was the answer on 39% of
+  days.
+- **The gate counts kinds of answer, not answer plans.** Counted as plans, days had 0 or dozens.
+- **The bot scores early plans by information about which plans are answers.** Information about the
+  whole profile played worse than random-consistent (4.54 against 4.00).
+
+The greedy test: always playing the likeliest answer matches the bot (3.22 against 3.34 plans). The
+depth is in staying consistent with the colours, not in choosing among plans that fit; players who
+don't reason fail about 70%. Offcut's own greedy test (GAMES.md) has not been run: Offcut hasn't
+started.

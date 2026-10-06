@@ -293,8 +293,12 @@ for (let id = 0; id < PROFILE_COUNT; id++) {
   }
   PROFILE_WEIGHT[id] = weight;
 }
-const stateIn = (id: number, area: Area): State =>
+/** Profile `id`'s state in `area`. */
+export const stateIn = (id: number, area: Area): State =>
   STATE_OF[PROFILE_STATES[id * AREAS.length + AREAS.indexOf(area)]!]!;
+
+/** Profile `id`'s prior weight (the product of PRIOR over its areas). */
+export const profileWeight = (id: number) => PROFILE_WEIGHT[id]!;
 
 /** The profiles you can't rule out yet, by id. */
 export type Belief = Int16Array;
