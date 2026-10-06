@@ -42,6 +42,11 @@ export type Fight = {
   momentum?: Momentum;
   /** The played fight: their chance to counter a failed move never drops below this. */
   counterFloor?: number;
+  /**
+   * The played fight: a stuffed move is burned (they've seen it) until you change position, so no
+   * exchange repeats the last one. The state then carries `used`, a bitmask of burned move indices.
+   */
+  burn?: boolean;
 };
 
 export type Momentum = { step: number; links: number };
@@ -176,14 +181,19 @@ export function chainAfterMiss(
 export function solveFight(board: Board, fight: Fight) {
   const { moves, escapes, stat, maxMoves } = board;
   const { skills, defence, exchanges } = fight;
-  // Memo over (position, exchanges left, last failed move + 1, chain); NaN means not computed.
+  // Memo over (position, exchanges left, last failed move + 1, chain, burned moves); NaN means not
+  // computed. The burned-moves slot is a bitmask, so it needs 2^maxMoves slots when burning is on
+  // (128 for a 7-move position: 5 MB of doubles on a daily move list).
   const lastSlots = maxMoves + 1;
   const chainSlots = (fight.momentum?.links ?? CHAIN_MAX) + 1;
-  const memo = new Float64Array(board.ids.length * (exchanges + 1) * lastSlots * chainSlots).fill(
-    NaN,
-  );
-  const key = (p: number, n: number, last: number, chain: number) =>
-    ((p * (exchanges + 1) + n) * lastSlots + (last + 1)) * chainSlots + chain;
+  const usedSlots = fight.burn ? 1 << maxMoves : 1;
+  const memo = new Float64Array(
+    board.ids.length * (exchanges + 1) * lastSlots * chainSlots * usedSlots,
+  ).fill(NaN);
+  const key = (p: number, n: number, last: number, chain: number, used: number) =>
+    (((p * (exchanges + 1) + n) * lastSlots + (last + 1)) * chainSlots + chain) * usedSlots + used;
+  /** Whether move m is burned in this state (`>>` and `&` read bit m of the mask). */
+  const burned = (used: number, m: number) => ((used >> m) & 1) === 1;
 
   /** Their chance to counter when your move fails at p (0 where they have no way out). */
   const counterChance = (p: number) =>
@@ -199,15 +209,22 @@ export function solveFight(board: Board, fight: Fight) {
     moveWorks(move, skills, defence, setUpBonus(move, m, last, chain, fight.momentum));
 
   /** Value of attempting move m: it works, or it fails and they may counter. */
-  const attempt = (p: number, n: number, last: number, chain: number, m: number): number => {
+  const attempt = (
+    p: number,
+    n: number,
+    last: number,
+    chain: number,
+    m: number,
+    used = 0,
+  ): number => {
     const move = moves[p]?.[m];
-    if (!move) return 0;
+    if (!move || burned(used, m)) return 0;
     const w = works(move, m, last, chain);
     const success = move.submission ? 1 : value(move.to, n - 1, -1, 0);
     // A failed attack that was a real threat grows the chain (a different one) or starts it (the
     // same one again); a fake, or any other failed move, ends it.
     const next = chainAfterMiss(move, w, m, last, chain, fight.momentum);
-    const stay = value(p, n - 1, next.last, next.chain);
+    const stay = value(p, n - 1, next.last, next.chain, fight.burn ? used | (1 << m) : 0);
     // When a move fails, they may counter. They pick the counter that's worst for you, and skip it
     // if staying put is worse for you anyway. Together with holding, this makes more skill never
     // lower the chance (engine.test.ts checks it), which the solver's pruning relies on.
@@ -218,26 +235,29 @@ export function solveFight(board: Board, fight: Fight) {
     return w * success + (1 - w) * (getOut * countered + (1 - getOut) * stay);
   };
 
-  function value(p: number, n: number, last: number, chain: number): number {
+  function value(p: number, n: number, last: number, chain: number, used = 0): number {
     if (n === 0) return 0;
-    const k = key(p, n, last, chain);
+    const k = key(p, n, last, chain, used);
     const cached = memo[k];
     if (cached !== undefined && !Number.isNaN(cached)) return cached;
     // Holding position (an exchange with no attack) is always allowed, so no move is ever forced.
-    let best = value(p, n - 1, -1, 0);
+    let best = value(p, n - 1, -1, 0, used);
     const count = moves[p]?.length ?? 0;
-    for (let m = 0; m < count; m++) best = Math.max(best, attempt(p, n, last, chain, m));
+    for (let m = 0; m < count; m++) {
+      if (!burned(used, m)) best = Math.max(best, attempt(p, n, last, chain, m, used));
+    }
     memo[k] = best;
     return best;
   }
 
   /** The best move here (-1 to hold); a move wins ties against holding, so the plan shows intent. */
-  const choose = (p: number, n: number, last: number, chain: number) => {
-    let best = value(p, n - 1, -1, 0);
+  const choose = (p: number, n: number, last: number, chain: number, used = 0) => {
+    let best = value(p, n - 1, -1, 0, used);
     let pick = -1;
     const count = moves[p]?.length ?? 0;
     for (let m = 0; m < count; m++) {
-      const v = attempt(p, n, last, chain, m);
+      if (burned(used, m)) continue;
+      const v = attempt(p, n, last, chain, m, used);
       if (v >= best && v > 0) [best, pick] = [v, m];
     }
     return pick;
@@ -334,6 +354,8 @@ export type FightLog = {
  * (engine.test.ts checks it), so the replay is one honest roll of the camp's chance.
  */
 export function simulateFight(board: Board, fight: Fight, rng: { next(): number }): FightLog {
+  // The camp's replay; burned moves are only tracked by the played fight (play.ts).
+  if (fight.burn) throw new Error("simulateFight doesn't track burned moves");
   const solved = solveFight(board, fight);
   const exchanges: Exchange[] = [];
   let p = board.ids.indexOf(fight.start);

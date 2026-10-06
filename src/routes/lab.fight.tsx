@@ -25,7 +25,8 @@ import {
 import { localPuzzleNo } from "@/kit/day";
 import { sfc32, stringSeed } from "@/kit/seed";
 
-// A throwaway playtest of "play the fight, graded like chess" (LOOP.md), v2: a daily move list,
+// A throwaway playtest of "play the fight, graded like chess" (LOOP.md), v3: a daily move list,
+// stuffed moves burned until you change position,
 // pressure on finishes, a finish-chance bar, the grade kept apart from the dice, accuracy as the score.
 // Everything runs in the browser on a public seed: no scores, no D1. Built by Claude Code outside
 // the usual Lovable lane because it's temporary.
@@ -92,7 +93,7 @@ function Fight({ n, next }: { n: number; next(): void }) {
   const [from, setFrom] = useState<PositionId>(positionOf(setup, setup.start));
 
   const here = positionOf(setup, state);
-  const { moves, best } = optionsAt(setup, state);
+  const { moves, best, burned } = optionsAt(setup, state);
   const exchange = setup.fight.exchanges - state.left + 1;
   const finishNow = pending ? pending.turn.after : evalOf(setup, state);
 
@@ -146,7 +147,7 @@ function Fight({ n, next }: { n: number; next(): void }) {
           <h1 className="arcade-logo" data-title={TITLE}>
             {TITLE}
           </h1>
-          <p className="arcade-hud pt-1 text-xs">FIGHT LAB #{n} · v2</p>
+          <p className="arcade-hud pt-1 text-xs">FIGHT LAB #{n} · v3</p>
         </header>
 
         <section className="arcade-panel mt-6 p-4">
@@ -222,6 +223,18 @@ function Fight({ n, next }: { n: number; next(): void }) {
                     </span>
                   </button>
                 ))}
+                {burned.map((label) => (
+                  <div
+                    key={label}
+                    aria-disabled="true"
+                    className="grid min-h-11 grid-cols-[1fr_auto] items-center gap-2 border-2 border-dashed border-[var(--arcade-line)] px-3 py-2 text-left opacity-60"
+                  >
+                    <span>
+                      <span className="arcade-hud block text-xs line-through">{label}</span>
+                      <span className="block text-[11px]">stuffed: they've seen it</span>
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -283,9 +296,9 @@ function Fight({ n, next }: { n: number; next(): void }) {
           <details>
             <summary className="arcade-section-title cursor-pointer">TODAY'S MOVE LIST</summary>
             <p className="mt-2 text-sm text-[var(--arcade-muted)]">
-              What your fighter knows today, position by position. A stuffed finish adds{" "}
-              {PRESSURE_POINTS}% to your next finish, up to {MOMENTUM.links} times; moving or
-              getting countered resets it.
+              What your fighter knows today, position by position. A stuffed move is gone until you
+              change position (they've seen it). A stuffed finish adds {PRESSURE_POINTS}% to your
+              next one, up to {MOMENTUM.links} times; moving or getting countered resets both.
             </p>
             <div className="mt-3 space-y-3">
               {setup.moveList.map((row) => (

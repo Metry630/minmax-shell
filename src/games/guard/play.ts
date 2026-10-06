@@ -12,18 +12,20 @@ import { EDGES, POSITIONS, type Edge, type PositionId } from "./graph";
 import { CHANCE, FAMILY_STAT, STAT_INDEX, STAT_OF } from "./model";
 import { baseOf } from "./quality";
 
-// A played fight (LOOP.md, "play the fight, graded like chess"), v2 after Joshua's first playtest.
+// A played fight (LOOP.md, "play the fight, graded like chess"), v3 after Joshua's second playtest.
 // Your fighter knows a few moves per position today (the move list); each exchange you pick one, the
-// solver's exact value of every option grades the pick, then the dice roll. A stuffed real attack
-// builds pressure on your next one. The score is the chance you threw away, never the dice. Pure, so
-// the lab page, the tests and later the real game share it.
+// solver's exact value of every option grades the pick, then the dice roll. A stuffed move is burned
+// (they've seen it) until you change position, and a stuffed finish builds pressure on your next,
+// different one: armbar, then triangle, then omoplata. The score is accuracy, never the dice. Pure,
+// so the lab page, the tests and later the real game share it.
 //
 // The numbers come from the fight lab (60 dev-salt puzzles x 400 fights per player, 2026-10-06).
-// Against v1 (generated exchanges, every move, even match, no pressure), best play got stuffed 3+
-// times in a row in 51% of fights and its attempts landed a median 24%; with the settings below
-// that's 8% and 60%. A move that lands never leaves you worse than before (0 of 21,216 landed
-// moves), and judgement still pays: always throwing the best-% finish throws away 21 points a
-// fight, "climb to the back first" 38 (best play finishes a median 81%, they 60% and 43%).
+// v1 (every move, 4-6 exchanges, no pressure): best play got stuffed 3+ times in a row in 51% of
+// fights and its attempts landed a median 24%. v2 fixed that (8%, 60%) but best play still pressed
+// the same button again on 24% of exchanges, 3+ times in a row in 17% of fights ("re click the same
+// button", Joshua). v3, with burning: 0% repeats, 3.1 different buttons a fight, 3+ stuffs in a row
+// in 1.4% of fights, attempts landing a median 70%. Judgement pays on most days: always throwing the
+// best-% finish throws away a median 10 points a fight, "climb to the back first" 15.
 
 /** Every played fight is 4 exchanges: fewer tries, so each one is likelier to land. */
 export const EXCHANGES = 4;
@@ -32,8 +34,8 @@ export const EXCHANGES = 4;
 export const TARGET = { low: 0.8, high: 0.9 } as const;
 
 /**
- * Each stuffed real submission (25%+) adds 3 skill points, 18 points of chance, to your next one,
- * the same one included, up to 2 stuffs: a 40% armbar goes 58%, then 76%.
+ * Each stuffed real submission (25%+) adds 3 skill points, 18 points of chance, to your next one, up
+ * to 2 stuffs: armbar stuffed, then a 40% triangle is 58%, then a 40% omoplata 76%.
  */
 export const MOMENTUM: Momentum = { step: 3, links: 2 };
 
@@ -57,8 +59,10 @@ export type FightState = {
   p: number;
   left: number;
   last: number;
-  /** Pressure: stuffed real attacks in a row here, 0 to MOMENTUM.links. */
+  /** Pressure: stuffed real submissions in a row here, 0 to MOMENTUM.links. */
   chain: number;
+  /** Moves burned here (stuffed, so they've seen them), a bitmask of move indices; 0 on arrival. */
+  used: number;
   /** null while the fight is on. */
   over: null | "tap" | "time";
 };
@@ -167,30 +171,44 @@ function calibrate(board: Board, fight: Fight): Fight {
   return at(shift);
 }
 
+/** Draws of the move list tried before keeping the closest; 1 or 2 almost always land. */
+export const MOVE_LIST_TRIES = 12;
+
 export function setUp(puzzle: GuardPuzzle, rng: { next(): number }): Setup {
   const base = baseOf(puzzle);
   const skills = base.skills.map((s) => s + EVEN_MATCH);
-  const edges = pickMoves(skills, rng);
-  const board = compileBoard(puzzle.belt, edges);
-  const fight = calibrate(board, {
-    ...base,
-    skills,
-    exchanges: EXCHANGES,
-    momentum: MOMENTUM,
-    counterFloor: COUNTER_FLOOR,
-  });
+  const p = base.start;
+  // Some draws can't reach the band: with burning, 8 of 60 first draws stayed under 80% at any skill,
+  // one with no finish reachable in 4 exchanges at all. Redraw the move list until one lands, as
+  // the generator's quality gate rejects puzzles; keep the closest if none does.
+  let kept: { board: Board; fight: Fight; value: number } | null = null;
+  for (let tries = 0; tries < MOVE_LIST_TRIES; tries++) {
+    const board = compileBoard(puzzle.belt, pickMoves(skills, rng));
+    const fight = calibrate(board, {
+      ...base,
+      skills,
+      exchanges: EXCHANGES,
+      momentum: MOMENTUM,
+      counterFloor: COUNTER_FLOOR,
+      burn: true,
+    });
+    const value = solveFight(board, fight).value(board.ids.indexOf(p), fight.exchanges, -1, 0);
+    if (!kept || value > kept.value) kept = { board, fight, value };
+    if (value >= TARGET.low) break;
+  }
+  const { board, fight } = kept!;
   const solved = solveFight(board, fight);
-  const p = board.ids.indexOf(puzzle.start);
+  const at = board.ids.indexOf(p);
   const moveList = board.ids
-    .map((at, i) => ({ at, moves: (board.moves[i] ?? []).map((mv) => mv.label) }))
+    .map((id, i) => ({ at: id, moves: (board.moves[i] ?? []).map((mv) => mv.label) }))
     .filter((row) => row.moves.length > 0);
   return {
     puzzle,
     board,
     fight,
     solved,
-    start: { p, left: fight.exchanges, last: -1, chain: 0, over: null },
-    bestChance: solved.value(p, fight.exchanges, -1, 0),
+    start: { p: at, left: fight.exchanges, last: -1, chain: 0, used: 0, over: null },
+    bestChance: solved.value(at, fight.exchanges, -1, 0),
     moveList,
   };
 }
@@ -204,29 +222,43 @@ export const evalOf = (setup: Setup, s: FightState): number =>
     ? 1
     : s.over || s.left <= 0
       ? 0
-      : setup.solved.value(s.p, s.left, s.last, s.chain);
+      : setup.solved.value(s.p, s.left, s.last, s.chain, s.used);
 
-/** Your options this exchange, each with its chance and exact value; holding only if you know no move here. */
-export function optionsAt(setup: Setup, s: FightState): { moves: MoveOption[]; best: number } {
+/** Whether move m is burned in this state (`>>` and `&` read bit m of the mask). */
+const isBurned = (s: FightState, m: number) => ((s.used >> m) & 1) === 1;
+
+/**
+ * Your options this exchange, each with its chance and exact value, and the moves you've burned here.
+ * Holding is offered only when no move is left.
+ */
+export function optionsAt(
+  setup: Setup,
+  s: FightState,
+): { moves: MoveOption[]; best: number; burned: string[] } {
   // A finished fight has no options. The solver's recursion stops at exactly 0 exchanges left, so
   // asking with 0 would recurse past it (the lab page crashed at TIME! on 2026-10-06).
-  if (s.over || s.left <= 0) return { moves: [], best: 0 };
+  if (s.over || s.left <= 0) return { moves: [], best: 0, burned: [] };
   const { board, solved } = setup;
-  const moves: MoveOption[] = (board.moves[s.p] ?? []).map((mv, m) => {
+  const here = board.moves[s.p] ?? [];
+  const burned = here.filter((_, m) => isBurned(s, m)).map((mv) => mv.label);
+  const moves: MoveOption[] = here.flatMap((mv, m) => {
+    if (isBurned(s, m)) return [];
     const chance = Math.round(100 * solved.works(mv, m, s.last, s.chain));
     const fresh = Math.round(100 * solved.works(mv, m, -1, 0));
-    return {
-      m,
-      label: mv.label,
-      chance,
-      boost: chance - fresh,
-      submission: mv.submission,
-      to: mv.to === -1 ? null : (board.ids[mv.to] ?? null),
-      q: solved.attempt(s.p, s.left, s.last, s.chain, m),
-    };
+    return [
+      {
+        m,
+        label: mv.label,
+        chance,
+        boost: chance - fresh,
+        submission: mv.submission,
+        to: mv.to === -1 ? null : (board.ids[mv.to] ?? null),
+        q: solved.attempt(s.p, s.left, s.last, s.chain, m, s.used),
+      },
+    ];
   });
   // Holding never beat every move on a best-play path in the lab (0 of ~12,000 decisions), so it's
-  // only offered where you know nothing.
+  // only offered when nothing is left (6% of best-play decisions have 0 or 1 options).
   if (moves.length === 0) {
     moves.push({
       m: -1,
@@ -235,10 +267,10 @@ export function optionsAt(setup: Setup, s: FightState): { moves: MoveOption[]; b
       boost: 0,
       submission: false,
       to: null,
-      q: solved.value(s.p, s.left - 1, -1, 0),
+      q: solved.value(s.p, s.left - 1, -1, 0, s.used),
     });
   }
-  return { moves, best: Math.max(...moves.map((o) => o.q)) };
+  return { moves, best: Math.max(...moves.map((o) => o.q)), burned };
 }
 
 /** Their chance to counter if your move fails here, whole percent. */
@@ -280,7 +312,8 @@ export function play(
   // The fight ends when time runs out, or when no finish is reachable in the time left (from there
   // every pick would grade BEST MOVE at 0%, which the lab page showed on 2026-10-06).
   const timeUp = (next: FightState): FightState =>
-    !next.over && (next.left === 0 || solved.value(next.p, next.left, next.last, next.chain) < 1e-9)
+    !next.over &&
+    (next.left === 0 || solved.value(next.p, next.left, next.last, next.chain, next.used) < 1e-9)
       ? { ...next, over: "time" }
       : next;
   if (m === -1) {
@@ -308,7 +341,7 @@ export function play(
       };
     }
     const event = FIRST_EVENT.get(mv.id);
-    const next = timeUp({ p: mv.to, left, last: -1, chain: 0, over: null });
+    const next = timeUp({ p: mv.to, left, last: -1, chain: 0, used: 0, over: null });
     const at = board.ids[mv.to] ?? from;
     return {
       next,
@@ -322,21 +355,23 @@ export function play(
       },
     };
   }
-  // It failed: pressure builds (a real submission) or resets, then they may counter, worst for you.
+  // It failed: it's burned, pressure builds (a real submission) or resets, then they may counter,
+  // worst for you. `|` sets bit m of the burned-moves mask.
   const after = chainAfterMiss(mv, w, m, s.last, s.chain, fight.momentum);
+  const used = s.used | (1 << m);
   const counter =
     rng.next() < solved.counterChance(s.p)
-      ? solved.counterTo(s.p, s.left, solved.value(s.p, left, after.last, after.chain))
+      ? solved.counterTo(s.p, s.left, solved.value(s.p, left, after.last, after.chain, used))
       : null;
   if (counter) {
-    const next = timeUp({ p: counter.to, left, last: -1, chain: 0, over: null });
+    const next = timeUp({ p: counter.to, left, last: -1, chain: 0, used: 0, over: null });
     const at = board.ids[counter.to] ?? from;
     return {
       next,
       outcome: { call: CALL.counter, line: counter.name, worked: false, pressure: 0, from, at },
     };
   }
-  const next = timeUp({ ...s, left, last: after.last, chain: after.chain });
+  const next = timeUp({ ...s, left, last: after.last, chain: after.chain, used });
   return {
     next,
     outcome: {

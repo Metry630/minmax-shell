@@ -18,6 +18,7 @@ import {
   play,
   setUp,
   type FightState,
+  type MoveOption,
 } from "./play";
 
 const setupFor = async (n: number) =>
@@ -39,7 +40,7 @@ describe("a played fight", () => {
   });
 
   it("calibrates every fight so best play finishes inside the target band, in 4 exchanges", async () => {
-    for (let n = 1; n <= 12; n++) {
+    for (let n = 1; n <= 30; n++) {
       const s = await setupFor(n);
       expect(s.fight.exchanges).toBe(EXCHANGES);
       expect(s.bestChance).toBeGreaterThanOrEqual(TARGET.low - 1e-9);
@@ -61,35 +62,53 @@ describe("a played fight", () => {
     }
   });
 
-  it("builds pressure: a stuffed real submission makes the same one likelier next exchange", async () => {
+  it("burns a stuffed move until you change position, and builds pressure on your next finish", async () => {
     let tested = 0;
-    for (let n = 1; n <= 12; n++) {
+    for (let n = 1; n <= 10; n++) {
       const s = await setupFor(n);
-      // A real submission (25%+) at the start with room under the 95% ceiling for the boost.
-      const attack = optionsAt(s, s.start).moves.find(
-        (o) => o.submission && o.chance >= 25 && o.chance + 2 * PRESSURE_POINTS <= 95,
-      );
-      if (!attack) continue;
+      // Any position with two finishes, the first a real threat (25%+), the second with room for
+      // the boost; the start rarely has two (0 to 2 per position).
+      const state = s.board.ids
+        .map((_, p) => ({ ...s.start, p }))
+        .find((st) => {
+          const [a, b] = optionsAt(s, st).moves.filter((o) => o.submission);
+          return a && b && a.chance >= 25 && b.chance + PRESSURE_POINTS <= 95;
+        });
+      if (!state) continue;
+      const [a, b] = optionsAt(s, state).moves.filter((o) => o.submission) as [
+        MoveOption,
+        MoveOption,
+      ];
       const stuffs = { next: () => 0.999 }; // every roll fails, and no counter lands
-      const r = play(s, s.start, attack.m, stuffs);
+      const r = play(s, state, a.m, stuffs);
       expect(r.outcome).toMatchObject({ worked: false, pressure: 1 });
-      const again = optionsAt(s, r.next).moves.find((o) => o.m === attack.m)!;
+      const after = optionsAt(s, r.next);
+      expect(after.moves.some((o) => o.m === a.m)).toBe(false);
+      expect(after.burned).toEqual([a.label]);
+      const again = after.moves.find((o) => o.m === b.m)!;
       expect(again.boost).toBe(PRESSURE_POINTS);
-      expect(again.chance - attack.chance).toBe(PRESSURE_POINTS);
+      expect(again.chance - b.chance).toBe(PRESSURE_POINTS);
       tested++;
     }
-    expect(tested).toBeGreaterThan(2);
+    expect(tested).toBeGreaterThan(5);
   });
 
-  it("builds no pressure from a stuffed pass or sweep, so landing one never beats failing it", async () => {
+  it("clears burned moves when you move, and burns a stuffed pass without building pressure", async () => {
+    let tested = 0;
     for (let n = 1; n <= 12; n++) {
       const s = await setupFor(n);
       const move = optionsAt(s, s.start).moves.find((o) => !o.submission && o.m !== -1);
       if (!move) continue;
-      const r = play(s, s.start, move.m, { next: () => 0.999 });
-      expect(r.outcome.pressure).toBe(0);
-      expect(r.next.chain).toBe(0);
+      const stuffed = play(s, s.start, move.m, { next: () => 0.999 });
+      expect(stuffed.outcome.pressure).toBe(0);
+      expect(stuffed.next.chain).toBe(0);
+      expect(stuffed.next.used).toBe(1 << move.m);
+      const landed = play(s, s.start, move.m, { next: () => 0 });
+      expect(landed.outcome.worked).toBe(true);
+      expect(landed.next.used).toBe(0);
+      tested++;
     }
+    expect(tested).toBeGreaterThan(5);
   });
 
   it("taps as often as the solver says when you always pick the best move", async () => {
@@ -130,14 +149,15 @@ describe("a played fight", () => {
     expect(a.calls.length).toBeLessThanOrEqual(s.fight.exchanges);
     // Time: the exchanges ran out, or no finish was reachable in the ones left.
     if (a.st.over === "time" && a.st.left > 0) {
-      expect(s.solved.value(a.st.p, a.st.left, a.st.last, a.st.chain)).toBe(0);
+      expect(s.solved.value(a.st.p, a.st.left, a.st.last, a.st.chain, a.st.used)).toBe(0);
     }
   });
 
   it("has no options once the fight is over, without touching the solver's recursion", async () => {
     const s = await setupFor(6);
-    expect(optionsAt(s, { ...s.start, left: 0, over: "time" })).toEqual({ moves: [], best: 0 });
-    expect(optionsAt(s, { ...s.start, over: "tap" })).toEqual({ moves: [], best: 0 });
+    const none = { moves: [], best: 0, burned: [] };
+    expect(optionsAt(s, { ...s.start, left: 0, over: "time" })).toEqual(none);
+    expect(optionsAt(s, { ...s.start, over: "tap" })).toEqual(none);
     expect(evalOf(s, { ...s.start, over: "tap" })).toBe(1);
     expect(evalOf(s, { ...s.start, left: 0, over: "time" })).toBe(0);
   });

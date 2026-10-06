@@ -228,6 +228,28 @@ The v2 page (`/lab/fight`):
 - Accuracy is the average share of your finish chance each pick kept.
 - Your own dice each play.
 
+## v2 still had you pressing the same button (Joshua, 2026-10-06): v3
+
+His note: "we keep getting stuffed and the person just has to re click the same button for 3 times
+out of 4, thats not really something you want to share". Every metric above passed, and none measured
+it. A stuff changed nothing you could see, so the next exchange was the same decision, and pressure on
+the same finish rewarded pressing it again. Measured now (same lab, best play):
+
+| | Repeats the last button | One button 3+ times in a row | Different buttons a fight | 3+ stuffs in a row | Attempts land (median) | Sub hunter throws away (median) | Climber (median) |
+|---|---|---|---|---|---|---|---|
+| v2 | 24% of exchanges | 17% of fights | 2.0 | 7.7% | 60% | 21.2 (0.0) | 37.7 (26.9) |
+| **v3: a stuffed move is burned until you change position** | **0%** | **0%** | **3.1** | **1.4%** | **70%** | **19.6 (10.0)** | **24.5 (15.2)** |
+
+Burning is the BJJ chain made literal: they've seen the armbar, so you go to the triangle (with
+pressure from the stuffed armbar), then the omoplata. Every exchange shows a different menu, and the
+heuristics now lose points on the median day instead of on some days. 5 exchanges or 1 to 3 finishes
+per position were shallower (sub hunter median 6.6 and 2.8). With burning, 8 of 60 first draws of the
+move list couldn't reach 80% at any skill (one had no reachable finish), so `setUp` redraws the move
+list until the day lands in the band; all 60 do, median 83.9%.
+
+Still open: best play taps on exchange 1 in 6.6% of fights (its first move is a finish on 9 of 60
+days); taps otherwise spread over exchanges 2 to 4 (18%, 21%, 27%).
+
 ## Options to decide together
 
 1. **Change the board daily.** Today's opponent *closes* moves instead of only lowering them (their

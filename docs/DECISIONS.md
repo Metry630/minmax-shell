@@ -653,3 +653,19 @@ Pressure from any stuffed attack was rejected: a pass graded best because failin
 landed and *lowered* the finish chance on fight #2. Finishes-only pressure makes that impossible, 0
 of 21,216. The engine options are opt-in, so the camp and its tests are unchanged.
 
+## 2026-10-06: Fight prototype v3: a stuffed move is burned until you change position
+
+Joshua on v2: you keep getting stuffed and re-click the same button. Measured (best play, 60 puzzles ×
+400 fights): v2 repeated the last button on 24% of exchanges and pressed one button 3+ times in a row in
+17% of fights, using 2.0 different buttons a fight. None of the earlier metrics tracked this, which is
+how it passed. v3 burns a stuffed move (they've seen it) until you move or get countered, and pressure
+from a stuffed finish goes to your next, different finish. Result: 0% repeats, 3.1 buttons a fight, 3+
+stuffs in a row 7.7% to 1.4%. Judgement pays on the median day: the finish-spammer throws away a median
+10 points a fight (v2: 0), "climb first" 15.
+
+The solver carries the burned moves as a bitmask (`Fight.burn`, the `used` argument, default 0 so the
+camp is unchanged), at most 2^7 slots on a daily move list. `setUp` redraws the move list (up to 12
+times) when a day can't calibrate to 80%: 8 of 60 first draws couldn't, and after redrawing all 60 land
+(median 83.9%). The repeat-press metrics now live in the lab script, so the next change gets measured
+on the thing Joshua felt.
+
