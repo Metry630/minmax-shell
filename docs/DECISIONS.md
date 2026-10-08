@@ -816,3 +816,14 @@ The favicon was still Lovable's. `scripts/icons.ts` draws, from the game's own s
 
 Dependency-free: the PNG encoder moved out of `art-sheet.ts` into `scripts/png.ts` so both use it.
 Live as Worker version d449b4aa.
+
+## 2026-10-07: The F1 lane is strategy by deduction, not a tyre calculator
+
+Market research (`docs/MARKET.md`) found 10+ F1 dailies, all trivia, and strategy only in tools with
+no daily, score or histogram, so the gap is a scored strategy puzzle. A spike with the numbers shown
+(50 to 70 laps, three compounds with wear and a cliff, every 1 to 3-stop strategy enumerated, 30
+days) is too flat: the best one-stop is optimal on 17 of 30 days and a median of 16 strategies sit
+within 1 s of the optimum, though "medium then hard at half distance" loses a median 6.1 s. So the
+proposal hides the tyre numbers and gives a practice budget to learn them (ARMBAR v7's lesson:
+deduction with feedback per action). FOM's guidelines bar its word marks from commercial domains, so
+no "F1" in the name or domain. Step 9 still decides whether it is game #2.

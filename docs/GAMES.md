@@ -34,6 +34,12 @@ Already taken: `pass.gg`, `lineup.gg`, `mise-en.place`.
 | 4 | Plates | `loadthe.bar` (available 2026-10-04) | Load the bar for today's sets in order (last plate on, first off) with the fewest plate moves. | BFS over sleeve states | lifters | plate calculators only; single-weight greedy is optimal, so the spike must show the *sequence* has depth | idea, depth unproven |
 | 5 | Imbuh | TBD | Build Indonesian words from today's root + affix tiles (meN-, ber-, di-, ter-, ke-…-an, -kan, -i); English glosses shown. | word list from a licensable source (Wiktionary via kaikki.org, CC BY-SA) | Indonesian speakers, learners | classroom crosswords only | idea |
 | 6 | Serapan | TBD | Guess the source language (Dutch, Portuguese, Arabic, Sanskrit, Hokkien, English…) of each of today's 5 Indonesian words; etymology card after. | 2 independent sources per etymology | linguistics nerds, ID + EN | classroom quizzes only | idea |
+| 7 | **Box Box** (F1 strategy, working title) | `undercut.day` / `boxbox.day` (unchecked) | Today's tyres are hidden: spend a practice budget on short runs to learn them, then call the race (compound order + pit laps). Score = seconds behind the perfect strategy. | enumerate every 1 to 3-stop strategy on the true model | F1 fans (r/formula1 ~6.7M), tier-1, young | trivia only (Paddockdle, Driverle, Formudle, Gridle, Boxdle…); strategy tools without a daily (Racemate, f1strategysim) | idea; depth spike in `MARKET.md` |
+| 8 | Ratio | TBD | Build today's item at the required rate with the fewest machines; alternate recipes share by-products. | small ILP, offline | Factorio / Satisfactory players, HN | nothing daily found; calculators, HTML Factorio | idea |
+| 9 | Lay Up | TBD | Play today's hole in the fewest expected strokes: club and target per shot. | DP over positions | golfers (older, tier-1) | club-selector apps, HexaGolf (dice golf) | idea; needs a licensable strokes baseline |
+
+Why these three were added, the F1 legal limits (no F1 word marks in name or domain) and where each
+would be posted: `docs/MARKET.md` (2026-10-07).
 
 Imbuh and Serapan are word games rather than optimisation puzzles, and Indonesian traffic earns far
 less per view. They're the bilingual lane, for reach rather than revenue.
@@ -43,6 +49,9 @@ less per view. They're the bilingual lane, for reach rather than revenue.
 - MMA "guess the fighter": [Fightdle](https://www.fightdle.com/), [MMADLE](https://mmadle.com/),
   [Shadowbox](https://www.ufcalendar.com/games/shadowbox), [Sportsdle UFC](https://www.sportsdle.com/ufc/daily-guessing-game),
   [UFClue](https://ufc-wordle.vercel.app/). MMA math chains: [MMA Math](https://www.nextknockout.com/mma-math), DoUKnowBall.
+- F1 trivia: driver guessing ([Paddockdle](https://10015.io/product/paddockdle), Driverle, Stewardle,
+  [Boxdle](https://boxboxd.fun/boxdle), [Gridle](https://playgridle.com/), Sportsdle F1), F1 word Wordle (Formudle,
+  Pitbrain), F1 Immaculate Grid (Sportsdle). The dles directory itself lists no F1 game (2026-10-07).
 - Chess: 8 in the directory (Chessle, Chessguessr, Matle, Echo Chess, Takes…) plus Elo guessers
   ([Gueslo](https://gueslo.app/), [EloGuessr](https://eloguessr.net/)).
 - Dish from ingredients: [Dishle](https://dish-le.com/), [Daily Dish](https://dailydishgame.com/),
